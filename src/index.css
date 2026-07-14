@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Configurações base */
+#root {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f9fafb;
+  /* gray-50 */
+  color: #111827;
+  /* gray-900 */
+  text-align: left;
+  font-family: 'Roboto', system-ui, sans-serif;
+}
