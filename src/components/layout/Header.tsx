@@ -8,10 +8,10 @@ export function Header() {
           Job Fit Analyzer
         </Link>
         <Link
-          to="/vagas/nova"
+          to="/historico"
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
         >
-          Nova Vaga
+          Histórico
         </Link>
       </div>
     </header>

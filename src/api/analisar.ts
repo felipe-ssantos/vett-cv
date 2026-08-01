@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import formidable from "formidable";
 import fs from "fs/promises";
@@ -8,13 +7,6 @@ import { PDFParse } from "pdf-parse";
 export const config = {
   api: { bodyParser: false },
 };
-
-// Cliente Supabase server-side. A policy de `vagas` já libera select público,
-// então a anon key é suficiente aqui (não precisa da service role key).
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.VITE_SUPABASE_ANON_KEY!,
-);
 
 async function extrairTextoDoArquivo(
   filepath: string,
@@ -38,20 +30,7 @@ async function extrairTextoDoArquivo(
   throw new Error("Formato de arquivo não suportado. Envie PDF ou DOCX.");
 }
 
-function montarPrompt(
-  curriculoTexto: string,
-  vaga: {
-    titulo: string;
-    descricao_completa: string;
-    hard_skills: string[];
-    soft_skills: string[];
-    senioridade?: string;
-  },
-): string {
-  return `Você é um especialista em recrutamento e ATS (Applicant Tracking System).
-Compare o currículo abaixo com a vaga e retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), no formato:
-
-{
+const FORMATO_ANALISE = `{
   "scoreMatch": number (0-100),
   "matchPorCategoria": {
     "skillsTecnicas": number (0-100),
@@ -65,14 +44,58 @@ Compare o currículo abaixo com a vaga e retorne SOMENTE um JSON válido (sem ma
   "sugestoesAjuste": string[],
   "resumoIA": string (2-3 frases sobre o alinhamento geral do perfil),
   "dicaFinal": string (1 frase objetiva com a ação mais impactante para subir a %)
+}`;
+
+// Vaga nova: a IA extrai os dados estruturados a partir do texto colado E analisa o match.
+function montarPromptComExtracao(
+  curriculoTexto: string,
+  descricaoVaga: string,
+): string {
+  return `Você é um especialista em recrutamento e ATS (Applicant Tracking System).
+Primeiro, extraia os dados estruturados da vaga a partir do texto colado (que pode vir de qualquer site de emprego, com ruído/formatação misturada). Depois, compare o currículo com a vaga.
+
+Retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), no formato:
+
+{
+  "vaga": {
+    "titulo": string,
+    "empresa": string | null,
+    "hardSkills": string[] (tecnologias, ferramentas, certificações exigidas),
+    "softSkills": string[],
+    "senioridade": string | null (ex: "Júnior", "Pleno", "Sênior", ou null se não informado)
+  },
+  "analise": ${FORMATO_ANALISE}
 }
+
+DESCRIÇÃO DA VAGA (texto colado, pode ter ruído):
+${descricaoVaga}
+
+CURRÍCULO:
+${curriculoTexto}`;
+}
+
+// Vaga já existente: os dados estruturados já são conhecidos, só analisa o match.
+function montarPromptSoAnalise(
+  curriculoTexto: string,
+  vaga: {
+    titulo: string;
+    descricaoCompleta: string;
+    hardSkills: string[];
+    softSkills: string[];
+    senioridade?: string | null;
+  },
+): string {
+  return `Você é um especialista em recrutamento e ATS (Applicant Tracking System).
+Compare o currículo abaixo com a vaga e retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), no formato:
+
+${FORMATO_ANALISE}
 
 VAGA:
 Título: ${vaga.titulo}
 Senioridade: ${vaga.senioridade ?? "não informado"}
-Hard skills exigidas: ${vaga.hard_skills.join(", ")}
-Soft skills exigidas: ${vaga.soft_skills.join(", ")}
-Descrição completa: ${vaga.descricao_completa}
+Hard skills exigidas: ${vaga.hardSkills.join(", ")}
+Soft skills exigidas: ${vaga.softSkills.join(", ")}
+Descrição completa: ${vaga.descricaoCompleta}
 
 CURRÍCULO:
 ${curriculoTexto}`;
@@ -108,15 +131,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const form = formidable({ multiples: false });
     const [fields, files] = await form.parse(req);
 
-    const vagaId = fields.vagaId?.[0];
+    const descricaoVaga = fields.descricaoVaga?.[0];
+    const vagaExistenteJson = fields.vagaExistente?.[0]; // presente quando reanalisando contra vaga já cadastrada
     const curriculoTextoColado = fields.curriculoTexto?.[0];
     const arquivo = files.arquivo?.[0];
 
-    if (!vagaId) {
-      return res.status(400).json({ erro: "vagaId é obrigatório" });
-    }
-
-    // Extrai o texto: prioriza arquivo enviado, senão usa o texto colado
+    // Extrai o texto do currículo: prioriza arquivo enviado, senão usa o texto colado
     let curriculoTexto = curriculoTextoColado ?? "";
     if (arquivo) {
       curriculoTexto = await extrairTextoDoArquivo(
@@ -133,24 +153,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
-    // Busca os dados da vaga
-    const { data: vaga, error: erroVaga } = await supabase
-      .from("vagas")
-      .select(
-        "titulo, descricao_completa, hard_skills, soft_skills, senioridade",
-      )
-      .eq("id", vagaId)
-      .single();
-
-    if (erroVaga || !vaga) {
-      return res.status(404).json({ erro: "Vaga não encontrada" });
+    if (vagaExistenteJson) {
+      // Fluxo B: vaga já cadastrada, só analisa o match
+      const vagaExistente = JSON.parse(vagaExistenteJson);
+      const prompt = montarPromptSoAnalise(curriculoTexto, vagaExistente);
+      const respostaIA = await chamarIA(prompt);
+      const analise = JSON.parse(respostaIA);
+      return res.status(200).json({ curriculoTexto, analise });
     }
 
-    const prompt = montarPrompt(curriculoTexto, vaga);
-    const respostaIA = await chamarIA(prompt);
-    const analise = JSON.parse(respostaIA);
+    if (!descricaoVaga?.trim()) {
+      return res.status(400).json({ erro: "Cole a descrição da vaga." });
+    }
 
-    return res.status(200).json({ curriculoTexto, analise });
+    // Fluxo A: vaga nova, extrai os dados e analisa
+    const prompt = montarPromptComExtracao(curriculoTexto, descricaoVaga);
+    const respostaIA = await chamarIA(prompt);
+    const { vaga, analise } = JSON.parse(respostaIA);
+
+    return res
+      .status(200)
+      .json({ curriculoTexto, descricaoVaga, vaga, analise });
   } catch (erro) {
     console.error(erro);
     return res.status(500).json({ erro: "Falha ao processar a análise." });

@@ -29,19 +29,16 @@ export function VagaList() {
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Vagas</h1>
-        <Link
-          to="/vagas/nova"
-          className="bg-indigo-600 text-white rounded px-4 py-2"
-        >
-          Nova vaga
+        <h1 className="text-2xl font-bold">Histórico de análises</h1>
+        <Link to="/" className="bg-indigo-600 text-white rounded px-4 py-2">
+          Nova análise
         </Link>
       </div>
 
       {carregando && <p>Carregando vagas...</p>}
       {erro && <p className="text-red-600">{erro}</p>}
       {!carregando && !erro && vagas.length === 0 && (
-        <p>Nenhuma vaga cadastrada ainda.</p>
+        <p>Nenhuma vaga analisada ainda.</p>
       )}
 
       <ul className="space-y-3">
