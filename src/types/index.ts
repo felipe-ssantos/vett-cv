@@ -48,4 +48,5 @@ export interface AnaliseMatchIA {
   pontosFortes: string[];
   sugestoesAjuste: string[];
   resumoIA: string;
+  dicaFinal: string;
 }
