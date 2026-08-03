@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import formidable from "formidable";
 import fs from "fs/promises";
 import mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
+import pdfParse from "pdf-parse";
 
 export const config = {
   api: { bodyParser: false },
@@ -42,8 +42,7 @@ async function extrairTextoDoArquivo(
 
   if (ext === "pdf") {
     const buffer = await fs.readFile(filepath);
-    const parser = new PDFParse({ data: buffer });
-    const resultado = await parser.getText();
+    const resultado = await pdfParse(buffer);
     return resultado.text;
   }
 
