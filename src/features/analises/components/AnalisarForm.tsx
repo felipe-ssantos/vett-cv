@@ -166,7 +166,7 @@ export function AnalisarForm() {
           </button>
 
           <p className="text-center text-secondary small mt-2 mb-0">
-            Análise feita com IA - seus dados não são armazenados
+            Análise feita com IA · seu histórico criptografado neste navegador
           </p>
 
           {erro && <div className="alert alert-danger mt-3">{erro}</div>}
