@@ -31,6 +31,7 @@ export interface Analise {
   pontos_fortes: string[];
   sugestoes_ajuste: string[];
   resumo_ia: string;
+  dica_final?: string;
   created_at: string;
 }
 

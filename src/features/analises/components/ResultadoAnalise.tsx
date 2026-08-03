@@ -123,8 +123,8 @@ export function ResultadoAnalise() {
         <h2 className="text-sm font-medium text-indigo-800 mb-1">
           Dica para aumentar sua %
         </h2>
-        <p className="text-sm text-indigo-900">
-          {(analise as Analise & { dica_final?: string }).dica_final}
+        <p className="text-sm text-indigo-900">          
+          {analise.dica_final}
         </p>
       </div>
     </div>

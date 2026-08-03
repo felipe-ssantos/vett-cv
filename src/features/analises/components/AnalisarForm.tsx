@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { normalizarMatchPorCategoria } from "../../../lib/normalizarAnalise";
 import { supabase } from "../../../lib/supabaseClient";
 import type { AnaliseMatchIA } from "../../../types";
 
@@ -107,7 +108,9 @@ export function AnalisarForm() {
         candidatura_id: candidatura.id,
         vaga_id: vagaSalva.id,
         score_match: analise.scoreMatch,
-        match_por_categoria: analise.matchPorCategoria,
+        match_por_categoria: normalizarMatchPorCategoria(
+          analise.matchPorCategoria,
+        ),
         keywords_presentes: analise.keywordsPresentes,
         keywords_faltando: analise.keywordsFaltando,
         pontos_fortes: analise.pontosFortes,
@@ -131,7 +134,7 @@ export function AnalisarForm() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">Analisar currículo x vaga</h1>
       <p className="text-gray-500 mb-4">
         Cole a descrição da vaga (de qualquer site) e o seu currículo, depois

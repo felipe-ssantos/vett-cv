@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { normalizarMatchPorCategoria } from "../../../lib/normalizarAnalise";
 import { supabase } from "../../../lib/supabaseClient";
 import type { AnaliseMatchIA, Vaga } from "../../../types";
 
@@ -99,7 +100,9 @@ export function CandidaturaForm() {
         candidatura_id: candidatura.id,
         vaga_id: vagaId,
         score_match: analise.scoreMatch,
-        match_por_categoria: analise.matchPorCategoria,
+        match_por_categoria: normalizarMatchPorCategoria(
+          analise.matchPorCategoria,
+        ),
         keywords_presentes: analise.keywordsPresentes,
         keywords_faltando: analise.keywordsFaltando,
         pontos_fortes: analise.pontosFortes,
@@ -121,7 +124,7 @@ export function CandidaturaForm() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">Reanalisar currículo</h1>
       {vaga && (
         <p className="text-gray-500 mb-4">contra a vaga: {vaga.titulo}</p>
