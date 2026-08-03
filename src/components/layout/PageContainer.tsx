@@ -1,9 +1,5 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
-export function PageContainer ({ children }: { children: ReactNode }) {
-  return (
-    <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-      {children}
-    </main>
-  )
+export function PageContainer({ children }: { children: ReactNode }) {
+  return <main className="container py-5">{children}</main>;
 }

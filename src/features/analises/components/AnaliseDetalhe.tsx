@@ -13,15 +13,18 @@ const LABELS_CATEGORIA: Record<string, string> = {
 function BarraCategoria({ label, valor }: { label: string; valor: number }) {
   return (
     <div className="mb-3">
-      <div className="flex justify-between text-sm mb-1">
+      <div className="d-flex justify-content-between small mb-1">
         <span>{label}</span>
-        <span className="font-medium">{valor}%</span>
+        <span className="fw-medium">{valor}%</span>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-2">
-        <div
-          className="bg-indigo-600 h-2 rounded-full"
-          style={{ width: `${valor}%` }}
-        />
+      <div
+        className="progress"
+        role="progressbar"
+        aria-valuenow={valor}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div className="progress-bar" style={{ width: `${valor}%` }} />
       </div>
     </div>
   );
@@ -52,141 +55,158 @@ export function AnaliseDetalhe() {
   }, [id]);
 
   if (carregando) return <p>Carregando análise...</p>;
-  if (erro || !analise) return <p className="text-red-600">{erro}</p>;
+  if (erro || !analise) return <div className="alert alert-danger">{erro}</div>;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <Link to="/historico" className="text-sm text-indigo-600">
-          ← Voltar ao histórico
-        </Link>
-      </div>
-
-      <div className="border rounded p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h1 className="text-2xl font-bold">{analise.titulo_vaga}</h1>
-          {analise.senioridade && (
-            <span className="text-xs bg-gray-100 rounded px-2 py-0.5 whitespace-nowrap">
-              {analise.senioridade}
-            </span>
-          )}
+    <div className="row justify-content-center">
+      <div className="col-lg-8 d-flex flex-column gap-4">
+        <div>
+          <Link to="/historico" className="small">
+            ← Voltar ao histórico
+          </Link>
         </div>
-        {analise.empresa && (
-          <p className="text-gray-500 mb-3">{analise.empresa}</p>
-        )}
 
-        {analise.hard_skills.length > 0 && (
-          <div className="mb-2">
-            <p className="text-sm font-medium mb-1">Hard skills</p>
-            <div className="flex flex-wrap gap-1">
-              {analise.hard_skills.map((s) => (
-                <span
-                  key={s}
-                  className="text-xs bg-gray-100 rounded px-2 py-0.5"
-                >
-                  {s}
+        <div className="card">
+          <div className="card-body">
+            <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <h1 className="h3 mb-0">{analise.titulo_vaga}</h1>
+              {analise.senioridade && (
+                <span className="badge bg-secondary-subtle text-secondary-emphasis">
+                  {analise.senioridade}
                 </span>
-              ))}
+              )}
+            </div>
+            {analise.empresa && (
+              <p className="text-secondary mb-3">{analise.empresa}</p>
+            )}
+
+            {analise.hard_skills.length > 0 && (
+              <div className="mb-2">
+                <p className="small fw-medium mb-1">Hard skills</p>
+                <div className="d-flex flex-wrap gap-1">
+                  {analise.hard_skills.map((s) => (
+                    <span key={s} className="badge bg-light text-dark border">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {analise.soft_skills.length > 0 && (
+              <div className="mb-3">
+                <p className="small fw-medium mb-1">Soft skills</p>
+                <div className="d-flex flex-wrap gap-1">
+                  {analise.soft_skills.map((s) => (
+                    <span key={s} className="badge bg-light text-dark border">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <details className="small text-secondary mt-2">
+              <summary className="text-primary" style={{ cursor: "pointer" }}>
+                Ver descrição completa
+              </summary>
+              <p className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
+                {analise.descricao_vaga}
+              </p>
+            </details>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-body text-center py-5">
+            <div
+              className="score-circle mx-auto mb-3"
+              style={{ "--score": analise.score_match } as React.CSSProperties}
+            >
+              <div className="score-circle-inner">{analise.score_match}%</div>
+            </div>
+            <p className="text-secondary mb-0">{analise.resumo_ia}</p>
+          </div>
+        </div>
+
+        {analise.match_por_categoria && (
+          <div className="card">
+            <div className="card-body">
+              <h2 className="h5 mb-3">Match por categoria</h2>
+              {Object.entries(analise.match_por_categoria).map(
+                ([chave, valor]) => (
+                  <BarraCategoria
+                    key={chave}
+                    label={LABELS_CATEGORIA[chave] ?? chave}
+                    valor={valor as number}
+                  />
+                ),
+              )}
             </div>
           </div>
         )}
 
-        {analise.soft_skills.length > 0 && (
-          <div className="mb-3">
-            <p className="text-sm font-medium mb-1">Soft skills</p>
-            <div className="flex flex-wrap gap-1">
-              {analise.soft_skills.map((s) => (
-                <span
-                  key={s}
-                  className="text-xs bg-gray-100 rounded px-2 py-0.5"
-                >
-                  {s}
-                </span>
-              ))}
+        <div className="row g-4">
+          <div className="col-md-6">
+            <div className="card h-100">
+              <div className="card-body">
+                <h2 className="h5 mb-2">Palavras-chave presentes</h2>
+                <div className="d-flex flex-wrap gap-1">
+                  {analise.keywords_presentes.map((k) => (
+                    <span
+                      key={k}
+                      className="badge bg-success-subtle text-success-emphasis"
+                    >
+                      {k}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        )}
-
-        <details className="text-sm text-gray-600 mt-2">
-          <summary className="cursor-pointer text-indigo-600">
-            Ver descrição completa
-          </summary>
-          <p className="mt-2 whitespace-pre-wrap">{analise.descricao_vaga}</p>
-        </details>
-      </div>
-
-      <div className="text-center border rounded p-6">
-        <div className="text-5xl font-bold text-indigo-600">
-          {analise.score_match}%
-        </div>
-        <p className="text-gray-600 mt-2">{analise.resumo_ia}</p>
-      </div>
-
-      {analise.match_por_categoria && (
-        <div className="border rounded p-4">
-          <h2 className="text-lg font-bold mb-3">Match por categoria</h2>
-          {Object.entries(analise.match_por_categoria).map(([chave, valor]) => (
-            <BarraCategoria
-              key={chave}
-              label={LABELS_CATEGORIA[chave] ?? chave}
-              valor={valor as number}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="border rounded p-4">
-          <h2 className="text-lg font-bold mb-2">Palavras-chave presentes</h2>
-          <div className="flex flex-wrap gap-1">
-            {analise.keywords_presentes.map((k) => (
-              <span
-                key={k}
-                className="text-xs bg-green-100 text-green-800 rounded px-2 py-1"
-              >
-                {k}
-              </span>
-            ))}
+          <div className="col-md-6">
+            <div className="card h-100">
+              <div className="card-body">
+                <h2 className="h5 mb-2">Palavras-chave faltando</h2>
+                <div className="d-flex flex-wrap gap-1">
+                  {analise.keywords_faltando.map((k) => (
+                    <span
+                      key={k}
+                      className="badge bg-danger-subtle text-danger-emphasis"
+                    >
+                      {k}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="border rounded p-4">
-          <h2 className="text-lg font-bold mb-2">Palavras-chave faltando</h2>
-          <div className="flex flex-wrap gap-1">
-            {analise.keywords_faltando.map((k) => (
-              <span
-                key={k}
-                className="text-xs bg-red-100 text-red-800 rounded px-2 py-1"
-              >
-                {k}
-              </span>
-            ))}
+
+        <div className="card">
+          <div className="card-body">
+            <h2 className="h5 mb-2">Sugestões de ajuste</h2>
+            <ul className="mb-0 small">
+              {analise.sugestoes_ajuste.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ul>
           </div>
         </div>
-      </div>
 
-      <div className="border rounded p-4">
-        <h2 className="text-lg font-bold mb-2">Sugestões de ajuste</h2>
-        <ul className="list-disc list-inside space-y-1 text-sm">
-          {analise.sugestoes_ajuste.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
-        </ul>
-      </div>
+        <div className="alert alert-primary mb-0">
+          <h2 className="h6 mb-1">Dica para aumentar sua %</h2>
+          <p className="mb-0 small">{analise.dica_final}</p>
+        </div>
 
-      <div className="border rounded p-4 bg-indigo-50">
-        <h2 className="text-sm font-medium text-indigo-800 mb-1">
-          Dica para aumentar sua %
-        </h2>
-        <p className="text-sm text-indigo-900">{analise.dica_final}</p>
-      </div>
-
-      <div className="flex justify-end">
-        <Link
-          to={`/analises/${analise.id}/reanalisar`}
-          className="bg-indigo-600 text-white rounded px-3 py-1.5 text-sm"
-        >
-          Reanalisar com outro currículo
-        </Link>
+        <div className="d-flex justify-content-end">
+          <Link
+            to={`/analises/${analise.id}/reanalisar`}
+            className="btn btn-primary"
+          >
+            Reanalisar com outro currículo
+          </Link>
+        </div>
       </div>
     </div>
   );

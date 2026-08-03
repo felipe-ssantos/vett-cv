@@ -116,61 +116,57 @@ export function ReanalisarForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1">Reanalisar currículo</h1>
-      {analiseBase && (
-        <p className="text-gray-500 mb-4">
-          contra a vaga: {analiseBase.titulo_vaga}
-        </p>
-      )}
+    <div className="row justify-content-center">
+      <div className="col-lg-8">
+        <h1 className="mb-1">Reanalisar currículo</h1>
+        {analiseBase && (
+          <p className="text-secondary mb-4">
+            contra a vaga: {analiseBase.titulo_vaga}
+          </p>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Cole o texto do currículo
-          </label>
-          <textarea
-            className="border rounded p-2 w-full"
-            rows={8}
-            placeholder="Cole aqui o texto do seu currículo (ex: já ajustado com base na dica anterior)..."
-            value={curriculoTexto}
-            onChange={(e) => {
-              setCurriculoTexto(e.target.value);
-              if (e.target.value) setArquivo(null);
-            }}
-            disabled={!!arquivo}
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="form-label">Cole o texto do currículo</label>
+            <textarea
+              className="form-control"
+              rows={8}
+              placeholder="Cole aqui o texto do seu currículo (ex: já ajustado com base na dica anterior)..."
+              value={curriculoTexto}
+              onChange={(e) => {
+                setCurriculoTexto(e.target.value);
+                if (e.target.value) setArquivo(null);
+              }}
+              disabled={!!arquivo}
+            />
+          </div>
 
-        <div className="text-center text-gray-400 text-sm">ou</div>
+          <div className="text-center text-secondary small mb-3">ou</div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Envie o arquivo (PDF ou DOCX)
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={handleArquivoChange}
-            className="block w-full text-sm"
-          />
-          {arquivo && (
-            <p className="text-sm text-gray-600 mt-1">
-              Selecionado: {arquivo.name}
-            </p>
-          )}
-        </div>
+          <div className="mb-3">
+            <label className="form-label">Envie o arquivo (PDF ou DOCX)</label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleArquivoChange}
+              className="form-control"
+            />
+            {arquivo && (
+              <div className="form-text">Selecionado: {arquivo.name}</div>
+            )}
+          </div>
 
-        <button
-          type="submit"
-          disabled={analisando || !analiseBase}
-          className="bg-indigo-600 text-white rounded px-4 py-2 disabled:opacity-50 w-full"
-        >
-          {analisando ? "Analisando..." : "Analisar"}
-        </button>
+          <button
+            type="submit"
+            disabled={analisando || !analiseBase}
+            className="btn btn-primary w-100"
+          >
+            {analisando ? "Analisando..." : "Analisar"}
+          </button>
 
-        {erro && <p className="text-red-600 text-sm">{erro}</p>}
-      </form>
+          {erro && <div className="alert alert-danger mt-3">{erro}</div>}
+        </form>
+      </div>
     </div>
   );
 }

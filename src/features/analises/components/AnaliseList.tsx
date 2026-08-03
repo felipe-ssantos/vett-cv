@@ -28,40 +28,39 @@ export function AnaliseList() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Histórico de análises</h1>
-        <Link to="/" className="bg-indigo-600 text-white rounded px-4 py-2">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="mb-0">Histórico de análises</h1>
+        <Link to="/" className="btn btn-primary">
           Nova análise
         </Link>
       </div>
 
       {carregando && <p>Carregando...</p>}
-      {erro && <p className="text-red-600">{erro}</p>}
+      {erro && <div className="alert alert-danger">{erro}</div>}
       {!carregando && !erro && analises.length === 0 && (
-        <p>Nenhuma análise feita ainda.</p>
+        <p className="text-secondary">Nenhuma análise feita ainda.</p>
       )}
 
-      <ul className="space-y-3">
+      <div className="list-group">
         {analises.map((analise) => (
-          <li key={analise.id} className="border rounded p-3">
-            <Link
-              to={`/analises/${analise.id}`}
-              className="flex items-center justify-between"
-            >
-              <div>
-                <strong>{analise.titulo_vaga}</strong>
-                {analise.empresa && <span> — {analise.empresa}</span>}
-                <p className="text-sm text-gray-500">
-                  {new Date(analise.created_at).toLocaleDateString("pt-BR")}
-                </p>
+          <Link
+            key={analise.id}
+            to={`/analises/${analise.id}`}
+            className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <strong>{analise.titulo_vaga}</strong>
+              {analise.empresa && <span> — {analise.empresa}</span>}
+              <div className="text-secondary small">
+                {new Date(analise.created_at).toLocaleDateString("pt-BR")}
               </div>
-              <span className="font-bold text-indigo-600">
-                {analise.score_match}%
-              </span>
-            </Link>
-          </li>
+            </div>
+            <span className="badge bg-primary rounded-pill fs-6">
+              {analise.score_match}%
+            </span>
+          </Link>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
