@@ -1,8 +1,1 @@
-{
-  "rewrites": [
-    {
-      "source": "/((?!api/|@vite|@react-refresh|src/|node_modules/|favicon\\.svg).*)",
-      "destination": "/"
-    }
-  ]
-}
+{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
