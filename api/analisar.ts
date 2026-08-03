@@ -101,6 +101,14 @@ CURRÍCULO:
 ${curriculoTexto}`;
 }
 
+interface RespostaGeminiAPI {
+  candidates: {
+    content: {
+      parts: { text: string }[];
+    };
+  }[];
+}
+
 async function chamarIA(prompt: string): Promise<string> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -118,7 +126,7 @@ async function chamarIA(prompt: string): Promise<string> {
     throw new Error(`Erro na chamada da IA: ${response.status}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as RespostaGeminiAPI;
   return data.candidates[0].content.parts[0].text;
 }
 
@@ -146,11 +154,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!curriculoTexto.trim()) {
-      return res
-        .status(400)
-        .json({
-          erro: "Nenhum texto de currículo foi encontrado (cole o texto ou envie um PDF/DOCX).",
-        });
+      return res.status(400).json({
+        erro: "Nenhum texto de currículo foi encontrado (cole o texto ou envie um PDF/DOCX).",
+      });
     }
 
     if (vagaExistenteJson) {
