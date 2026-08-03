@@ -109,7 +109,10 @@ export function AnalisarForm() {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">Descrição da vaga</label>
+            <label className="form-label d-flex align-items-center gap-2">
+              <span className="numero-circulo">1</span>
+              Descrição da vaga
+            </label>
             <textarea
               className="form-control"
               rows={8}
@@ -120,7 +123,10 @@ export function AnalisarForm() {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Cole o texto do currículo</label>
+            <label className="form-label d-flex align-items-center gap-2">
+              <span className="numero-circulo">2</span>
+              Cole o texto do currículo
+            </label>
             <textarea
               className="form-control"
               rows={8}
@@ -156,8 +162,12 @@ export function AnalisarForm() {
             disabled={analisando}
             className="btn btn-primary w-100"
           >
-            {analisando ? "Analisando..." : "Analisar"}
+            {analisando ? "Analisando..." : "Analisar Job Fit"}
           </button>
+
+          <p className="text-center text-secondary small mt-2 mb-0">
+            Análise feita com IA - seus dados não são armazenados
+          </p>
 
           {erro && <div className="alert alert-danger mt-3">{erro}</div>}
         </form>

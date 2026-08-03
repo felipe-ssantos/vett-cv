@@ -1,12 +1,34 @@
 :root {
-  --bs-primary: #4f46e5;
-  --bs-primary-rgb: 79, 70, 229;
-  --bs-link-color: #4f46e5;
-  --bs-link-hover-color: #4338ca;
+  --brand-purple: #8b5cf6;
+  --brand-purple-dark: #7c3aed;
+  --text-dark-gray: #374151;
+
+  --bs-primary: #8b5cf6;
+  --bs-primary-rgb: 139, 92, 246;
+  --bs-link-color: #8b5cf6;
+  --bs-link-hover-color: #7c3aed;
+
+  --bs-success: #16a34a;
+  --bs-success-rgb: 22, 163, 74;
 }
 
 body {
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  background-color: #fafafa;
+}
+
+.numero-circulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand-purple);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
 }
 
 .score-circle {
@@ -18,7 +40,7 @@ body {
   align-items: center;
   justify-content: center;
   background: conic-gradient(
-    var(--bs-primary) calc(var(--score) * 1%),
+    var(--bs-success) calc(var(--score) * 1%),
     #e9ecef 0
   );
 }
@@ -33,5 +55,5 @@ body {
   justify-content: center;
   font-size: 2rem;
   font-weight: 700;
-  color: var(--bs-primary);
+  color: var(--bs-success);
 }

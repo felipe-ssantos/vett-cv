@@ -185,8 +185,14 @@ export function AnaliseDetalhe() {
 
         <div className="card">
           <div className="card-body">
-            <h2 className="h5 mb-2">Sugestões de ajuste</h2>
-            <ul className="mb-0 small">
+            <h2 className="h5 mb-2 d-flex align-items-center gap-2">
+              <i className="bi bi-lightbulb text-warning"></i>
+              Sugestões de ajuste
+            </h2>
+            <ul
+              className="mb-0 small"
+              style={{ color: "var(--text-dark-gray)" }}
+            >
               {analise.sugestoes_ajuste.map((s, i) => (
                 <li key={i}>{s}</li>
               ))}
@@ -194,9 +200,20 @@ export function AnaliseDetalhe() {
           </div>
         </div>
 
-        <div className="alert alert-primary mb-0">
-          <h2 className="h6 mb-1">Dica para aumentar sua %</h2>
-          <p className="mb-0 small">{analise.dica_final}</p>
+        <div
+          className="alert mb-0"
+          style={{ background: "#f5f3ff", border: "1px solid #ddd6fe" }}
+        >
+          <h2
+            className="h6 mb-1 d-flex align-items-center gap-2"
+            style={{ color: "var(--brand-purple)" }}
+          >
+            <i className="bi bi-magic"></i>
+            Dica para aumentar sua pontuação
+          </h2>
+          <p className="mb-0 small" style={{ color: "var(--text-dark-gray)" }}>
+            {analise.dica_final}
+          </p>
         </div>
 
         <div className="d-flex justify-content-end">
