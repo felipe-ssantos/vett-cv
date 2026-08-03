@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { normalizarMatchPorCategoria } from "../../../lib/normalizarAnalise";
 import { supabase } from "../../../lib/supabaseClient";
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
 
@@ -75,9 +74,7 @@ export function AnalisarForm() {
           senioridade: vaga.senioridade,
           curriculo_texto: textoExtraido,
           score_match: analise.scoreMatch,
-          match_por_categoria: normalizarMatchPorCategoria(
-            analise.matchPorCategoria,
-          ),
+          match_por_categoria: analise.matchPorCategoria,
           keywords_presentes: analise.keywordsPresentes,
           keywords_faltando: analise.keywordsFaltando,
           pontos_fortes: analise.pontosFortes,

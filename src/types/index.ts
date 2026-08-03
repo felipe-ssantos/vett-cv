@@ -1,4 +1,9 @@
-import type { MatchPorCategoriaDb } from "../lib/normalizarAnalise";
+export interface MatchPorCategoria {
+  skills_tecnicas: number;
+  ferramentas: number;
+  experiencia: number;
+  soft_skills: number;
+}
 
 export interface Analise {
   id: string;
@@ -10,7 +15,7 @@ export interface Analise {
   senioridade?: string;
   curriculo_texto: string;
   score_match: number;
-  match_por_categoria?: MatchPorCategoriaDb;
+  match_por_categoria?: MatchPorCategoria;
   keywords_presentes: string[];
   keywords_faltando: string[];
   pontos_fortes: string[];
@@ -30,12 +35,7 @@ export interface VagaExtraidaIA {
 
 export interface AnaliseMatchIA {
   scoreMatch: number;
-  matchPorCategoria: {
-    skillsTecnicas: number;
-    ferramentas: number;
-    experiencia: number;
-    softSkills: number;
-  };
+  matchPorCategoria: MatchPorCategoria;
   keywordsPresentes: string[];
   keywordsFaltando: string[];
   pontosFortes: string[];

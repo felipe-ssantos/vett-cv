@@ -8,6 +8,32 @@ export const config = {
   api: { bodyParser: false },
 };
 
+interface MatchPorCategoria {
+  skills_tecnicas: number;
+  ferramentas: number;
+  experiencia: number;
+  soft_skills: number;
+}
+
+interface AnaliseMatchIA {
+  scoreMatch: number;
+  matchPorCategoria: MatchPorCategoria;
+  keywordsPresentes: string[];
+  keywordsFaltando: string[];
+  pontosFortes: string[];
+  sugestoesAjuste: string[];
+  resumoIA: string;
+  dicaFinal: string;
+}
+
+interface VagaExtraidaIA {
+  titulo: string;
+  empresa: string | null;
+  hardSkills: string[];
+  softSkills: string[];
+  senioridade: string | null;
+}
+
 async function extrairTextoDoArquivo(
   filepath: string,
   filename: string,
@@ -33,10 +59,10 @@ async function extrairTextoDoArquivo(
 const FORMATO_ANALISE = `{
   "scoreMatch": number (0-100),
   "matchPorCategoria": {
-    "skillsTecnicas": number (0-100),
+    "skills_tecnicas": number (0-100),
     "ferramentas": number (0-100),
     "experiencia": number (0-100),
-    "softSkills": number (0-100)
+    "soft_skills": number (0-100)
   },
   "keywordsPresentes": string[],
   "keywordsFaltando": string[],
@@ -46,7 +72,6 @@ const FORMATO_ANALISE = `{
   "dicaFinal": string (1 frase objetiva com a ação mais impactante para subir a %)
 }`;
 
-// Vaga nova: a IA extrai os dados estruturados a partir do texto colado E analisa o match.
 function montarPromptComExtracao(
   curriculoTexto: string,
   descricaoVaga: string,
@@ -54,7 +79,7 @@ function montarPromptComExtracao(
   return `Você é um especialista em recrutamento e ATS (Applicant Tracking System).
 Primeiro, extraia os dados estruturados da vaga a partir do texto colado (que pode vir de qualquer site de emprego, com ruído/formatação misturada). Depois, compare o currículo com a vaga.
 
-Retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), no formato:
+Retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), exatamente no formato abaixo, respeitando os nomes de propriedade exatamente como estão (note o underscore em "skills_tecnicas" e "soft_skills"):
 
 {
   "vaga": {
@@ -74,7 +99,6 @@ CURRÍCULO:
 ${curriculoTexto}`;
 }
 
-// Vaga já existente: os dados estruturados já são conhecidos, só analisa o match.
 function montarPromptSoAnalise(
   curriculoTexto: string,
   vaga: {
@@ -86,7 +110,7 @@ function montarPromptSoAnalise(
   },
 ): string {
   return `Você é um especialista em recrutamento e ATS (Applicant Tracking System).
-Compare o currículo abaixo com a vaga e retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), no formato:
+Compare o currículo abaixo com a vaga e retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), exatamente no formato abaixo, respeitando os nomes de propriedade exatamente como estão (note o underscore em "skills_tecnicas" e "soft_skills"):
 
 ${FORMATO_ANALISE}
 
@@ -130,6 +154,109 @@ async function chamarIA(prompt: string): Promise<string> {
   return data.candidates[0].content.parts[0].text;
 }
 
+class RespostaIAInvalidaError extends Error {}
+
+function validarNumeroPercentual(valor: unknown, campo: string): number {
+  if (typeof valor !== "number" || Number.isNaN(valor)) {
+    throw new RespostaIAInvalidaError(
+      `Campo "${campo}" ausente ou não é um número.`,
+    );
+  }
+  if (valor < 0 || valor > 100) {
+    throw new RespostaIAInvalidaError(
+      `Campo "${campo}" fora do intervalo 0-100 (recebido: ${valor}).`,
+    );
+  }
+  return valor;
+}
+
+function validarArrayDeStrings(valor: unknown, campo: string): string[] {
+  if (!Array.isArray(valor) || valor.some((item) => typeof item !== "string")) {
+    throw new RespostaIAInvalidaError(
+      `Campo "${campo}" ausente ou não é uma lista de strings.`,
+    );
+  }
+  return valor;
+}
+
+function validarString(valor: unknown, campo: string): string {
+  if (typeof valor !== "string" || !valor.trim()) {
+    throw new RespostaIAInvalidaError(`Campo "${campo}" ausente ou vazio.`);
+  }
+  return valor;
+}
+
+function validarAnaliseIA(json: unknown): AnaliseMatchIA {
+  if (typeof json !== "object" || json === null) {
+    throw new RespostaIAInvalidaError(
+      "Resposta da IA não é um objeto JSON válido.",
+    );
+  }
+  const obj = json as Record<string, unknown>;
+
+  const categoriaRaw = obj.matchPorCategoria;
+  if (typeof categoriaRaw !== "object" || categoriaRaw === null) {
+    throw new RespostaIAInvalidaError(
+      'Campo "matchPorCategoria" ausente ou inválido.',
+    );
+  }
+  const categoria = categoriaRaw as Record<string, unknown>;
+
+  return {
+    scoreMatch: validarNumeroPercentual(obj.scoreMatch, "scoreMatch"),
+    matchPorCategoria: {
+      skills_tecnicas: validarNumeroPercentual(
+        categoria.skills_tecnicas,
+        "matchPorCategoria.skills_tecnicas",
+      ),
+      ferramentas: validarNumeroPercentual(
+        categoria.ferramentas,
+        "matchPorCategoria.ferramentas",
+      ),
+      experiencia: validarNumeroPercentual(
+        categoria.experiencia,
+        "matchPorCategoria.experiencia",
+      ),
+      soft_skills: validarNumeroPercentual(
+        categoria.soft_skills,
+        "matchPorCategoria.soft_skills",
+      ),
+    },
+    keywordsPresentes: validarArrayDeStrings(
+      obj.keywordsPresentes,
+      "keywordsPresentes",
+    ),
+    keywordsFaltando: validarArrayDeStrings(
+      obj.keywordsFaltando,
+      "keywordsFaltando",
+    ),
+    pontosFortes: validarArrayDeStrings(obj.pontosFortes, "pontosFortes"),
+    sugestoesAjuste: validarArrayDeStrings(
+      obj.sugestoesAjuste,
+      "sugestoesAjuste",
+    ),
+    resumoIA: validarString(obj.resumoIA, "resumoIA"),
+    dicaFinal: validarString(obj.dicaFinal, "dicaFinal"),
+  };
+}
+
+function validarVagaExtraidaIA(json: unknown): VagaExtraidaIA {
+  if (typeof json !== "object" || json === null) {
+    throw new RespostaIAInvalidaError(
+      "Dados da vaga extraídos pela IA não são um objeto JSON válido.",
+    );
+  }
+  const obj = json as Record<string, unknown>;
+
+  return {
+    titulo: validarString(obj.titulo, "vaga.titulo"),
+    empresa: typeof obj.empresa === "string" ? obj.empresa : null,
+    hardSkills: validarArrayDeStrings(obj.hardSkills, "vaga.hardSkills"),
+    softSkills: validarArrayDeStrings(obj.softSkills, "vaga.softSkills"),
+    senioridade: typeof obj.senioridade === "string" ? obj.senioridade : null,
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ erro: "Método não permitido" });
@@ -140,11 +267,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [fields, files] = await form.parse(req);
 
     const descricaoVaga = fields.descricaoVaga?.[0];
-    const vagaExistenteJson = fields.vagaExistente?.[0]; // presente quando reanalisando contra vaga já cadastrada
+    const vagaExistenteJson = fields.vagaExistente?.[0];
     const curriculoTextoColado = fields.curriculoTexto?.[0];
     const arquivo = files.arquivo?.[0];
 
-    // Extrai o texto do currículo: prioriza arquivo enviado, senão usa o texto colado
     let curriculoTexto = curriculoTextoColado ?? "";
     if (arquivo) {
       curriculoTexto = await extrairTextoDoArquivo(
@@ -160,11 +286,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (vagaExistenteJson) {
-      // Fluxo B: vaga já cadastrada, só analisa o match
       const vagaExistente = JSON.parse(vagaExistenteJson);
       const prompt = montarPromptSoAnalise(curriculoTexto, vagaExistente);
       const respostaIA = await chamarIA(prompt);
-      const analise = JSON.parse(respostaIA);
+
+      let respostaJson: unknown;
+      try {
+        respostaJson = JSON.parse(respostaIA);
+      } catch {
+        throw new RespostaIAInvalidaError("A IA não retornou um JSON válido.");
+      }
+
+      const analise = validarAnaliseIA(respostaJson);
       return res.status(200).json({ curriculoTexto, analise });
     }
 
@@ -172,16 +305,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ erro: "Cole a descrição da vaga." });
     }
 
-    // Fluxo A: vaga nova, extrai os dados e analisa
     const prompt = montarPromptComExtracao(curriculoTexto, descricaoVaga);
     const respostaIA = await chamarIA(prompt);
-    const { vaga, analise } = JSON.parse(respostaIA);
+
+    let respostaJson: unknown;
+    try {
+      respostaJson = JSON.parse(respostaIA);
+    } catch {
+      throw new RespostaIAInvalidaError("A IA não retornou um JSON válido.");
+    }
+
+    const respostaObj = respostaJson as Record<string, unknown>;
+    const vaga = validarVagaExtraidaIA(respostaObj.vaga);
+    const analise = validarAnaliseIA(respostaObj.analise);
 
     return res
       .status(200)
       .json({ curriculoTexto, descricaoVaga, vaga, analise });
   } catch (erro) {
     console.error(erro);
+    if (erro instanceof RespostaIAInvalidaError) {
+      return res.status(502).json({
+        erro: `A IA retornou uma resposta inválida: ${erro.message}`,
+      });
+    }
     return res.status(500).json({ erro: "Falha ao processar a análise." });
   }
 }
