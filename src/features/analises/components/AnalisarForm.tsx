@@ -2,15 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { normalizarMatchPorCategoria } from "../../../lib/normalizarAnalise";
 import { supabase } from "../../../lib/supabaseClient";
-import type { AnaliseMatchIA } from "../../../types";
-
-interface VagaExtraidaIA {
-  titulo: string;
-  empresa: string | null;
-  hardSkills: string[];
-  softSkills: string[];
-  senioridade: string | null;
-}
+import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
 
 export function AnalisarForm() {
   const navigate = useNavigate();
@@ -72,58 +64,34 @@ export function AnalisarForm() {
         analise: AnaliseMatchIA;
       } = await resposta.json();
 
-      // 1. Salva a vaga (dados extraídos pela IA a partir do texto colado)
-      const { data: vagaSalva, error: erroVaga } = await supabase
-        .from("vagas")
+      const { data: analiseSalva, error: erroAnalise } = await supabase
+        .from("analises")
         .insert({
-          titulo: vaga.titulo,
+          titulo_vaga: vaga.titulo,
           empresa: vaga.empresa,
-          descricao_completa: descricaoOriginal,
+          descricao_vaga: descricaoOriginal,
           hard_skills: vaga.hardSkills,
           soft_skills: vaga.softSkills,
           senioridade: vaga.senioridade,
-        })
-        .select()
-        .single();
-
-      if (erroVaga || !vagaSalva)
-        throw new Error("Não foi possível salvar a vaga.");
-
-      // 2. Salva a candidatura
-      const { data: candidatura, error: erroCandidatura } = await supabase
-        .from("candidaturas")
-        .insert({
-          vaga_id: vagaSalva.id,
           curriculo_texto: textoExtraido,
-          status: "analisada",
+          score_match: analise.scoreMatch,
+          match_por_categoria: normalizarMatchPorCategoria(
+            analise.matchPorCategoria,
+          ),
+          keywords_presentes: analise.keywordsPresentes,
+          keywords_faltando: analise.keywordsFaltando,
+          pontos_fortes: analise.pontosFortes,
+          sugestoes_ajuste: analise.sugestoesAjuste,
+          resumo_ia: analise.resumoIA,
+          dica_final: analise.dicaFinal,
         })
         .select()
         .single();
 
-      if (erroCandidatura || !candidatura)
-        throw new Error("Não foi possível salvar a candidatura.");
+      if (erroAnalise || !analiseSalva)
+        throw new Error("Não foi possível salvar a análise.");
 
-      // 3. Salva a análise
-      const { error: erroAnalise } = await supabase.from("analises").insert({
-        candidatura_id: candidatura.id,
-        vaga_id: vagaSalva.id,
-        score_match: analise.scoreMatch,
-        match_por_categoria: normalizarMatchPorCategoria(
-          analise.matchPorCategoria,
-        ),
-        keywords_presentes: analise.keywordsPresentes,
-        keywords_faltando: analise.keywordsFaltando,
-        pontos_fortes: analise.pontosFortes,
-        sugestoes_ajuste: analise.sugestoesAjuste,
-        resumo_ia: analise.resumoIA,
-        dica_final: analise.dicaFinal,
-      });
-
-      if (erroAnalise) throw new Error("Não foi possível salvar a análise.");
-
-      navigate(
-        `/vagas/${vagaSalva.id}/candidatura/${candidatura.id}/resultado`,
-      );
+      navigate(`/analises/${analiseSalva.id}`);
     } catch (err) {
       setErro(
         err instanceof Error ? err.message : "Erro inesperado na análise.",

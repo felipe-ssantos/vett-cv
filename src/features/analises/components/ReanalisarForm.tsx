@@ -2,33 +2,33 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { normalizarMatchPorCategoria } from "../../../lib/normalizarAnalise";
 import { supabase } from "../../../lib/supabaseClient";
-import type { AnaliseMatchIA, Vaga } from "../../../types";
+import type { Analise, AnaliseMatchIA } from "../../../types";
 
-export function CandidaturaForm() {
-  const { id: vagaId } = useParams();
+export function ReanalisarForm() {
+  const { id } = useParams();
   const navigate = useNavigate();
 
-  const [vaga, setVaga] = useState<Vaga | null>(null);
+  const [analiseBase, setAnaliseBase] = useState<Analise | null>(null);
   const [curriculoTexto, setCurriculoTexto] = useState("");
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [analisando, setAnalisando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    async function carregarVaga() {
+    async function carregarAnaliseBase() {
       const { data, error } = await supabase
-        .from("vagas")
+        .from("analises")
         .select("*")
-        .eq("id", vagaId)
+        .eq("id", id)
         .single();
       if (error || !data) {
-        setErro("Não foi possível carregar a vaga.");
+        setErro("Não foi possível carregar a análise original.");
       } else {
-        setVaga(data);
+        setAnaliseBase(data);
       }
     }
-    if (vagaId) carregarVaga();
-  }, [vagaId]);
+    if (id) carregarAnaliseBase();
+  }, [id]);
 
   function handleArquivoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
@@ -43,7 +43,7 @@ export function CandidaturaForm() {
       setErro("Cole o texto do currículo ou envie um arquivo PDF/DOCX.");
       return;
     }
-    if (!vaga) return;
+    if (!analiseBase) return;
 
     setAnalisando(true);
     setErro(null);
@@ -53,11 +53,11 @@ export function CandidaturaForm() {
       formData.append(
         "vagaExistente",
         JSON.stringify({
-          titulo: vaga.titulo,
-          descricaoCompleta: vaga.descricao_completa,
-          hardSkills: vaga.hard_skills,
-          softSkills: vaga.soft_skills,
-          senioridade: vaga.senioridade ?? null,
+          titulo: analiseBase.titulo_vaga,
+          descricaoCompleta: analiseBase.descricao_vaga,
+          hardSkills: analiseBase.hard_skills,
+          softSkills: analiseBase.soft_skills,
+          senioridade: analiseBase.senioridade ?? null,
         }),
       );
       if (arquivo) {
@@ -81,39 +81,34 @@ export function CandidaturaForm() {
       }: { curriculoTexto: string; analise: AnaliseMatchIA } =
         await resposta.json();
 
-      // 1. Salva a candidatura contra a vaga já existente
-      const { data: candidatura, error: erroCandidatura } = await supabase
-        .from("candidaturas")
+      const { data: novaAnalise, error: erroAnalise } = await supabase
+        .from("analises")
         .insert({
-          vaga_id: vagaId,
+          titulo_vaga: analiseBase.titulo_vaga,
+          empresa: analiseBase.empresa,
+          descricao_vaga: analiseBase.descricao_vaga,
+          hard_skills: analiseBase.hard_skills,
+          soft_skills: analiseBase.soft_skills,
+          senioridade: analiseBase.senioridade,
           curriculo_texto: textoExtraido,
-          status: "analisada",
+          score_match: analise.scoreMatch,
+          match_por_categoria: normalizarMatchPorCategoria(
+            analise.matchPorCategoria,
+          ),
+          keywords_presentes: analise.keywordsPresentes,
+          keywords_faltando: analise.keywordsFaltando,
+          pontos_fortes: analise.pontosFortes,
+          sugestoes_ajuste: analise.sugestoesAjuste,
+          resumo_ia: analise.resumoIA,
+          dica_final: analise.dicaFinal,
         })
         .select()
         .single();
 
-      if (erroCandidatura || !candidatura)
-        throw new Error("Não foi possível salvar a candidatura.");
+      if (erroAnalise || !novaAnalise)
+        throw new Error("Não foi possível salvar a nova análise.");
 
-      // 2. Salva a análise
-      const { error: erroAnalise } = await supabase.from("analises").insert({
-        candidatura_id: candidatura.id,
-        vaga_id: vagaId,
-        score_match: analise.scoreMatch,
-        match_por_categoria: normalizarMatchPorCategoria(
-          analise.matchPorCategoria,
-        ),
-        keywords_presentes: analise.keywordsPresentes,
-        keywords_faltando: analise.keywordsFaltando,
-        pontos_fortes: analise.pontosFortes,
-        sugestoes_ajuste: analise.sugestoesAjuste,
-        resumo_ia: analise.resumoIA,
-        dica_final: analise.dicaFinal,
-      });
-
-      if (erroAnalise) throw new Error("Não foi possível salvar a análise.");
-
-      navigate(`/vagas/${vagaId}/candidatura/${candidatura.id}/resultado`);
+      navigate(`/analises/${novaAnalise.id}`);
     } catch (err) {
       setErro(
         err instanceof Error ? err.message : "Erro inesperado na análise.",
@@ -126,8 +121,10 @@ export function CandidaturaForm() {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">Reanalisar currículo</h1>
-      {vaga && (
-        <p className="text-gray-500 mb-4">contra a vaga: {vaga.titulo}</p>
+      {analiseBase && (
+        <p className="text-gray-500 mb-4">
+          contra a vaga: {analiseBase.titulo_vaga}
+        </p>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -169,7 +166,7 @@ export function CandidaturaForm() {
 
         <button
           type="submit"
-          disabled={analisando || !vaga}
+          disabled={analisando || !analiseBase}
           className="bg-indigo-600 text-white rounded px-4 py-2 disabled:opacity-50 w-full"
         >
           {analisando ? "Analisando..." : "Analisar"}
