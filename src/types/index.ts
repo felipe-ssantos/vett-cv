@@ -1,3 +1,5 @@
+import type { MatchPorCategoriaDb } from "../lib/normalizarAnalise";
+
 // Tipos de Domínio
 export interface Vaga {
   id: string;
@@ -25,7 +27,7 @@ export interface Analise {
   candidatura_id: string;
   vaga_id: string;
   score_match: number;
-  match_por_categoria?: Record<string, number>;
+  match_por_categoria?: MatchPorCategoriaDb;
   keywords_presentes: string[];
   keywords_faltando: string[];
   pontos_fortes: string[];
