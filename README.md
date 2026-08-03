@@ -55,11 +55,33 @@ Descrição da vaga + Currículo
 
 ## 🛠️ Tecnologias
 
-**Front-end:** React · TypeScript · Vite · React Router · Bootstrap
-**Back-end/API:** Vercel Functions · Node.js · TypeScript
-**Banco de dados:** Supabase · PostgreSQL
-**IA:** Google Gemini API
-**Documentos:** pdf-parse · mammoth
+**Front-end**
+
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+
+**Back-end / API**
+
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+
+**Banco de dados**
+
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+
+**Inteligência Artificial**
+
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)
+
+**Documentos**
+
+![pdf-parse](https://img.shields.io/badge/pdf--parse-EC1C24?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)
+![mammoth](https://img.shields.io/badge/mammoth-2B579A?style=for-the-badge&logo=microsoftword&logoColor=white)
 
 ---
 
@@ -153,4 +175,4 @@ Tecnólogo em Sistemas para Internet, focado em desenvolvimento web moderno.
 
 ## 📄 Aviso
 
-Projeto educacional e de portfólio. A análise gerada por IA não deve ser considerada aconselhamento profissional de recrutamento, carreira ou emprego.
+Projeto educacional e de portfólio. A análise gerada por IA não deve ser considerada como verdade absoluta ou aconselhamento profissional de recrutamento, carreira ou emprego.
