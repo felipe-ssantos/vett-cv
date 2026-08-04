@@ -161,7 +161,7 @@ export function ReanalisarForm() {
             disabled={analisando || !analiseBase}
             className="btn btn-primary w-100"
           >
-            {analisando ? "Analisando..." : "Analisar"}
+            {analisando ? "Analisando..." : "Analisar oportunidade →"}
           </button>
 
           {erro && <div className="alert alert-danger mt-3">{erro}</div>}

@@ -9,13 +9,13 @@ export function Footer() {
       className="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 mt-4"
       style={{ borderTop: "1px solid var(--border-subtle)" }}
     >
-      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-        © {textoAno} Job Fit Analyzer · v1.0 · beta
+      <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+        © {textoAno} Vett · v1.0 · beta
       </span>
 
       <div
         className="d-flex align-items-center gap-3"
-        style={{ fontSize: 12, color: "var(--text-muted)" }}
+        style={{ fontSize: 12, color: "var(--text-tertiary)" }}
       >
         <span>
           Desenvolvido por{" "}
@@ -24,7 +24,7 @@ export function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-decoration-none fw-medium"
-            style={{ color: "var(--brand-purple)" }}
+            style={{ color: "var(--primary)" }}
           >
             Nelson Felipe
           </a>

@@ -28,11 +28,19 @@ export function AnaliseList() {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="mb-0">Histórico de análises</h1>
-        <Link to="/" className="btn btn-primary">
-          Nova análise
-        </Link>
+      <div className="mb-4">
+        <div className="d-flex justify-content-between align-items-center">
+          <h1 className="h4 mb-0">Histórico</h1>
+          <Link to="/" className="btn btn-primary">
+            Nova análise
+          </Link>
+        </div>
+        <p
+          className="small mb-0 mt-1"
+          style={{ color: "var(--text-tertiary)" }}
+        >
+          Suas análises são privadas e vinculadas à sua sessão.
+        </p>
       </div>
 
       {carregando && <p>Carregando...</p>}

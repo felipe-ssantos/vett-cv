@@ -1,4 +1,4 @@
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
 
@@ -6,9 +6,9 @@ const LIMITE_CARACTERES = 5000;
 
 const ETAPAS_ANALISE = [
   "Lendo seu currículo...",
-  "Interpretando a vaga...",
+  "Interpretando a oportunidade...",
   "Comparando skills e experiência...",
-  "Gerando sugestões personalizadas...",
+  "Gerando recomendações...",
 ];
 
 const LABELS_CATEGORIA: Record<string, string> = {
@@ -18,26 +18,11 @@ const LABELS_CATEGORIA: Record<string, string> = {
   soft_skills: "Soft skills",
 };
 
-function tierDoScore(score: number) {
-  if (score >= 75) {
-    return {
-      titulo: "Você tem um ótimo alinhamento com a vaga!",
-      label: "Ótimo Match",
-      cor: "var(--green-dark)",
-    };
-  }
-  if (score >= 50) {
-    return {
-      titulo: "Você tem um bom alinhamento com a vaga!",
-      label: "Bom Match",
-      cor: "var(--green-dark)",
-    };
-  }
-  return {
-    titulo: "Seu perfil ainda precisa de ajustes para essa vaga.",
-    label: "Match a melhorar",
-    cor: "var(--red)",
-  };
+function classificarScore(score: number): string {
+  if (score < 40) return "Baixa compatibilidade";
+  if (score < 60) return "Compatibilidade moderada";
+  if (score < 80) return "Boa compatibilidade";
+  return "Forte compatibilidade";
 }
 
 function StepIndicator({
@@ -58,66 +43,33 @@ function StepIndicator({
         <div>
           <div
             className="fw-bold"
-            style={{ fontSize: 16, color: "var(--text-title)" }}
+            style={{ fontSize: 15, color: "var(--text-primary)" }}
           >
             {titulo}
           </div>
-          <div style={{ fontSize: 13, color: "var(--text-aux)" }}>
+          <div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>
             {subtitulo}
           </div>
         </div>
       </div>
-      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+      <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
         {contador}
       </span>
     </div>
   );
 }
 
-function ScoreRing({ score }: { score: number }) {
-  return (
-    <div
-      className="score-ring"
-      style={{ "--score": score } as React.CSSProperties}
-    >
-      <div className="score-ring-inner">
-        <span className="score-ring-value">{score}%</span>
-        <span className="score-ring-label">{tierDoScore(score).label}</span>
-      </div>
-    </div>
-  );
-}
-
-function MetricBar({ label, valor }: { label: string; valor: number }) {
+function DimensaoBarra({ label, valor }: { label: string; valor: number }) {
   return (
     <div className="mb-3">
-      <div
-        className="d-flex justify-content-between mb-1"
-        style={{ fontSize: 13 }}
-      >
-        <span style={{ color: "var(--text-aux)" }}>{label}</span>
-        <span style={{ color: "var(--text-muted)" }}>{valor}%</span>
+      <div className="d-flex justify-content-between small mb-1">
+        <span style={{ color: "var(--text-secondary)" }}>{label}</span>
+        <span className="fw-medium">{valor}/100</span>
       </div>
-      <div className="metric-bar-track">
-        <div className="metric-bar-fill" style={{ width: `${valor}%` }} />
+      <div className="dimension-bar-track">
+        <div className="dimension-bar-fill" style={{ width: `${valor}%` }} />
       </div>
     </div>
-  );
-}
-
-function KeywordBadge({
-  texto,
-  variante,
-}: {
-  texto: string;
-  variante: "presente" | "faltando";
-}) {
-  return (
-    <span
-      className={`keyword-badge keyword-badge--${variante === "presente" ? "presente" : "faltando"}`}
-    >
-      {texto}
-    </span>
   );
 }
 
@@ -128,14 +80,11 @@ export function AnaliseWorkspace() {
   const [analisando, setAnalisando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const [vaga, setVaga] = useState<VagaExtraidaIA | null>(null);
   const [analise, setAnalise] = useState<AnaliseMatchIA | null>(null);
   const [tempoAnalise, setTempoAnalise] = useState<number | null>(null);
 
-  // Estado para mensagens cíclicas
   const [etapaAtual, setEtapaAtual] = useState(0);
 
-  // Efeito simplificado para mensagens cíclicas
   useEffect(() => {
     if (!analisando) return;
     const intervalo = setInterval(() => {
@@ -150,11 +99,11 @@ export function AnaliseWorkspace() {
     if (file) setCurriculoTexto("");
   }
 
-  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!descricaoVaga.trim()) {
-      setErro("Cole a descrição da vaga.");
+      setErro("Cole a descrição da oportunidade.");
       return;
     }
     if (!curriculoTexto.trim() && !arquivo) {
@@ -197,11 +146,9 @@ export function AnaliseWorkspace() {
         analise: AnaliseMatchIA;
       } = await resposta.json();
 
-      setVaga(vagaExtraida);
       setAnalise(analiseResultado);
       setTempoAnalise((performance.now() - inicio) / 1000);
 
-      // Salva no histórico sem bloquear a exibição do resultado
       supabase
         .from("analises")
         .insert({
@@ -233,358 +180,222 @@ export function AnaliseWorkspace() {
     }
   }
 
-  const tier = analise ? tierDoScore(analise.scoreMatch) : null;
-
   return (
-    <div className="row g-4">
-      {/* Coluna esquerda — formulário */}
-      <div className="col-lg-4">
-        <div className="card-clean p-4">
-          <form onSubmit={handleSubmit}>
-            <StepIndicator
-              numero={1}
-              titulo="Cole seu currículo"
-              subtitulo="Cole o conteúdo do seu currículo abaixo"
-              contador={`${curriculoTexto.length}/${LIMITE_CARACTERES}`}
+    <div className="row g-5">
+      {/* Coluna esquerda — Seu perfil / Oportunidade */}
+      <div className="col-lg-5">
+        <form onSubmit={handleSubmit}>
+          <h2 className="h6 mb-1">Seu perfil</h2>
+          <p className="form-hint">
+            Conte ao Vett sobre sua experiência profissional.
+          </p>
+
+          <StepIndicator
+            numero={1}
+            titulo="Currículo"
+            subtitulo="Cole aqui o conteúdo do seu currículo"
+            contador={`${curriculoTexto.length}/${LIMITE_CARACTERES}`}
+          />
+          <textarea
+            className="form-control mb-1"
+            style={{ height: 220 }}
+            placeholder="Cole aqui o conteúdo do seu currículo..."
+            maxLength={LIMITE_CARACTERES}
+            value={curriculoTexto}
+            onChange={(e) => {
+              setCurriculoTexto(e.target.value);
+              if (e.target.value) setArquivo(null);
+            }}
+            disabled={!!arquivo}
+          />
+
+          <div className="mb-4">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleArquivoChange}
+              className="form-control form-control-sm"
             />
-            <div className="position-relative mb-1">
-              <textarea
-                className="form-control textarea-clean"
-                style={{ height: 240 }}
-                placeholder="Cole aqui o texto do seu currículo..."
-                maxLength={LIMITE_CARACTERES}
-                value={curriculoTexto}
-                onChange={(e) => {
-                  setCurriculoTexto(e.target.value);
-                  if (e.target.value) setArquivo(null);
-                }}
-                disabled={!!arquivo}
-              />
-              {curriculoTexto.trim().length > 0 && (
-                <span
-                  className="position-absolute d-inline-flex align-items-center justify-content-center"
-                  style={{
-                    right: 10,
-                    bottom: 10,
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    background: "#22A447",
-                    color: "#fff",
-                    fontSize: 11,
-                  }}
-                >
-                  <i className="bi bi-check-lg" />
-                </span>
-              )}
-            </div>
-
-            <div className="mb-3">
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleArquivoChange}
-                className="form-control form-control-sm"
-              />
-              {arquivo && (
-                <div className="form-text">Selecionado: {arquivo.name}</div>
-              )}
-            </div>
-
-            <hr
-              className="my-4"
-              style={{ borderColor: "var(--border-subtle)" }}
-            />
-
-            <StepIndicator
-              numero={2}
-              titulo="Cole a descrição da vaga"
-              subtitulo="Cole a descrição completa da vaga abaixo"
-              contador={`${descricaoVaga.length}/${LIMITE_CARACTERES}`}
-            />
-            <textarea
-              className="form-control textarea-clean mb-3"
-              style={{ height: 237 }}
-              placeholder="Cole aqui a descrição completa da vaga (Indeed, LinkedIn, etc.)..."
-              maxLength={LIMITE_CARACTERES}
-              value={descricaoVaga}
-              onChange={(e) => setDescricaoVaga(e.target.value)}
-            />
-
-            <button
-              type="submit"
-              disabled={analisando}
-              className="btn btn-analisar mb-2"
-            >
-              {analisando ? (
-                <>
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  />
-                  Analisando...
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-search me-2" />
-                  Analisar Job Fit
-                </>
-              )}
-            </button>
-
-            <p
-              className="text-center mb-0"
-              style={{ fontSize: 12, color: "var(--text-muted)" }}
-            >
-              Análise feita com IA · Seus dados são criptografados. Nenhuma
-              informação é enviado para terceiros.
-            </p>
-
-            {erro && <div className="alert alert-danger mt-3 mb-0">{erro}</div>}
-          </form>
-        </div>
-      </div>
-
-      {/* Coluna direita — resultado */}
-      <div className="col-lg-8">
-        <div className="card-clean p-4">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div className="d-flex align-items-center gap-2">
-              <span
-                className="d-inline-flex align-items-center justify-content-center"
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: "var(--brand-purple-light)",
-                  color: "var(--brand-purple)",
-                }}
-              >
-                <i className="bi bi-file-earmark-text" />
-              </span>
-              <span
-                className="fw-bold"
-                style={{ fontSize: 17, color: "var(--text-title)" }}
-              >
-                Resultado da análise
-              </span>
-            </div>
-            {tempoAnalise !== null && (
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                <i
-                  className="bi bi-check-circle-fill me-1"
-                  style={{ color: "#16A34A" }}
-                />
-                Análise concluída em {tempoAnalise.toFixed(1)}s
-              </span>
+            {arquivo && (
+              <div className="form-text">Selecionado: {arquivo.name}</div>
             )}
           </div>
 
-          {analisando ? (
-            <div className="resultado-vazio d-flex flex-column align-items-center justify-content-center text-center">
-              <div
-                className="ai-tip-icon mb-3"
-                style={{ animation: "pulse 1.6s ease-in-out infinite" }}
-              >
-                <i className="bi bi-magic" />
-              </div>
-              <p
-                className="fw-bold mb-2"
-                style={{ color: "var(--text-title)", fontSize: 15 }}
-              >
-                {ETAPAS_ANALISE[etapaAtual]}
-              </p>
-              <div className="progress-indeterminado" />
-            </div>
-          ) : !analise || !vaga || !tier ? (
-            <div className="resultado-vazio d-flex flex-column align-items-center justify-content-center text-center">
-              <i
-                className="bi bi-search mb-3"
-                style={{ fontSize: 40, color: "var(--brand-purple-border)" }}
-              />
-              <p className="mb-0" style={{ color: "var(--text-muted)" }}>
-                Cole seu currículo e a descrição da vaga ao lado para ver o
-                resultado da análise aqui.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Card do score */}
-              <div className="card-inner p-4 mb-4 d-flex flex-column flex-md-row align-items-center gap-4">
-                <ScoreRing score={analise.scoreMatch} />
+          <div className="section-divider" />
 
-                <div className="flex-grow-1">
-                  <h2 className="h5 fw-bold mb-2" style={{ color: tier.cor }}>
-                    {tier.titulo}
-                  </h2>
-                  <p
-                    className="mb-1"
-                    style={{ fontSize: 14, color: "var(--text-secondary)" }}
-                  >
-                    {analise.resumoIA}
-                  </p>
+          <h2 className="h6 mb-1">Oportunidade</h2>
+          <p className="form-hint">
+            Cole a descrição da vaga que você está considerando.
+          </p>
 
-                  <div className="d-flex align-items-center gap-3 mt-3">
-                    <div className="flex-grow-1 score-bar-track">
-                      <div
-                        className="score-bar-fill"
-                        style={{ width: `${analise.scoreMatch}%` }}
-                      >
-                        <span className="score-bar-dot" />
-                      </div>
-                    </div>
-                    <span
-                      className="fw-bold"
-                      style={{ fontSize: 20, color: tier.cor }}
-                    >
-                      {analise.scoreMatch}%
-                    </span>
-                  </div>
-                  <div
-                    className="d-flex justify-content-between mt-1"
-                    style={{ fontSize: 12, color: "var(--text-muted)" }}
-                  >
-                    <span>0%</span>
-                    <span>50%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
+          <StepIndicator
+            numero={2}
+            titulo="Descrição da vaga"
+            subtitulo="Cole aqui a descrição completa da oportunidade"
+            contador={`${descricaoVaga.length}/${LIMITE_CARACTERES}`}
+          />
+          <textarea
+            className="form-control mb-4"
+            style={{ height: 220 }}
+            placeholder="Cole aqui a descrição completa da oportunidade..."
+            maxLength={LIMITE_CARACTERES}
+            value={descricaoVaga}
+            onChange={(e) => setDescricaoVaga(e.target.value)}
+          />
 
-                <div
-                  className="d-none d-lg-block"
-                  style={{ width: 1, height: 220, background: "#E5E7EB" }}
+          <button
+            type="submit"
+            disabled={analisando}
+            className="btn btn-primary w-100 mb-2"
+          >
+            {analisando ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
                 />
+                Analisando...
+              </>
+            ) : (
+              "Analisar oportunidade →"
+            )}
+          </button>
 
-                <div style={{ minWidth: 220 }}>
-                  <h3
-                    className="fw-bold mb-3"
-                    style={{ fontSize: 15, color: "var(--text-title)" }}
-                  >
-                    Match por categoria
-                  </h3>
-                  {Object.entries(analise.matchPorCategoria).map(
-                    ([chave, valor]) => (
-                      <MetricBar
-                        key={chave}
-                        label={LABELS_CATEGORIA[chave] ?? chave}
-                        valor={valor}
-                      />
-                    ),
-                  )}
-                </div>
-              </div>
+          <p
+            className="text-center mb-0"
+            style={{ fontSize: 12, color: "var(--text-tertiary)" }}
+          >
+            Análise feita com IA · seu histórico é privado neste navegador
+          </p>
 
-              {/* Três cards inferiores */}
-              <div className="row g-3 mb-4">
-                <div className="col-md-4">
-                  <div className="card-inner p-3 h-100">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="fw-bold" style={{ fontSize: 14 }}>
-                        🟢 Palavras-chave presentes
-                      </span>
-                      <span className="badge-count badge-count--verde">
-                        {analise.keywordsPresentes.length}
-                      </span>
-                    </div>
-                    <div className="d-flex flex-wrap gap-2 mb-2">
-                      {analise.keywordsPresentes.map((k) => (
-                        <KeywordBadge key={k} texto={k} variante="presente" />
-                      ))}
-                    </div>
-                    <p
-                      className="mb-0 mt-2"
-                      style={{ fontSize: 12, color: "var(--text-muted)" }}
-                    >
-                      💡 Essas keywords aumentam suas chances!
-                    </p>
-                  </div>
-                </div>
+          {erro && <div className="alert alert-danger mt-3 mb-0">{erro}</div>}
+        </form>
+      </div>
 
-                <div className="col-md-4">
-                  <div className="card-inner p-3 h-100">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="fw-bold" style={{ fontSize: 14 }}>
-                        🔴 Palavras-chave faltando
-                      </span>
-                      <span className="badge-count badge-count--vermelho">
-                        {analise.keywordsFaltando.length}
-                      </span>
-                    </div>
-                    <div className="d-flex flex-wrap gap-2 mb-2">
-                      {analise.keywordsFaltando.map((k) => (
-                        <KeywordBadge key={k} texto={k} variante="faltando" />
-                      ))}
-                    </div>
-                    <p
-                      className="mb-0 mt-2"
-                      style={{ fontSize: 12, color: "var(--text-muted)" }}
-                    >
-                      💡 Inclua essas keywords no seu currículo!
-                    </p>
-                  </div>
-                </div>
-
-                <div className="col-md-4">
-                  <div className="card-inner p-3 h-100">
-                    <span
-                      className="fw-bold d-block mb-2"
-                      style={{ fontSize: 14 }}
-                    >
-                      💡 Sugestões de ajuste
-                    </span>
-                    <div className="d-flex flex-column gap-3">
-                      {analise.sugestoesAjuste.map((s, i) => (
-                        <div key={i} className="d-flex align-items-start gap-2">
-                          <span className="suggestion-icon">
-                            <i
-                              className="bi bi-stars"
-                              style={{ fontSize: 12 }}
-                            />
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 13,
-                              color: "var(--text-strong)",
-                              lineHeight: 1.55,
-                            }}
-                          >
-                            {s}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dica extra da IA */}
-              <div className="ai-tip-card d-flex align-items-center gap-3">
-                <span className="ai-tip-icon">
-                  <i className="bi bi-magic" />
-                </span>
-                <div>
-                  <h3
-                    className="fw-bold mb-1"
-                    style={{ fontSize: 15, color: "var(--brand-purple-dark)" }}
-                  >
-                    Dica extra da IA
-                  </h3>
-                  <p
-                    className="mb-0"
-                    style={{
-                      fontSize: 13,
-                      color: "var(--text-strong)",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {analise.dicaFinal}
-                  </p>
-                </div>
-              </div>
-            </>
+      {/* Coluna direita — Sua análise */}
+      <div className="col-lg-7">
+        <div className="d-flex justify-content-between align-items-center mb-1">
+          <h2 className="h6 mb-0">Sua análise</h2>
+          {tempoAnalise !== null && !analisando && (
+            <span className="status-concluida">
+              <span className="status-concluida-dot" />
+              Análise concluída em {tempoAnalise.toFixed(1)}s
+            </span>
           )}
         </div>
+
+        {analisando ? (
+          <div className="empty-state">
+            <p className="empty-state-title">{ETAPAS_ANALISE[etapaAtual]}</p>
+            <div className="score-bar-track" style={{ width: 220 }}>
+              <div className="score-bar-fill" style={{ width: "60%" }} />
+            </div>
+          </div>
+        ) : !analise ? (
+          <div className="empty-state">
+            <p className="empty-state-title">Sua análise aparecerá aqui.</p>
+            <p className="empty-state-text">
+              Preencha seu perfil e a oportunidade ao lado. O Vett analisará o
+              alinhamento entre os dois.
+            </p>
+          </div>
+        ) : (
+          <div className="fade-in-up">
+            <p className="small mb-3" style={{ color: "var(--text-tertiary)" }}>
+              Veja o quanto seu perfil se alinha com esta oportunidade.
+            </p>
+
+            <div className="score-editorial">
+              <span className="score-editorial-value">
+                {analise.scoreMatch}
+              </span>
+              <span className="score-editorial-total">/100</span>
+            </div>
+            <p className="score-editorial-classification mb-1">
+              {classificarScore(analise.scoreMatch)}
+            </p>
+            <p
+              className="small mb-0"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {analise.resumoIA}
+            </p>
+            <div className="score-bar-track">
+              <div
+                className="score-bar-fill"
+                style={{ width: `${analise.scoreMatch}%` }}
+              />
+            </div>
+
+            <div className="section-divider" />
+
+            <h3 className="h6 mb-3">Onde você se encaixa</h3>
+            {Object.entries(analise.matchPorCategoria).map(([chave, valor]) => (
+              <DimensaoBarra
+                key={chave}
+                label={LABELS_CATEGORIA[chave] ?? chave}
+                valor={valor}
+              />
+            ))}
+
+            <div className="row g-4 mt-1">
+              <div className="col-md-6">
+                <h3 className="h6 mb-3">O que joga a seu favor</h3>
+                <ul className="evidence-list">
+                  {analise.keywordsPresentes.map((k) => (
+                    <li key={k} className="evidence-item">
+                      <span className="evidence-icon evidence-icon--favor">
+                        <i className="bi bi-check" />
+                      </span>
+                      {k}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="col-md-6">
+                <h3 className="h6 mb-3">Onde existe uma lacuna</h3>
+                <ul className="evidence-list">
+                  {analise.keywordsFaltando.map((k) => (
+                    <li key={k} className="evidence-item">
+                      <span className="evidence-icon evidence-icon--lacuna">
+                        <i className="bi bi-exclamation" />
+                      </span>
+                      {k}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="section-divider" />
+
+            <div className="row g-4">
+              <div className="col-md-7">
+                <h3 className="h6 mb-3">Antes de aplicar</h3>
+                <ol
+                  className="ps-3 small mb-0"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {analise.sugestoesAjuste.map((s, i) => (
+                    <li key={i} className="mb-2">
+                      {s}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="col-md-5">
+                <h3 className="h6 mb-3">Insight</h3>
+                <p
+                  className="small mb-0"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {analise.dicaFinal}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

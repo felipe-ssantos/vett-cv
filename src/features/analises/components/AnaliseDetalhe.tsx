@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import type { Analise } from "../../../types";
 
@@ -10,21 +10,22 @@ const LABELS_CATEGORIA: Record<string, string> = {
   soft_skills: "Soft skills",
 };
 
-function BarraCategoria({ label, valor }: { label: string; valor: number }) {
+function classificarScore(score: number): string {
+  if (score < 40) return "Baixa compatibilidade";
+  if (score < 60) return "Compatibilidade moderada";
+  if (score < 80) return "Boa compatibilidade";
+  return "Forte compatibilidade";
+}
+
+function DimensaoBarra({ label, valor }: { label: string; valor: number }) {
   return (
     <div className="mb-3">
       <div className="d-flex justify-content-between small mb-1">
-        <span>{label}</span>
-        <span className="fw-medium">{valor}%</span>
+        <span style={{ color: "var(--text-secondary)" }}>{label}</span>
+        <span className="fw-medium">{valor}/100</span>
       </div>
-      <div
-        className="progress"
-        role="progressbar"
-        aria-valuenow={valor}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
-        <div className="progress-bar" style={{ width: `${valor}%` }} />
+      <div className="dimension-bar-track">
+        <div className="dimension-bar-fill" style={{ width: `${valor}%` }} />
       </div>
     </div>
   );
@@ -32,6 +33,11 @@ function BarraCategoria({ label, valor }: { label: string; valor: number }) {
 
 export function AnaliseDetalhe() {
   const { id } = useParams();
+  const location = useLocation();
+  const tempoAnaliseSegundos = (
+    location.state as { tempoAnaliseSegundos?: number } | null
+  )?.tempoAnaliseSegundos;
+
   const [analise, setAnalise] = useState<Analise | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -59,161 +65,153 @@ export function AnaliseDetalhe() {
 
   return (
     <div className="row justify-content-center">
-      <div className="col-lg-8 d-flex flex-column gap-4">
+      <div className="col-lg-8 d-flex flex-column gap-4 fade-in-up">
         <div>
-          <Link to="/historico" className="small">
+          <Link
+            to="/historico"
+            className="small"
+            style={{ color: "var(--text-tertiary)" }}
+          >
             ← Voltar ao histórico
           </Link>
         </div>
 
-        <div className="card">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
-              <h1 className="h3 mb-0">{analise.titulo_vaga}</h1>
-              {analise.senioridade && (
-                <span className="badge bg-secondary-subtle text-secondary-emphasis">
-                  {analise.senioridade}
-                </span>
-              )}
-            </div>
-            {analise.empresa && (
-              <p className="text-secondary mb-3">{analise.empresa}</p>
+        <div className="card-clean p-4">
+          <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <h1 className="h4 mb-0">{analise.titulo_vaga}</h1>
+            {analise.senioridade && (
+              <span className="small" style={{ color: "var(--text-tertiary)" }}>
+                {analise.senioridade}
+              </span>
             )}
-
-            {analise.hard_skills.length > 0 && (
-              <div className="mb-2">
-                <p className="small fw-medium mb-1">Hard skills</p>
-                <div className="d-flex flex-wrap gap-1">
-                  {analise.hard_skills.map((s) => (
-                    <span key={s} className="badge bg-light text-dark border">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {analise.soft_skills.length > 0 && (
-              <div className="mb-3">
-                <p className="small fw-medium mb-1">Soft skills</p>
-                <div className="d-flex flex-wrap gap-1">
-                  {analise.soft_skills.map((s) => (
-                    <span key={s} className="badge bg-light text-dark border">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <details className="small text-secondary mt-2">
-              <summary className="text-primary" style={{ cursor: "pointer" }}>
-                Ver descrição completa
-              </summary>
-              <p className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
-                {analise.descricao_vaga}
-              </p>
-            </details>
           </div>
+          {analise.empresa && (
+            <p className="mb-3" style={{ color: "var(--text-secondary)" }}>
+              {analise.empresa}
+            </p>
+          )}
+
+          {(analise.hard_skills.length > 0 ||
+            analise.soft_skills.length > 0) && (
+            <p className="small mb-2" style={{ color: "var(--text-tertiary)" }}>
+              {[...analise.hard_skills, ...analise.soft_skills].join(" · ")}
+            </p>
+          )}
+
+          <details
+            className="small mt-2"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <summary style={{ cursor: "pointer", color: "var(--primary)" }}>
+              Ver descrição completa
+            </summary>
+            <p className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
+              {analise.descricao_vaga}
+            </p>
+          </details>
         </div>
 
-        <div className="card">
-          <div className="card-body text-center py-5">
+        <div>
+          <div className="d-flex justify-content-between align-items-center mb-1">
+            <h2 className="h5 mb-0">Sua análise</h2>
+            {tempoAnaliseSegundos != null && (
+              <span className="status-concluida">
+                <span className="status-concluida-dot" />
+                Análise concluída em {tempoAnaliseSegundos.toFixed(1)}s
+              </span>
+            )}
+          </div>
+          <p className="small mb-3" style={{ color: "var(--text-tertiary)" }}>
+            Veja o quanto seu perfil se alinha com esta oportunidade.
+          </p>
+
+          <div className="score-editorial">
+            <span className="score-editorial-value">{analise.score_match}</span>
+            <span className="score-editorial-total">/100</span>
+          </div>
+          <p className="score-editorial-classification mb-1">
+            {classificarScore(analise.score_match)}
+          </p>
+          <p className="small mb-0" style={{ color: "var(--text-secondary)" }}>
+            {analise.resumo_ia}
+          </p>
+          <div className="score-bar-track">
             <div
-              className="score-circle mx-auto mb-3"
-              style={{ "--score": analise.score_match } as React.CSSProperties}
-            >
-              <div className="score-circle-inner">{analise.score_match}%</div>
-            </div>
-            <p className="text-secondary mb-0">{analise.resumo_ia}</p>
+              className="score-bar-fill"
+              style={{ width: `${analise.score_match}%` }}
+            />
           </div>
         </div>
 
         {analise.match_por_categoria && (
-          <div className="card">
-            <div className="card-body">
-              <h2 className="h5 mb-3">Match por categoria</h2>
-              {Object.entries(analise.match_por_categoria).map(
-                ([chave, valor]) => (
-                  <BarraCategoria
-                    key={chave}
-                    label={LABELS_CATEGORIA[chave] ?? chave}
-                    valor={valor as number}
-                  />
-                ),
-              )}
-            </div>
+          <div>
+            <h2 className="h6 mb-3">Onde você se encaixa</h2>
+            {Object.entries(analise.match_por_categoria).map(
+              ([chave, valor]) => (
+                <DimensaoBarra
+                  key={chave}
+                  label={LABELS_CATEGORIA[chave] ?? chave}
+                  valor={valor as number}
+                />
+              ),
+            )}
           </div>
         )}
 
         <div className="row g-4">
           <div className="col-md-6">
-            <div className="card h-100">
-              <div className="card-body">
-                <h2 className="h5 mb-2">Palavras-chave presentes</h2>
-                <div className="d-flex flex-wrap gap-1">
-                  {analise.keywords_presentes.map((k) => (
-                    <span
-                      key={k}
-                      className="badge bg-success-subtle text-success-emphasis"
-                    >
-                      {k}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <h2 className="h6 mb-3">O que joga a seu favor</h2>
+            <ul className="evidence-list">
+              {analise.keywords_presentes.map((k) => (
+                <li key={k} className="evidence-item">
+                  <span className="evidence-icon evidence-icon--favor">
+                    <i className="bi bi-check" />
+                  </span>
+                  {k}
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="col-md-6">
-            <div className="card h-100">
-              <div className="card-body">
-                <h2 className="h5 mb-2">Palavras-chave faltando</h2>
-                <div className="d-flex flex-wrap gap-1">
-                  {analise.keywords_faltando.map((k) => (
-                    <span
-                      key={k}
-                      className="badge bg-danger-subtle text-danger-emphasis"
-                    >
-                      {k}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-body">
-            <h2 className="h5 mb-2 d-flex align-items-center gap-2">
-              <i className="bi bi-lightbulb text-warning"></i>
-              Sugestões de ajuste
-            </h2>
-            <ul
-              className="mb-0 small"
-              style={{ color: "var(--text-dark-gray)" }}
-            >
-              {analise.sugestoes_ajuste.map((s, i) => (
-                <li key={i}>{s}</li>
+            <h2 className="h6 mb-3">Onde existe uma lacuna</h2>
+            <ul className="evidence-list">
+              {analise.keywords_faltando.map((k) => (
+                <li key={k} className="evidence-item">
+                  <span className="evidence-icon evidence-icon--lacuna">
+                    <i className="bi bi-exclamation" />
+                  </span>
+                  {k}
+                </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <div
-          className="alert mb-0"
-          style={{ background: "#f5f3ff", border: "1px solid #ddd6fe" }}
-        >
-          <h2
-            className="h6 mb-1 d-flex align-items-center gap-2"
-            style={{ color: "var(--brand-purple)" }}
-          >
-            <i className="bi bi-magic"></i>
-            Dica para aumentar sua pontuação
-          </h2>
-          <p className="mb-0 small" style={{ color: "var(--text-dark-gray)" }}>
-            {analise.dica_final}
-          </p>
+        <div className="section-divider" />
+
+        <div className="row g-4">
+          <div className="col-md-7">
+            <h2 className="h6 mb-3">Antes de aplicar</h2>
+            <ol
+              className="ps-3 small mb-0"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {analise.sugestoes_ajuste.map((s, i) => (
+                <li key={i} className="mb-2">
+                  {s}
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="col-md-5">
+            <h2 className="h6 mb-3">Insight</h2>
+            <p
+              className="small mb-0"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {analise.dica_final}
+            </p>
+          </div>
         </div>
 
         <div className="d-flex justify-content-end">
