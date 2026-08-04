@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
 
 export function PageContainer({ children }: { children: ReactNode }) {
-  return <main className="container py-5">{children}</main>;
+  return <main className="pb-4">{children}</main>;
 }

@@ -1,59 +1,299 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 :root {
-  --brand-purple: #8b5cf6;
-  --brand-purple-dark: #7c3aed;
-  --text-dark-gray: #374151;
+  /* Purple */
+  --brand-purple: #6947e8;
+  --brand-purple-dark: #5142d9;
+  --brand-purple-darker: #4338ca;
+  --brand-purple-light: #f0eeff;
+  --brand-purple-lighter: #f8f7ff;
+  --brand-purple-border: #d9d2ff;
 
-  --bs-primary: #8b5cf6;
-  --bs-primary-rgb: 139, 92, 246;
-  --bs-link-color: #8b5cf6;
-  --bs-link-hover-color: #7c3aed;
+  /* Green — sucesso */
+  --green: #16a34a;
+  --green-dark: #159947;
+  --green-strong: #25b45b;
+  --green-light: #e7f7ec;
+  --green-track: #e8f5ec;
 
-  --bs-success: #16a34a;
-  --bs-success-rgb: 22, 163, 74;
+  /* Red — alerta */
+  --red: #d92d20;
+  --red-light: #fff0f1;
+
+  /* Yellow */
+  --yellow: #f4b740;
+  --yellow-light: #fff8e7;
+
+  /* Texto */
+  --text-title: #111827;
+  --text-strong: #344054;
+  --text-secondary: #4b5872;
+  --text-aux: #53617a;
+  --text-muted: #667085;
+
+  /* Fundo e bordas */
+  --bg-page: #f8fafc;
+  --border-subtle: #e7eaf0;
+  --border-input: #d9dee8;
+  --border-card-inner: #e2e6ed;
+
+  /* Radius */
+  --radius-container: 22px;
+  --radius-card: 14px;
+  --radius-card-inner: 12px;
+  --radius-input: 9px;
+  --radius-btn: 8px;
+  --radius-badge: 20px;
+
+  /* Sombra */
+  --shadow-card: 0 4px 14px rgba(15, 23, 42, 0.05);
+  --shadow-accent: 0 6px 18px rgba(99, 70, 230, 0.1);
 }
 
 body {
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
-  background-color: #fafafa;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-strong);
 }
 
-.numero-circulo {
-  display: inline-flex;
+/* ===== Container principal (app shell) ===== */
+.app-shell {
+  max-width: 1516px;
+  margin: 10px auto;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-container);
+  padding: 20px;
+}
+
+/* ===== Header ===== */
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6750e8 0%, #5142d9 100%);
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--brand-purple);
   color: #fff;
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   flex-shrink: 0;
 }
 
-.score-circle {
+.headline-highlight {
+  color: var(--brand-purple);
+}
+
+/* ===== Cards ===== */
+.card-clean {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.card-inner {
+  background: #ffffff;
+  border: 1px solid var(--border-card-inner);
+  border-radius: var(--radius-card-inner);
+}
+
+/* ===== Step indicator ===== */
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand-purple);
+  color: #fff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ===== Textarea ===== */
+.textarea-clean {
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-input);
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #263247;
+  resize: none;
+}
+.textarea-clean:focus {
+  border-color: var(--brand-purple);
+  box-shadow: 0 0 0 3px rgba(105, 71, 232, 0.12);
+}
+
+/* ===== Botão principal ===== */
+.btn-analisar {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: var(--radius-btn);
+  background: linear-gradient(90deg, #7047e8 0%, #5b45e6 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 4px 10px rgba(99, 70, 230, 0.18);
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease;
+}
+.btn-analisar:hover:not(:disabled) {
+  filter: brightness(0.94);
+  transform: translateY(-1px);
+}
+.btn-analisar:disabled {
+  opacity: 0.7;
+}
+
+/* ===== Score ring (donut via conic-gradient) ===== */
+.score-ring {
   --score: 0;
-  width: 160px;
-  height: 160px;
+  width: 190px;
+  height: 190px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: conic-gradient(
-    var(--bs-success) calc(var(--score) * 1%),
-    #e9ecef 0
+    var(--green-strong) calc(var(--score) * 1%),
+    var(--green-track) 0
   );
+  flex-shrink: 0;
 }
-
-.score-circle-inner {
-  width: 128px;
-  height: 128px;
+.score-ring-inner {
+  width: 158px;
+  height: 158px;
   border-radius: 50%;
   background: #fff;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+}
+.score-ring-value {
+  font-size: 52px;
   font-weight: 700;
-  color: var(--bs-success);
+  color: var(--text-title);
+  line-height: 1;
+}
+.score-ring-label {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ===== Barra horizontal de score ===== */
+.score-bar-track {
+  height: 8px;
+  background: #edf0f4;
+  border-radius: 10px;
+  position: relative;
+}
+.score-bar-fill {
+  height: 8px;
+  background: var(--green-strong);
+  border-radius: 10px;
+  position: relative;
+}
+.score-bar-dot {
+  position: absolute;
+  right: -6px;
+  top: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--green-strong);
+}
+
+/* ===== Match por categoria ===== */
+.metric-bar-track {
+  height: 4px;
+  background: #eceef4;
+  border-radius: 10px;
+}
+.metric-bar-fill {
+  height: 4px;
+  background: var(--brand-purple);
+  border-radius: 10px;
+}
+
+/* ===== Badges de palavra-chave ===== */
+.keyword-badge {
+  display: inline-block;
+  border-radius: var(--radius-badge);
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.keyword-badge--presente {
+  background: #e8f8ee;
+  color: #16833e;
+}
+.keyword-badge--faltando {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+/* ===== Contador de badge (12 / 8) ===== */
+.badge-count {
+  border-radius: var(--radius-badge);
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-count--verde {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+.badge-count--vermelho {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+/* ===== Sugestão de ajuste ===== */
+.suggestion-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--brand-purple-light);
+  color: var(--brand-purple);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ===== Card de dica extra da IA ===== */
+.ai-tip-card {
+  background: var(--brand-purple-lighter);
+  border: 1px solid var(--brand-purple-border);
+  border-radius: var(--radius-card-inner);
+  padding: 20px;
+}
+.ai-tip-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  background: var(--brand-purple);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.5rem;
+}
+
+/* ===== Estado vazio (antes da análise) ===== */
+.resultado-vazio {
+  min-height: 500px;
 }

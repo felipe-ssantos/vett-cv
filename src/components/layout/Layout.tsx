@@ -4,7 +4,7 @@ import { PageContainer } from "./PageContainer";
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="app-shell">
       <Header />
       <PageContainer>{children}</PageContainer>
     </div>
