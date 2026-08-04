@@ -1,8 +1,15 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type SubmitEvent } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
 
 const LIMITE_CARACTERES = 5000;
+
+const ETAPAS_ANALISE = [
+  "Lendo seu currículo...",
+  "Interpretando a vaga...",
+  "Comparando skills e experiência...",
+  "Gerando sugestões personalizadas...",
+];
 
 const LABELS_CATEGORIA: Record<string, string> = {
   skills_tecnicas: "Skills técnicas",
@@ -125,13 +132,25 @@ export function AnaliseWorkspace() {
   const [analise, setAnalise] = useState<AnaliseMatchIA | null>(null);
   const [tempoAnalise, setTempoAnalise] = useState<number | null>(null);
 
+  // Estado para mensagens cíclicas
+  const [etapaAtual, setEtapaAtual] = useState(0);
+
+  // Efeito simplificado para mensagens cíclicas
+  useEffect(() => {
+    if (!analisando) return;
+    const intervalo = setInterval(() => {
+      setEtapaAtual((atual) => (atual + 1) % ETAPAS_ANALISE.length);
+    }, 1800);
+    return () => clearInterval(intervalo);
+  }, [analisando]);
+
   function handleArquivoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
     setArquivo(file);
     if (file) setCurriculoTexto("");
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!descricaoVaga.trim()) {
@@ -145,6 +164,7 @@ export function AnaliseWorkspace() {
 
     setAnalisando(true);
     setErro(null);
+    setEtapaAtual(0);
     const inicio = performance.now();
 
     try {
@@ -297,7 +317,14 @@ export function AnaliseWorkspace() {
               className="btn btn-analisar mb-2"
             >
               {analisando ? (
-                "Analisando..."
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Analisando...
+                </>
               ) : (
                 <>
                   <i className="bi bi-search me-2" />
@@ -310,8 +337,9 @@ export function AnaliseWorkspace() {
               className="text-center mb-0"
               style={{ fontSize: 12, color: "var(--text-muted)" }}
             >
-              Análise feita com IA · seu histórico fica salvo e criptografado neste navegador para reanálise
-              posterior. Nenhum dado é enviado a terceiros.
+              Análise feita com IA · seu histórico fica salvo e criptografado
+              neste navegador para reanálise posterior. Nenhum dado é enviado a
+              terceiros.
             </p>
 
             {erro && <div className="alert alert-danger mt-3 mb-0">{erro}</div>}
@@ -354,7 +382,23 @@ export function AnaliseWorkspace() {
             )}
           </div>
 
-          {!analise || !vaga || !tier ? (
+          {analisando ? (
+            <div className="resultado-vazio d-flex flex-column align-items-center justify-content-center text-center">
+              <div
+                className="ai-tip-icon mb-3"
+                style={{ animation: "pulse 1.6s ease-in-out infinite" }}
+              >
+                <i className="bi bi-magic" />
+              </div>
+              <p
+                className="fw-bold mb-2"
+                style={{ color: "var(--text-title)", fontSize: 15 }}
+              >
+                {ETAPAS_ANALISE[etapaAtual]}
+              </p>
+              <div className="progress-indeterminado" />
+            </div>
+          ) : !analise || !vaga || !tier ? (
             <div className="resultado-vazio d-flex flex-column align-items-center justify-content-center text-center">
               <i
                 className="bi bi-search mb-3"

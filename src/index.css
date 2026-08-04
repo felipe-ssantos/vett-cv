@@ -297,3 +297,52 @@ body {
 .resultado-vazio {
   min-height: 500px;
 }
+
+/* ===== Loading indeterminado ===== */
+.progress-indeterminado {
+  height: 6px;
+  width: 100%;
+  max-width: 280px;
+  background: var(--brand-purple-light);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-indeterminado::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #7047e8 0%, #5b45e6 100%);
+  animation: progresso-indeterminado 1.3s ease-in-out infinite;
+}
+@keyframes progresso-indeterminado {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-indeterminado::after {
+    animation: none;
+    left: 0;
+  }
+}
