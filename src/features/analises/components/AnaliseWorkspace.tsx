@@ -337,9 +337,8 @@ export function AnaliseWorkspace() {
               className="text-center mb-0"
               style={{ fontSize: 12, color: "var(--text-muted)" }}
             >
-              Análise feita com IA · seu histórico fica salvo e criptografado
-              neste navegador para reanálise posterior. Nenhum dado é enviado a
-              terceiros.
+              Análise feita com IA · Seus dados são criptografados. Nenhuma
+              informação é enviado para terceiros.
             </p>
 
             {erro && <div className="alert alert-danger mt-3 mb-0">{erro}</div>}
