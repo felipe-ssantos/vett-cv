@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { LuArrowLeft, LuArrowRight, LuUser, LuCheck } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import type { Analise, AnaliseMatchIA } from "../../../types";
 
@@ -116,35 +117,59 @@ export function ReanalisarForm() {
   }
 
   return (
-    <div className="row justify-content-center">
-      <div className="col-lg-8">
-        <h1 className="mb-1">Reanalisar currículo</h1>
-        {analiseBase && (
-          <p className="text-secondary mb-4">
-            contra a vaga: {analiseBase.titulo_vaga}
-          </p>
-        )}
+    <div className="fade-in-up" style={{ maxWidth: 720, margin: "0 auto" }}>
+      <div className="mb-4">
+        <Link
+          to={analiseBase ? `/analises/${analiseBase.id}` : "/historico"}
+          className="text-decoration-none d-inline-flex align-items-center gap-1 text-secondary"
+          style={{ fontSize: 14, fontWeight: 500 }}
+        >
+          <LuArrowLeft size={16} /> Voltar à análise
+        </Link>
+      </div>
+
+      <div className="vett-card p-4">
+        <div className="vett-card-header">
+          <div className="vett-icon-circle">
+            <LuUser />
+          </div>
+          <div>
+            <h1 className="h5 fw-bold mb-1">Reanalisar currículo</h1>
+            {analiseBase && (
+              <p className="mb-0 text-secondary" style={{ fontSize: 14 }}>
+                Comparando novo currículo para: <strong>{analiseBase.titulo_vaga}</strong>
+              </p>
+            )}
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">Cole o texto do currículo</label>
-            <textarea
-              className="form-control"
-              rows={8}
-              placeholder="Cole aqui o texto do seu currículo (ex: já ajustado com base na dica anterior)..."
-              value={curriculoTexto}
-              onChange={(e) => {
-                setCurriculoTexto(e.target.value);
-                if (e.target.value) setArquivo(null);
-              }}
-              disabled={!!arquivo}
-            />
+            <label className="vett-field-label mb-2">Cole o novo texto do currículo</label>
+            <div className="vett-input-wrapper">
+              <textarea
+                className="form-control vett-textarea w-100"
+                style={{ height: 220 }}
+                placeholder="Cole aqui o texto do seu currículo atualizado..."
+                value={curriculoTexto}
+                onChange={(e) => {
+                  setCurriculoTexto(e.target.value);
+                  if (e.target.value) setArquivo(null);
+                }}
+                disabled={!!arquivo}
+              />
+              {curriculoTexto.trim().length > 0 && (
+                <div className="vett-check-badge">
+                  <LuCheck />
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="text-center text-secondary small mb-3">ou</div>
+          <div className="text-center text-secondary small my-3">ou</div>
 
-          <div className="mb-3">
-            <label className="form-label">Envie o arquivo (PDF ou DOCX)</label>
+          <div className="mb-4">
+            <label className="vett-field-label mb-2">Envie o arquivo (PDF ou DOCX)</label>
             <input
               type="file"
               accept=".pdf,.doc,.docx"
@@ -152,19 +177,28 @@ export function ReanalisarForm() {
               className="form-control"
             />
             {arquivo && (
-              <div className="form-text">Selecionado: {arquivo.name}</div>
+              <div className="form-text mt-1">Selecionado: {arquivo.name}</div>
             )}
           </div>
 
           <button
             type="submit"
             disabled={analisando || !analiseBase}
-            className="btn btn-primary w-100"
+            className="btn-vett-primary"
           >
-            {analisando ? "Analisando..." : "Analisar oportunidade →"}
+            {analisando ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" />
+                Analisando...
+              </>
+            ) : (
+              <>
+                Analisar oportunidade <LuArrowRight size={18} />
+              </>
+            )}
           </button>
 
-          {erro && <div className="alert alert-danger mt-3">{erro}</div>}
+          {erro && <div className="alert alert-danger mt-3 mb-0">{erro}</div>}
         </form>
       </div>
     </div>

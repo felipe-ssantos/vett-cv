@@ -1,322 +1,496 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
 
 :root {
   --bg: #f7f7f5;
   --surface: #ffffff;
+  --surface-alt: #f9fafb;
 
-  --text-primary: #171717;
-  --text-secondary: #525252;
-  --text-tertiary: #737373;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;
+  --text-muted: #9ca3af;
 
-  --border: #e5e5e2;
+  --border: #e5e7eb;
+  --border-subtle: #f3f4f6;
 
-  --primary: #115e59;
-  --primary-hover: #0f4c48;
+  /* Vett primary forest green / teal */
+  --primary: #0b4f46;
+  --primary-hover: #073832;
+  --primary-light: #e6f4f1;
 
-  --success: #15803d;
+  --success: #0f766e;
   --success-bg: #f0fdf4;
-  --warning: #a16207;
-  --warning-bg: #fefce8;
-  --error: #b42318;
-  --error-bg: #fef2f2;
+  --success-border: #dcfce7;
+  
+  --warning: #c2410c;
+  --warning-bg: #fff7ed;
+  --warning-border: #ffedd5;
 
-  --font-heading:
-    "Manrope", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-body:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-hover: #b91c1c;
 
-  /* Bootstrap overrides — mantém as classes btn-primary/badge bg-primary etc. */
-  --bs-primary: #115e59;
-  --bs-primary-rgb: 17, 94, 89;
-  --bs-link-color: #115e59;
-  --bs-link-hover-color: #0f4c48;
-  --bs-success: #15803d;
-  --bs-success-rgb: 21, 128, 61;
-  --bs-danger: #b42318;
-  --bs-danger-rgb: 180, 35, 24;
-  --bs-warning: #a16207;
-  --bs-warning-rgb: 161, 98, 7;
-  --bs-body-color: #171717;
-  --bs-border-color: #e5e5e2;
+  --font-heading: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Bootstrap overrides */
+  --bs-primary: #0b4f46;
+  --bs-primary-rgb: 11, 79, 70;
+  --bs-link-color: #0b4f46;
+  --bs-link-hover-color: #073832;
+  --bs-body-color: #111827;
+  --bs-border-color: #e5e7eb;
 }
 
 body {
   font-family: var(--font-body);
   background-color: var(--bg);
   color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
-h1,
-h2,
-h3,
-h4,
-.fw-heading {
+h1, h2, h3, h4, h5, h6, .fw-heading {
   font-family: var(--font-heading);
+  letter-spacing: -0.01em;
 }
 
 /* ===== Container principal ===== */
 .app-shell {
-  max-width: 1400px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 24px 48px;
 }
 
 /* ===== Header ===== */
+.vett-header {
+  border-bottom: 1px solid transparent;
+}
+
+.vett-logo-dots {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 4px;
+}
+
 .vett-wordmark {
   font-family: var(--font-heading);
   font-weight: 800;
-  font-size: 22px;
+  font-size: 24px;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .vett-tagline {
   font-size: 13px;
   color: var(--text-tertiary);
+  font-weight: 400;
 }
 
 .vett-history-link {
   font-size: 14px;
-  color: var(--text-secondary);
+  font-weight: 500;
+  color: var(--text-primary);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 150ms ease;
 }
+
 .vett-history-link:hover {
+  background: rgba(0, 0, 0, 0.04);
   color: var(--primary);
 }
 
-/* ===== Cards discretos ===== */
-.card-clean {
+/* ===== Cards Vett ===== */
+.vett-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-/* ===== Step circle ===== */
-.step-circle {
-  width: 32px;
-  height: 32px;
+.vett-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.vett-icon-circle {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
-  font-weight: 700;
+  background: var(--border-subtle);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 18px;
   flex-shrink: 0;
 }
 
-/* ===== Card inner ===== */
-.card-inner {
-  padding: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-/* ===== Inputs ===== */
-.form-control,
-.form-select {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  font-size: 14px;
-}
-.form-control:focus,
-.form-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(17, 94, 89, 0.08);
-}
-
-.form-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.form-hint {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  margin-bottom: 8px;
-}
-
-.char-counter {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  text-align: right;
-  margin-top: 4px;
-}
-
-/* ===== Botão principal ===== */
-.btn-primary {
-  background: var(--primary);
-  border-color: var(--primary);
-  height: 48px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 15px;
-  transition: background-color 150ms ease;
-}
-.btn-primary:hover:not(:disabled),
-.btn-primary:focus:not(:disabled) {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
-.btn-primary:disabled {
-  opacity: 0.6;
-}
-
-/* ===== Status "análise concluída" ===== */
-.status-concluida {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
+.vett-icon-circle--success {
+  background: var(--success-bg);
   color: var(--success);
 }
-.status-concluida-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--success);
-  flex-shrink: 0;
+
+.vett-icon-circle--warning {
+  background: var(--warning-bg);
+  color: var(--warning);
 }
 
-/* ===== Score editorial ===== */
-.score-editorial {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.score-editorial-value {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 64px;
-  color: var(--text-primary);
-  line-height: 1;
-}
-.score-editorial-total {
-  font-size: 20px;
-  color: var(--text-tertiary);
-}
-.score-editorial-classification {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 18px;
+.vett-icon-circle--primary {
+  background: var(--primary-light);
   color: var(--primary);
 }
 
-.score-bar-track {
-  height: 6px;
-  background: var(--border);
-  border-radius: 10px;
-  margin-top: 16px;
-}
-.score-bar-fill {
-  height: 6px;
-  background: var(--primary);
-  border-radius: 10px;
-  transition: width 400ms ease;
+/* ===== Inputs e Textareas ===== */
+.vett-input-wrapper {
+  position: relative;
 }
 
-/* ===== Barras de dimensão (Onde você se encaixa) ===== */
-.dimension-bar-track {
-  height: 4px;
-  background: var(--border);
+.vett-textarea {
+  border: 1px solid var(--border);
   border-radius: 10px;
-}
-.dimension-bar-fill {
-  height: 4px;
-  background: var(--primary);
-  border-radius: 10px;
-  transition: width 400ms ease;
+  background: var(--surface-alt);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  padding: 14px 16px;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+  resize: vertical;
 }
 
-/* ===== Listas de favor / lacuna (sem parede de badges) ===== */
-.evidence-list {
+.vett-textarea:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 79, 70, 0.1);
+  outline: none;
+}
+
+.vett-check-badge {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  pointer-events: none;
+  animation: fadeIn 200ms ease;
+}
+
+.vett-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.vett-field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.vett-char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ===== Botão Principal ===== */
+.btn-vett-primary {
+  background: var(--primary);
+  color: #ffffff;
+  border: 1px solid var(--primary);
+  height: 50px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.btn-vett-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: #ffffff;
+}
+
+.btn-vett-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ===== Status Concluído ===== */
+.vett-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--success);
+}
+
+/* ===== Score Layout ===== */
+.vett-score-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vett-score-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.vett-score-number-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.vett-score-number {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 72px;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+.vett-score-max {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+.vett-score-info {
+  flex: 1;
+}
+
+.vett-score-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.vett-score-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Scale Bar */
+.vett-scale-container {
+  margin-top: 12px;
+}
+
+.vett-scale-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.vett-scale-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 10px;
+  transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vett-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* ===== Sub-cards de Dimensão (Onde você se encaixa) ===== */
+.vett-dimension-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.vett-dimension-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 140px;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.vett-dimension-bar-wrapper {
+  flex: 1;
+}
+
+.vett-dimension-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.vett-dimension-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 10px;
+  transition: width 500ms ease;
+}
+
+.vett-dimension-score {
+  width: 60px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ===== Listas Favor / Lacuna ===== */
+.vett-evidence-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
-.evidence-item {
+
+.vett-evidence-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  font-weight: 500;
 }
-.evidence-icon {
+
+.vett-evidence-icon {
+  font-size: 16px;
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 11px;
-  margin-top: 1px;
 }
-.evidence-icon--favor {
-  background: var(--success-bg);
+
+.vett-evidence-icon--favor {
   color: var(--success);
 }
-.evidence-icon--lacuna {
-  background: var(--warning-bg);
+
+.vett-evidence-icon--lacuna {
   color: var(--warning);
 }
 
-/* ===== Estado vazio ===== */
-.empty-state {
-  min-height: 420px;
+/* ===== Numbered recommendations list ===== */
+.vett-numbered-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vett-numbered-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.vett-number-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--border-subtle);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ===== Empty State ===== */
+.vett-empty-state {
+  min-height: 480px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 24px;
-}
-.empty-state-title {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-.empty-state-text {
-  font-size: 14px;
-  color: var(--text-tertiary);
-  max-width: 340px;
+  padding: 48px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
 }
 
-/* ===== Divisor discreto ===== */
-.section-divider {
-  border-top: 1px solid var(--border);
-  margin: 24px 0;
+.vett-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 16px;
 }
 
-/* ===== Microinteração de entrada ===== */
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .fade-in-up {
-  animation: fadeInUp 250ms ease both;
+  animation: fadeInUp 300ms ease both;
 }
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fade-in-up {
-    animation: none;
   }
 }
