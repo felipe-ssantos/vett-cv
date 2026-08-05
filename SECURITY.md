@@ -1,4 +1,4 @@
-# Segurança — Job Fit Analyzer
+# Segurança — Vett
 
 Este é um projeto de portfólio, com código aberto e demo pública. Este
 documento registra o estado conhecido de segurança do projeto e as decisões
