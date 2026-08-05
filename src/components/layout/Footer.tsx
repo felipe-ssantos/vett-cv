@@ -5,10 +5,7 @@ export function Footer() {
     anoAtual > ANO_CRIACAO ? `${ANO_CRIACAO}–${anoAtual}` : `${ANO_CRIACAO}`;
 
   return (
-    <footer
-      className="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 mt-4"
-      style={{ borderTop: "1px solid var(--border-subtle)" }}
-    >
+    <footer className="vett-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
       <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
         © {textoAno} Vett · v1.0 · beta
       </span>

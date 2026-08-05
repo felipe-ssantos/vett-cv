@@ -8,11 +8,12 @@ import {
   LuStar,
   LuWrench,
   LuGlobe,
-  LuCircleAlert,
   LuClipboardList,
   LuLightbulb,
   LuSparkles,
   LuClipboard,
+  LuThumbsUp,
+  LuTriangleAlert,
 } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
@@ -484,11 +485,14 @@ export function AnaliseWorkspace() {
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
                       className="vett-icon-circle vett-icon-circle--success"
-                      style={{ width: 24, height: 24, fontSize: 13 }}
+                      style={{ width: 26, height: 26, fontSize: 13 }}
                     >
-                      <LuCheck />
+                      <LuThumbsUp />
                     </div>
-                    <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                    <h3
+                      className="h6 fw-bold mb-0 text-dark"
+                      style={{ fontSize: 14, lineHeight: 1 }}
+                    >
                       O que joga a seu favor
                     </h3>
                   </div>
@@ -509,11 +513,14 @@ export function AnaliseWorkspace() {
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
                       className="vett-icon-circle vett-icon-circle--warning"
-                      style={{ width: 24, height: 24, fontSize: 13 }}
+                      style={{ width: 26, height: 26, fontSize: 13 }}
                     >
-                      <LuCircleAlert />
+                      <LuTriangleAlert />
                     </div>
-                    <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                    <h3
+                      className="h6 fw-bold mb-0 text-dark"
+                      style={{ fontSize: 14, lineHeight: 1 }}
+                    >
                       Onde existe uma lacuna
                     </h3>
                   </div>
@@ -521,7 +528,7 @@ export function AnaliseWorkspace() {
                     {analise.keywordsFaltando.map((k) => (
                       <li key={k} className="vett-evidence-item">
                         <span className="vett-evidence-icon vett-evidence-icon--lacuna">
-                          <LuCircleAlert />
+                          <LuTriangleAlert />
                         </span>
                         <span>{k}</span>
                       </li>
@@ -539,7 +546,7 @@ export function AnaliseWorkspace() {
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
                       className="vett-icon-circle"
-                      style={{ width: 24, height: 24, fontSize: 13 }}
+                      style={{ width: 26, height: 26, fontSize: 13 }}
                     >
                       <LuClipboardList />
                     </div>
@@ -564,7 +571,7 @@ export function AnaliseWorkspace() {
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
                       className="vett-icon-circle vett-icon-circle--primary"
-                      style={{ width: 24, height: 24, fontSize: 13 }}
+                      style={{ width: 26, height: 26, fontSize: 13 }}
                     >
                       <LuLightbulb />
                     </div>

@@ -9,12 +9,14 @@ import {
   LuStar,
   LuWrench,
   LuGlobe,
-  LuCircleAlert,
   LuClipboardList,
   LuLightbulb,
   LuTrash2,
   LuRotateCw,
   LuTriangleAlert,
+  LuThumbsUp,
+  LuEye,
+  LuChevronDown,
 } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import type { Analise } from "../../../types";
@@ -89,6 +91,7 @@ export function AnaliseDetalhe() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
+  const [descricaoAberta, setDescricaoAberta] = useState(false);
   const [copiadoDescricao, setCopiadoDescricao] = useState(false);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
@@ -216,15 +219,37 @@ export function AnaliseDetalhe() {
           </div>
         )}
 
+        {/* Botão em destaque para usuários leigos verem a descrição */}
         <details
-          className="mt-2"
-          style={{ fontSize: 12.5, color: "var(--text-secondary)" }}
+          className="mt-3"
+          onToggle={(e) =>
+            setDescricaoAberta((e.target as HTMLDetailsElement).open)
+          }
         >
           <summary
-            className="d-inline-flex align-items-center gap-2"
-            style={{ cursor: "pointer", color: "var(--primary)", fontWeight: 600 }}
+            className="btn btn-light border text-dark fw-semibold d-flex align-items-center justify-content-between w-100 px-3 py-2"
+            style={{
+              borderRadius: 8,
+              fontSize: 13,
+              cursor: "pointer",
+              background: "var(--surface-alt)",
+            }}
           >
-            Ver descrição completa da vaga
+            <span className="d-inline-flex align-items-center gap-2">
+              <LuEye size={16} className="text-teal" />
+              <span>
+                {descricaoAberta
+                  ? "Ocultar descrição da vaga"
+                  : "Ver descrição completa da vaga"}
+              </span>
+            </span>
+            <LuChevronDown
+              size={16}
+              style={{
+                transform: descricaoAberta ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            />
           </summary>
 
           <div
@@ -339,11 +364,14 @@ export function AnaliseDetalhe() {
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
                 className="vett-icon-circle vett-icon-circle--success"
-                style={{ width: 24, height: 24, fontSize: 13 }}
+                style={{ width: 26, height: 26, fontSize: 13 }}
               >
-                <LuCheck />
+                <LuThumbsUp />
               </div>
-              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+              <h3
+                className="h6 fw-bold mb-0 text-dark"
+                style={{ fontSize: 14, lineHeight: 1 }}
+              >
                 O que joga a seu favor
               </h3>
             </div>
@@ -364,11 +392,14 @@ export function AnaliseDetalhe() {
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
                 className="vett-icon-circle vett-icon-circle--warning"
-                style={{ width: 24, height: 24, fontSize: 13 }}
+                style={{ width: 26, height: 26, fontSize: 13 }}
               >
-                <LuCircleAlert />
+                <LuTriangleAlert />
               </div>
-              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+              <h3
+                className="h6 fw-bold mb-0 text-dark"
+                style={{ fontSize: 14, lineHeight: 1 }}
+              >
                 Onde existe uma lacuna
               </h3>
             </div>
@@ -376,7 +407,7 @@ export function AnaliseDetalhe() {
               {analise.keywords_faltando.map((k) => (
                 <li key={k} className="vett-evidence-item">
                   <span className="vett-evidence-icon vett-evidence-icon--lacuna">
-                    <LuCircleAlert />
+                    <LuTriangleAlert />
                   </span>
                   <span>{k}</span>
                 </li>
@@ -394,7 +425,7 @@ export function AnaliseDetalhe() {
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
                 className="vett-icon-circle"
-                style={{ width: 24, height: 24, fontSize: 13 }}
+                style={{ width: 26, height: 26, fontSize: 13 }}
               >
                 <LuClipboardList />
               </div>
@@ -419,7 +450,7 @@ export function AnaliseDetalhe() {
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
                 className="vett-icon-circle vett-icon-circle--primary"
-                style={{ width: 24, height: 24, fontSize: 13 }}
+                style={{ width: 26, height: 26, fontSize: 13 }}
               >
                 <LuLightbulb />
               </div>
@@ -431,7 +462,7 @@ export function AnaliseDetalhe() {
               className="mb-0 text-secondary"
               style={{ fontSize: 13, lineHeight: 1.45 }}
             >
-              {analise.dica_final}
+              {analise.dicaFinal}
             </p>
           </div>
         </div>
