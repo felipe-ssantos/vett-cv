@@ -164,12 +164,6 @@ A análise é gerada por IA e deve ser tratada como assistiva, não como medida 
 
 ---
 
-## 🔮 Possíveis Melhorias Futuras
-
-Autenticação · histórico privado · múltiplos perfis de currículo · exportação em PDF · matching semântico mais avançado · testes automatizados · melhorias de acessibilidade e performance
-
----
-
 ## 👤 Autor
 
 **Felipe Santos**
