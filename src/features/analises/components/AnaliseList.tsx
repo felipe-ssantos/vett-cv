@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  LuClock,
-  LuTrash2,
-  LuPlus,
-  LuTriangleAlert,
   LuChevronRight,
-  LuSparkles,
+  LuClock,
+  LuPlus,
   LuSearch,
+  LuSparkles,
+  LuTrash2,
+  LuTriangleAlert,
   LuX,
 } from "react-icons/lu";
+import { Link } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import type { Analise } from "../../../types";
 
@@ -27,25 +27,31 @@ export function AnaliseList() {
   const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
-    carregarAnalises();
-  }, []);
+    let cancelado = false;
 
-  async function carregarAnalises() {
-    setCarregando(true);
-    setErro(null);
-    const { data, error } = await supabase
-      .from("analises")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      setErro("Não foi possível carregar o histórico.");
-      console.error(error);
-    } else {
-      setAnalises(data ?? []);
+    async function carregar() {
+      setCarregando(true);
+      setErro(null);
+      const { data, error } = await supabase
+        .from("analises")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (cancelado) return;
+      if (error) {
+        setErro("Não foi possível carregar o histórico.");
+        console.error(error);
+      } else {
+        setAnalises(data ?? []);
+      }
+      setCarregando(false);
     }
-    setCarregando(false);
-  }
+
+    carregar();
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   async function handleExcluirUma() {
     if (!itemParaExcluir) return;
@@ -142,7 +148,12 @@ export function AnaliseList() {
             <button
               onClick={() => setConfirmandoExcluirTodas(true)}
               className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3"
-              style={{ height: 36, borderRadius: 8, fontSize: 13, fontWeight: 600 }}
+              style={{
+                height: 36,
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+              }}
             >
               <LuTrash2 size={14} /> Limpar histórico
             </button>
@@ -165,7 +176,7 @@ export function AnaliseList() {
               type="text"
               className="form-control vett-textarea py-2 pe-4"
               style={{ paddingLeft: 38, height: 40, fontSize: 13.5 }}
-              placeholder="Filtrar histórico por cargo, empresa ou palavra-chave..."
+              placeholder="Pesquise em suas analises por cargo, empresa ou palavra-chave..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
             />
@@ -188,7 +199,8 @@ export function AnaliseList() {
           </div>
           {filtro && (
             <div className="mt-1 text-secondary" style={{ fontSize: 12 }}>
-              Exibindo {analisesFiltradas.length} de {analises.length} resultados para "{filtro}".
+              Exibindo {analisesFiltradas.length} de {analises.length}{" "}
+              resultados para "{filtro}".
             </div>
           )}
         </div>
@@ -211,10 +223,18 @@ export function AnaliseList() {
             <LuSparkles />
           </div>
           <h3 className="h6 fw-bold mb-2">Nenhuma análise salva ainda</h3>
-          <p className="text-secondary mb-4" style={{ fontSize: 13, maxWidth: 360 }}>
-            Realize sua primeira comparação de currículo com uma vaga para ver os resultados aqui.
+          <p
+            className="text-secondary mb-4"
+            style={{ fontSize: 13, maxWidth: 360 }}
+          >
+            Realize sua primeira comparação de currículo com uma vaga para ver
+            os resultados aqui.
           </p>
-          <Link to="/" className="btn-vett-primary text-decoration-none px-4" style={{ width: "auto", height: 38 }}>
+          <Link
+            to="/"
+            className="btn-vett-primary text-decoration-none px-4"
+            style={{ width: "auto", height: 38 }}
+          >
             Realizar análise
           </Link>
         </div>
@@ -263,11 +283,14 @@ export function AnaliseList() {
                     </div>
                     <div className="text-secondary" style={{ fontSize: 12.5 }}>
                       {analise.empresa ? `${analise.empresa} · ` : ""}
-                      {new Date(analise.created_at).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {new Date(analise.created_at).toLocaleDateString(
+                        "pt-BR",
+                        {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      )}
                     </div>
                   </div>
                 </div>
@@ -277,7 +300,11 @@ export function AnaliseList() {
                 <Link
                   to={`/analises/${analise.id}`}
                   className="btn btn-light btn-sm text-secondary d-flex align-items-center gap-1"
-                  style={{ borderRadius: 6, fontSize: 12.5, padding: "5px 10px" }}
+                  style={{
+                    borderRadius: 6,
+                    fontSize: 12.5,
+                    padding: "5px 10px",
+                  }}
                 >
                   Ver <LuChevronRight size={14} />
                 </Link>
@@ -313,7 +340,8 @@ export function AnaliseList() {
               </div>
               <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
                 Tem certeza que deseja excluir a análise para a vaga{" "}
-                <strong>"{itemParaExcluir.titulo_vaga}"</strong>? Esta ação não pode ser desfeita.
+                <strong>"{itemParaExcluir.titulo_vaga}"</strong>? Esta ação não
+                pode ser desfeita.
               </p>
               <div className="d-flex justify-content-end gap-2">
                 <button
@@ -354,8 +382,10 @@ export function AnaliseList() {
                 <h2 className="h5 fw-bold mb-0">Excluir todo o histórico?</h2>
               </div>
               <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
-                Tem certeza que deseja apagar <strong>todas as {analises.length} análises</strong> salvas?
-                Esta ação removerá permanentemente o histórico do banco de dados.
+                Tem certeza que deseja apagar{" "}
+                <strong>todas as {analises.length} análises</strong> salvas?
+                Esta ação removerá permanentemente o histórico do banco de
+                dados.
               </p>
               <div className="d-flex justify-content-end gap-2">
                 <button
