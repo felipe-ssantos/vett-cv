@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   LuArrowLeft,
+  LuArrowUp,
   LuCheck,
   LuUser,
   LuStar,
@@ -27,17 +28,17 @@ function classificarScore(score: number): string {
 function getCategoriaIcon(chave: string) {
   switch (chave) {
     case "experiencia":
-      return <LuUser size={16} />;
+      return <LuUser size={15} />;
     case "competencias":
     case "skills_tecnicas":
-      return <LuStar size={16} />;
+      return <LuStar size={15} />;
     case "ferramentas":
-      return <LuWrench size={16} />;
+      return <LuWrench size={15} />;
     case "contexto_vaga":
     case "contexto":
     case "soft_skills":
     default:
-      return <LuGlobe size={16} />;
+      return <LuGlobe size={15} />;
   }
 }
 
@@ -50,7 +51,15 @@ const LABELS_CATEGORIA: Record<string, string> = {
   soft_skills: "Contexto da vaga",
 };
 
-function DimensaoBarra({ label, valor, iconKey }: { label: string; valor: number; iconKey: string }) {
+function DimensaoBarra({
+  label,
+  valor,
+  iconKey,
+}: {
+  label: string;
+  valor: number;
+  iconKey: string;
+}) {
   return (
     <div className="vett-dimension-row">
       <div className="vett-dimension-label">
@@ -104,63 +113,84 @@ export function AnaliseDetalhe() {
     if (!id) return;
     setExcluindo(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("analises")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .select();
 
       if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Não foi possível excluir no Supabase. Caso o RLS (Row Level Security) esteja ativado no Supabase, crie uma política (Policy) de DELETE na tabela 'analises'.",
+        );
+      }
 
       navigate("/historico");
     } catch (err) {
       console.error("Erro ao excluir:", err);
-      alert("Erro ao excluir esta análise.");
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Erro ao excluir esta análise.",
+      );
     } finally {
       setExcluindo(false);
     }
+  }
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   if (carregando) {
     return (
       <div className="vett-empty-state">
         <div className="spinner-border text-teal" role="status" />
-        <p className="mt-3 text-secondary">Carregando análise...</p>
+        <p className="mt-3 text-secondary" style={{ fontSize: 13 }}>
+          Carregando análise...
+        </p>
       </div>
     );
   }
 
   if (erro || !analise) {
-    return <div className="alert alert-danger">{erro ?? "Análise não encontrada."}</div>;
+    return (
+      <div className="alert alert-danger">
+        {erro ?? "Análise não encontrada."}
+      </div>
+    );
   }
 
   return (
-    <div className="fade-in-up" style={{ maxWidth: 960, margin: "0 auto" }}>
+    <div className="fade-in-up" style={{ maxWidth: 920, margin: "0 auto" }}>
       {/* Top back navigation */}
-      <div className="mb-4">
+      <div className="mb-3">
         <Link
           to="/historico"
           className="text-decoration-none d-inline-flex align-items-center gap-1 text-secondary"
-          style={{ fontSize: 14, fontWeight: 500 }}
+          style={{ fontSize: 13, fontWeight: 500 }}
         >
-          <LuArrowLeft size={16} /> Voltar ao histórico
+          <LuArrowLeft size={15} /> Voltar ao histórico
         </Link>
       </div>
 
       {/* Card da vaga */}
-      <div className="vett-card mb-4">
+      <div className="vett-card mb-3">
         <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
           <div>
-            <h1 className="h4 fw-bold mb-1">{analise.titulo_vaga}</h1>
+            <h1 className="h5 fw-bold mb-1">{analise.titulo_vaga}</h1>
             {analise.empresa && (
-              <p className="mb-0 text-secondary" style={{ fontSize: 14 }}>
+              <p className="mb-0 text-secondary" style={{ fontSize: 13 }}>
                 {analise.empresa}
               </p>
             )}
           </div>
           {analise.senioridade && (
             <span
-              className="badge bg-light text-dark border px-3 py-2"
-              style={{ fontSize: 13, borderRadius: 20 }}
+              className="badge bg-light text-dark border px-3 py-1"
+              style={{ fontSize: 12, borderRadius: 20 }}
             >
               {analise.senioridade}
             </span>
@@ -168,28 +198,40 @@ export function AnaliseDetalhe() {
         </div>
 
         {(analise.hard_skills.length > 0 || analise.soft_skills.length > 0) && (
-          <div className="mt-2 text-tertiary" style={{ fontSize: 13 }}>
+          <div className="mt-1 text-tertiary" style={{ fontSize: 12.5 }}>
             {[...analise.hard_skills, ...analise.soft_skills].join(" · ")}
           </div>
         )}
 
-        <details className="mt-3" style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-          <summary style={{ cursor: "pointer", color: "var(--primary)", fontWeight: 600 }}>
+        <details
+          className="mt-2"
+          style={{ fontSize: 12.5, color: "var(--text-secondary)" }}
+        >
+          <summary
+            style={{ cursor: "pointer", color: "var(--primary)", fontWeight: 600 }}
+          >
             Ver descrição completa da vaga
           </summary>
-          <p className="mt-2 p-3 rounded" style={{ whiteSpace: "pre-wrap", background: "var(--surface-alt)", border: "1px solid var(--border)" }}>
+          <p
+            className="mt-2 p-3 rounded"
+            style={{
+              whiteSpace: "pre-wrap",
+              background: "var(--surface-alt)",
+              border: "1px solid var(--border)",
+            }}
+          >
             {analise.descricao_vaga}
           </p>
         </details>
       </div>
 
       {/* Top Score Box */}
-      <div className="vett-card mb-4">
-        <div className="d-flex justify-content-between align-items-start mb-3">
-          <h2 className="h5 fw-bold mb-0">Sua análise</h2>
+      <div className="vett-card mb-3">
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <h2 className="h6 fw-bold mb-0">Sua análise</h2>
           {tempoAnaliseSegundos != null && (
             <span className="vett-status-pill">
-              <LuCheck size={15} />
+              <LuCheck size={14} />
               Análise concluída em {tempoAnaliseSegundos.toFixed(1)}s
             </span>
           )}
@@ -225,33 +267,48 @@ export function AnaliseDetalhe() {
       </div>
 
       {/* Sub-cards: Onde você se encaixa / Favor / Lacuna */}
-      <div className="row g-4 mb-4">
+      <div className="row g-3 mb-3">
         {/* Onde você se encaixa */}
         {analise.match_por_categoria && (
-          <div className="col-md-7">
+          <div className="col-md-6">
             <div className="vett-card h-100">
-              <h3 className="h6 fw-bold mb-4">Onde você se encaixa</h3>
-              {Object.entries(analise.match_por_categoria).map(([chave, valor]) => (
-                <DimensaoBarra
-                  key={chave}
-                  iconKey={chave}
-                  label={LABELS_CATEGORIA[chave] ?? chave}
-                  valor={valor as number}
-                />
-              ))}
+              <h3 className="h6 fw-bold mb-3" style={{ fontSize: 14 }}>
+                Onde você se encaixa
+              </h3>
+              {Object.entries(analise.match_por_categoria).map(
+                ([chave, valor]) => (
+                  <DimensaoBarra
+                    key={chave}
+                    iconKey={chave}
+                    label={LABELS_CATEGORIA[chave] ?? chave}
+                    valor={valor as number}
+                  />
+                ),
+              )}
             </div>
           </div>
         )}
 
         {/* Favor & Lacuna */}
-        <div className={analise.match_por_categoria ? "col-md-5 d-flex flex-column gap-3" : "col-12 d-flex flex-column gap-3"}>
+        <div
+          className={
+            analise.match_por_categoria
+              ? "col-md-6 d-flex flex-column gap-3"
+              : "col-12 d-flex flex-column gap-3"
+          }
+        >
           {/* Favor */}
           <div className="vett-card flex-fill">
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <div className="vett-icon-circle vett-icon-circle--success" style={{ width: 28, height: 28, fontSize: 14 }}>
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <div
+                className="vett-icon-circle vett-icon-circle--success"
+                style={{ width: 24, height: 24, fontSize: 13 }}
+              >
                 <LuCheck />
               </div>
-              <h3 className="h6 fw-bold mb-0">O que joga a seu favor</h3>
+              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                O que joga a seu favor
+              </h3>
             </div>
             <ul className="vett-evidence-list">
               {analise.keywords_presentes.map((k) => (
@@ -267,11 +324,16 @@ export function AnaliseDetalhe() {
 
           {/* Lacuna */}
           <div className="vett-card flex-fill">
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <div className="vett-icon-circle vett-icon-circle--warning" style={{ width: 28, height: 28, fontSize: 14 }}>
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <div
+                className="vett-icon-circle vett-icon-circle--warning"
+                style={{ width: 24, height: 24, fontSize: 13 }}
+              >
                 <LuCircleAlert />
               </div>
-              <h3 className="h6 fw-bold mb-0">Onde existe uma lacuna</h3>
+              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                Onde existe uma lacuna
+              </h3>
             </div>
             <ul className="vett-evidence-list">
               {analise.keywords_faltando.map((k) => (
@@ -288,15 +350,20 @@ export function AnaliseDetalhe() {
       </div>
 
       {/* Bottom row: Antes de aplicar & Insight */}
-      <div className="row g-4 mb-4">
+      <div className="row g-3 mb-3">
         {/* Antes de aplicar */}
-        <div className="col-md-7">
+        <div className="col-md-6">
           <div className="vett-card h-100">
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <div className="vett-icon-circle" style={{ width: 28, height: 28, fontSize: 14 }}>
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <div
+                className="vett-icon-circle"
+                style={{ width: 24, height: 24, fontSize: 13 }}
+              >
                 <LuClipboardList />
               </div>
-              <h3 className="h6 fw-bold mb-0">Antes de aplicar</h3>
+              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                Antes de aplicar
+              </h3>
             </div>
             <ol className="vett-numbered-list">
               {analise.sugestoes_ajuste.map((sugestao, index) => (
@@ -310,38 +377,56 @@ export function AnaliseDetalhe() {
         </div>
 
         {/* Insight */}
-        <div className="col-md-5">
+        <div className="col-md-6">
           <div className="vett-card h-100">
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <div className="vett-icon-circle vett-icon-circle--primary" style={{ width: 28, height: 28, fontSize: 14 }}>
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <div
+                className="vett-icon-circle vett-icon-circle--primary"
+                style={{ width: 24, height: 24, fontSize: 13 }}
+              >
                 <LuLightbulb />
               </div>
-              <h3 className="h6 fw-bold mb-0">Insight</h3>
+              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                Insight
+              </h3>
             </div>
-            <p className="mb-0 text-secondary" style={{ fontSize: 14, lineHeight: 1.5 }}>
+            <p
+              className="mb-0 text-secondary"
+              style={{ fontSize: 13, lineHeight: 1.45 }}
+            >
               {analise.dica_final}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Action buttons footer */}
-      <div className="d-flex justify-content-between align-items-center pt-2">
+      {/* Action buttons footer with Voltar ao topo */}
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top mt-4 mb-4">
         <button
-          onClick={() => setConfirmandoExclusao(true)}
-          className="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3"
-          style={{ height: 44, borderRadius: 10, fontWeight: 600, fontSize: 14 }}
+          onClick={scrollToTop}
+          className="btn btn-light text-secondary d-inline-flex align-items-center gap-2"
+          style={{ height: 38, borderRadius: 8, fontSize: 13, fontWeight: 600 }}
         >
-          <LuTrash2 size={16} /> Excluir esta análise
+          <LuArrowUp size={16} /> Voltar ao topo
         </button>
 
-        <Link
-          to={`/analises/${analise.id}/reanalisar`}
-          className="btn-vett-primary text-decoration-none px-4"
-          style={{ width: "auto", height: 44 }}
-        >
-          <LuRotateCw size={16} /> Reanalisar com outro currículo
-        </Link>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            onClick={() => setConfirmandoExclusao(true)}
+            className="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3"
+            style={{ height: 38, borderRadius: 8, fontWeight: 600, fontSize: 13 }}
+          >
+            <LuTrash2 size={15} /> Excluir análise
+          </button>
+
+          <Link
+            to={`/analises/${analise.id}/reanalisar`}
+            className="btn-vett-primary text-decoration-none px-3"
+            style={{ width: "auto", height: 38, fontSize: 13 }}
+          >
+            <LuRotateCw size={15} /> Reanalisar
+          </Link>
+        </div>
       </div>
 
       {/* Confirmation Modal */}
@@ -359,16 +444,16 @@ export function AnaliseDetalhe() {
                 </div>
                 <h2 className="h5 fw-bold mb-0">Excluir análise?</h2>
               </div>
-              <p className="text-secondary mb-4" style={{ fontSize: 14 }}>
-                Tem certeza que deseja excluir esta análise para <strong>"{analise.titulo_vaga}"</strong>?
-                Esta ação não pode ser desfeita.
+              <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
+                Tem certeza que deseja excluir esta análise para{" "}
+                <strong>"{analise.titulo_vaga}"</strong>? Esta ação não pode ser desfeita.
               </p>
               <div className="d-flex justify-content-end gap-2">
                 <button
                   onClick={() => setConfirmandoExclusao(false)}
                   disabled={excluindo}
                   className="btn btn-light px-3"
-                  style={{ borderRadius: 8, fontSize: 14 }}
+                  style={{ borderRadius: 8, fontSize: 13.5 }}
                 >
                   Cancelar
                 </button>
@@ -376,7 +461,7 @@ export function AnaliseDetalhe() {
                   onClick={handleExcluir}
                   disabled={excluindo}
                   className="btn btn-danger px-4"
-                  style={{ borderRadius: 8, fontSize: 14, fontWeight: 600 }}
+                  style={{ borderRadius: 8, fontSize: 13.5, fontWeight: 600 }}
                 >
                   {excluindo ? "Excluindo..." : "Sim, excluir"}
                 </button>

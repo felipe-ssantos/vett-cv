@@ -46,19 +46,29 @@ export function AnaliseList() {
     if (!itemParaExcluir) return;
     setExcluindo(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("analises")
         .delete()
-        .eq("id", itemParaExcluir.id);
+        .eq("id", itemParaExcluir.id)
+        .select();
 
-      if (error) {
-        throw error;
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Não foi possível excluir no Supabase. Caso o RLS (Row Level Security) esteja ativado no Supabase, crie uma política (Policy) de DELETE na tabela 'analises'.",
+        );
       }
+
       setAnalises((prev) => prev.filter((a) => a.id !== itemParaExcluir.id));
       setItemParaExcluir(null);
     } catch (err) {
       console.error("Erro ao excluir análise:", err);
-      alert("Erro ao excluir análise do banco de dados.");
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Erro ao excluir análise do banco de dados.",
+      );
     } finally {
       setExcluindo(false);
     }
@@ -69,33 +79,43 @@ export function AnaliseList() {
     setExcluindo(true);
     try {
       const ids = analises.map((a) => a.id);
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("analises")
         .delete()
-        .in("id", ids);
+        .in("id", ids)
+        .select();
 
-      if (error) {
-        throw error;
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Não foi possível excluir no Supabase. Caso o RLS (Row Level Security) esteja ativado no Supabase, crie uma política (Policy) de DELETE na tabela 'analises'.",
+        );
       }
+
       setAnalises([]);
       setConfirmandoExcluirTodas(false);
     } catch (err) {
       console.error("Erro ao limpar histórico:", err);
-      alert("Erro ao excluir todo o histórico do banco de dados.");
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Erro ao excluir todo o histórico.",
+      );
     } finally {
       setExcluindo(false);
     }
   }
 
   return (
-    <div className="fade-in-up" style={{ maxWidth: 960, margin: "0 auto" }}>
+    <div className="fade-in-up" style={{ maxWidth: 920, margin: "0 auto" }}>
       {/* Header section */}
-      <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
         <div>
-          <h1 className="h4 fw-bold mb-1 d-flex align-items-center gap-2">
-            <LuClock className="text-teal" size={22} /> Histórico de Análises
+          <h1 className="h5 fw-bold mb-0 d-flex align-items-center gap-2">
+            <LuClock className="text-teal" size={20} /> Histórico de Análises
           </h1>
-          <p className="mb-0 text-secondary" style={{ fontSize: 14 }}>
+          <p className="mb-0 text-secondary" style={{ fontSize: 13 }}>
             Suas análises são privadas e vinculadas à sua sessão.
           </p>
         </div>
@@ -105,17 +125,17 @@ export function AnaliseList() {
             <button
               onClick={() => setConfirmandoExcluirTodas(true)}
               className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3"
-              style={{ height: 38, borderRadius: 8, fontSize: 13, fontWeight: 600 }}
+              style={{ height: 36, borderRadius: 8, fontSize: 13, fontWeight: 600 }}
             >
-              <LuTrash2 size={15} /> Limpar histórico
+              <LuTrash2 size={14} /> Limpar histórico
             </button>
           )}
           <Link
             to="/"
             className="btn-vett-primary px-3 text-decoration-none"
-            style={{ height: 38, borderRadius: 8, fontSize: 13 }}
+            style={{ height: 36, borderRadius: 8, fontSize: 13 }}
           >
-            <LuPlus size={16} /> Nova análise
+            <LuPlus size={15} /> Nova análise
           </Link>
         </div>
       </div>
@@ -123,7 +143,7 @@ export function AnaliseList() {
       {carregando && (
         <div className="vett-empty-state">
           <div className="spinner-border text-teal" role="status" />
-          <p className="mt-3 text-secondary" style={{ fontSize: 14 }}>
+          <p className="mt-3 text-secondary" style={{ fontSize: 13 }}>
             Carregando histórico...
           </p>
         </div>
@@ -137,22 +157,21 @@ export function AnaliseList() {
             <LuSparkles />
           </div>
           <h3 className="h6 fw-bold mb-2">Nenhuma análise salva ainda</h3>
-          <p className="text-secondary mb-4" style={{ fontSize: 14, maxWidth: 360 }}>
+          <p className="text-secondary mb-4" style={{ fontSize: 13, maxWidth: 360 }}>
             Realize sua primeira comparação de currículo com uma vaga para ver os resultados aqui.
           </p>
-          <Link to="/" className="btn-vett-primary text-decoration-none px-4" style={{ width: "auto" }}>
+          <Link to="/" className="btn-vett-primary text-decoration-none px-4" style={{ width: "auto", height: 38 }}>
             Realizar análise
           </Link>
         </div>
       )}
 
       {!carregando && analises.length > 0 && (
-        <div className="d-flex flex-column gap-3">
+        <div className="d-flex flex-column gap-2">
           {analises.map((analise) => (
             <div
               key={analise.id}
               className="vett-card d-flex align-items-center justify-content-between p-3"
-              style={{ transition: "border-color 150ms ease, box-shadow 150ms ease" }}
             >
               <Link
                 to={`/analises/${analise.id}`}
@@ -162,18 +181,18 @@ export function AnaliseList() {
                 <div className="d-flex align-items-center gap-3">
                   <div
                     className="vett-icon-circle vett-icon-circle--primary flex-shrink-0"
-                    style={{ width: 44, height: 44, fontSize: 20 }}
+                    style={{ width: 40, height: 40, fontSize: 18 }}
                   >
-                    <span className="fw-bold" style={{ fontSize: 15 }}>
+                    <span className="fw-bold" style={{ fontSize: 14 }}>
                       {analise.score_match}%
                     </span>
                   </div>
 
                   <div>
-                    <div className="fw-bold text-dark" style={{ fontSize: 16 }}>
+                    <div className="fw-bold text-dark" style={{ fontSize: 15 }}>
                       {analise.titulo_vaga}
                     </div>
-                    <div className="text-secondary" style={{ fontSize: 13 }}>
+                    <div className="text-secondary" style={{ fontSize: 12.5 }}>
                       {analise.empresa ? `${analise.empresa} · ` : ""}
                       {new Date(analise.created_at).toLocaleDateString("pt-BR", {
                         day: "2-digit",
@@ -189,7 +208,7 @@ export function AnaliseList() {
                 <Link
                   to={`/analises/${analise.id}`}
                   className="btn btn-light btn-sm text-secondary d-flex align-items-center gap-1"
-                  style={{ borderRadius: 6, fontSize: 13, padding: "6px 12px" }}
+                  style={{ borderRadius: 6, fontSize: 12.5, padding: "5px 10px" }}
                 >
                   Ver <LuChevronRight size={14} />
                 </Link>
@@ -200,7 +219,7 @@ export function AnaliseList() {
                   aria-label="Excluir esta análise"
                   style={{ borderRadius: 6 }}
                 >
-                  <LuTrash2 size={17} />
+                  <LuTrash2 size={16} />
                 </button>
               </div>
             </div>
@@ -223,7 +242,7 @@ export function AnaliseList() {
                 </div>
                 <h2 className="h5 fw-bold mb-0">Excluir análise?</h2>
               </div>
-              <p className="text-secondary mb-4" style={{ fontSize: 14 }}>
+              <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
                 Tem certeza que deseja excluir a análise para a vaga{" "}
                 <strong>"{itemParaExcluir.titulo_vaga}"</strong>? Esta ação não pode ser desfeita.
               </p>
@@ -232,7 +251,7 @@ export function AnaliseList() {
                   onClick={() => setItemParaExcluir(null)}
                   disabled={excluindo}
                   className="btn btn-light px-3"
-                  style={{ borderRadius: 8, fontSize: 14 }}
+                  style={{ borderRadius: 8, fontSize: 13.5 }}
                 >
                   Cancelar
                 </button>
@@ -240,7 +259,7 @@ export function AnaliseList() {
                   onClick={handleExcluirUma}
                   disabled={excluindo}
                   className="btn btn-danger px-4"
-                  style={{ borderRadius: 8, fontSize: 14, fontWeight: 600 }}
+                  style={{ borderRadius: 8, fontSize: 13.5, fontWeight: 600 }}
                 >
                   {excluindo ? "Excluindo..." : "Sim, excluir"}
                 </button>
@@ -265,16 +284,16 @@ export function AnaliseList() {
                 </div>
                 <h2 className="h5 fw-bold mb-0">Excluir todo o histórico?</h2>
               </div>
-              <p className="text-secondary mb-4" style={{ fontSize: 14 }}>
+              <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
                 Tem certeza que deseja apagar <strong>todas as {analises.length} análises</strong> salvas?
-                Esta ação removerá permanentemente o histórico.
+                Esta ação removerá permanentemente o histórico do banco de dados.
               </p>
               <div className="d-flex justify-content-end gap-2">
                 <button
                   onClick={() => setConfirmandoExcluirTodas(false)}
                   disabled={excluindo}
                   className="btn btn-light px-3"
-                  style={{ borderRadius: 8, fontSize: 14 }}
+                  style={{ borderRadius: 8, fontSize: 13.5 }}
                 >
                   Cancelar
                 </button>
@@ -282,7 +301,7 @@ export function AnaliseList() {
                   onClick={handleExcluirTodas}
                   disabled={excluindo}
                   className="btn btn-danger px-4"
-                  style={{ borderRadius: 8, fontSize: 14, fontWeight: 600 }}
+                  style={{ borderRadius: 8, fontSize: 13.5, fontWeight: 600 }}
                 >
                   {excluindo ? "Excluindo..." : "Excluir tudo"}
                 </button>
