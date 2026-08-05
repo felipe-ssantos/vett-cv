@@ -1,8 +1,8 @@
-# 🎯 Job Fit Analyzer
+# 🎯 Vett
 
 > Ferramenta com IA para analisar a compatibilidade entre um currículo e uma descrição de vaga.
 
-O Job Fit Analyzer ajuda candidatos a entender o quanto seu currículo está alinhado com uma vaga específica. Basta colar a descrição da vaga, adicionar o currículo (texto, PDF ou DOCX) e pedir a análise. A IA compara os dois e retorna um score de compatibilidade, palavras-chave, pontos fortes e sugestões de melhoria.
+O Vett ajuda candidatos a entender o quanto seu currículo está alinhado com uma vaga específica. Basta colar a descrição da vaga, adicionar o currículo (texto, PDF ou DOCX) e pedir a análise. A IA compara os dois e retorna um score de compatibilidade, palavras-chave, pontos fortes e sugestões de melhoria.
 
 ---
 
@@ -118,8 +118,8 @@ GEMINI_API_KEY=sua_chave_da_api_gemini
 ## 🚀 Instalação
 
 \`\`\`bash
-git clone https://github.com/felipe-ssantos/job-fit-analyzer.git
-cd job-fit-analyzer
+git clone https://github.com/felipe-ssantos/vett-cv.git
+cd vett-cv
 npm install
 cp .env.example .env
 npm run dev
