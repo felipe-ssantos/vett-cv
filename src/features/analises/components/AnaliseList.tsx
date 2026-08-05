@@ -7,6 +7,8 @@ import {
   LuTriangleAlert,
   LuChevronRight,
   LuSparkles,
+  LuSearch,
+  LuX,
 } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import type { Analise } from "../../../types";
@@ -15,6 +17,9 @@ export function AnaliseList() {
   const [analises, setAnalises] = useState<Analise[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+
+  // Estado do filtro personalizado
+  const [filtro, setFiltro] = useState("");
 
   // Estados para modal / confirmação de exclusão
   const [itemParaExcluir, setItemParaExcluir] = useState<Analise | null>(null);
@@ -107,6 +112,18 @@ export function AnaliseList() {
     }
   }
 
+  // Filtragem dinâmica por cargo, empresa, senioridade ou palavra-chave
+  const analisesFiltradas = analises.filter((a) => {
+    const termo = filtro.toLowerCase().trim();
+    if (!termo) return true;
+    return (
+      a.titulo_vaga?.toLowerCase().includes(termo) ||
+      a.empresa?.toLowerCase().includes(termo) ||
+      a.senioridade?.toLowerCase().includes(termo) ||
+      a.descricao_vaga?.toLowerCase().includes(termo)
+    );
+  });
+
   return (
     <div className="fade-in-up" style={{ maxWidth: 920, margin: "0 auto" }}>
       {/* Header section */}
@@ -140,6 +157,43 @@ export function AnaliseList() {
         </div>
       </div>
 
+      {/* Input de Filtro Personalizado */}
+      {!carregando && analises.length > 0 && (
+        <div className="mb-3">
+          <div className="position-relative">
+            <input
+              type="text"
+              className="form-control vett-textarea py-2 pe-4"
+              style={{ paddingLeft: 38, height: 40, fontSize: 13.5 }}
+              placeholder="Filtrar histórico por cargo, empresa ou palavra-chave..."
+              value={filtro}
+              onChange={(e) => setFiltro(e.target.value)}
+            />
+            <LuSearch
+              className="position-absolute top-50 translate-middle-y text-secondary"
+              style={{ left: 12 }}
+              size={16}
+            />
+            {filtro && (
+              <button
+                type="button"
+                onClick={() => setFiltro("")}
+                className="btn btn-sm text-secondary position-absolute top-50 translate-middle-y border-0 p-1"
+                style={{ right: 8 }}
+                title="Limpar filtro"
+              >
+                <LuX size={15} />
+              </button>
+            )}
+          </div>
+          {filtro && (
+            <div className="mt-1 text-secondary" style={{ fontSize: 12 }}>
+              Exibindo {analisesFiltradas.length} de {analises.length} resultados para "{filtro}".
+            </div>
+          )}
+        </div>
+      )}
+
       {carregando && (
         <div className="vett-empty-state">
           <div className="spinner-border text-teal" role="status" />
@@ -166,9 +220,24 @@ export function AnaliseList() {
         </div>
       )}
 
-      {!carregando && analises.length > 0 && (
+      {!carregando && analises.length > 0 && analisesFiltradas.length === 0 && (
+        <div className="vett-empty-state" style={{ minHeight: 220 }}>
+          <p className="text-secondary mb-2" style={{ fontSize: 14 }}>
+            Nenhuma análise encontrada para <strong>"{filtro}"</strong>.
+          </p>
+          <button
+            onClick={() => setFiltro("")}
+            className="btn btn-sm btn-light border text-secondary"
+            style={{ borderRadius: 6, fontSize: 13 }}
+          >
+            Limpar filtro
+          </button>
+        </div>
+      )}
+
+      {!carregando && analisesFiltradas.length > 0 && (
         <div className="d-flex flex-column gap-2">
-          {analises.map((analise) => (
+          {analisesFiltradas.map((analise) => (
             <div
               key={analise.id}
               className="vett-card d-flex align-items-center justify-content-between p-3"

@@ -12,6 +12,7 @@ import {
   LuClipboardList,
   LuLightbulb,
   LuSparkles,
+  LuClipboard,
 } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
@@ -107,6 +108,31 @@ export function AnaliseWorkspace() {
     const file = e.target.files?.[0] ?? null;
     setArquivo(file);
     if (file) setCurriculoTexto("");
+  }
+
+  async function handleColarDescricao() {
+    try {
+      const texto = await navigator.clipboard.readText();
+      if (texto) {
+        setDescricaoVaga(texto.slice(0, LIMITE_CARACTERES));
+      }
+    } catch (err) {
+      console.error("Falha ao colar:", err);
+      alert("Para colar, use o atalho Ctrl + V diretamente na caixa de texto.");
+    }
+  }
+
+  async function handleColarCurriculo() {
+    try {
+      const texto = await navigator.clipboard.readText();
+      if (texto) {
+        setCurriculoTexto(texto.slice(0, LIMITE_CARACTERES));
+        setArquivo(null);
+      }
+    } catch (err) {
+      console.error("Falha ao colar:", err);
+      alert("Para colar, use o atalho Ctrl + V diretamente na caixa de texto.");
+    }
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -211,9 +237,21 @@ export function AnaliseWorkspace() {
 
             <div className="vett-label-row">
               <span className="vett-field-label">Currículo</span>
-              <span className="vett-char-count">
-                {curriculoTexto.length}/{LIMITE_CARACTERES}
-              </span>
+              <div className="d-flex align-items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleColarCurriculo}
+                  disabled={!!arquivo}
+                  className="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1 py-0 px-2"
+                  style={{ fontSize: 11.5, borderRadius: 5 }}
+                  title="Colar texto do currículo"
+                >
+                  <LuClipboard size={12} /> Colar
+                </button>
+                <span className="vett-char-count">
+                  {curriculoTexto.length}/{LIMITE_CARACTERES}
+                </span>
+              </div>
             </div>
 
             <div className="vett-input-wrapper mb-2">
@@ -268,9 +306,20 @@ export function AnaliseWorkspace() {
 
             <div className="vett-label-row">
               <span className="vett-field-label">Descrição da vaga</span>
-              <span className="vett-char-count">
-                {descricaoVaga.length}/{LIMITE_CARACTERES}
-              </span>
+              <div className="d-flex align-items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleColarDescricao}
+                  className="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1 py-0 px-2"
+                  style={{ fontSize: 11.5, borderRadius: 5 }}
+                  title="Colar descrição da vaga"
+                >
+                  <LuClipboard size={12} /> Colar
+                </button>
+                <span className="vett-char-count">
+                  {descricaoVaga.length}/{LIMITE_CARACTERES}
+                </span>
+              </div>
             </div>
 
             <div className="vett-input-wrapper">

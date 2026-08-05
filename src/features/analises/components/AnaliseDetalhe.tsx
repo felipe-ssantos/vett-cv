@@ -4,6 +4,7 @@ import {
   LuArrowLeft,
   LuArrowUp,
   LuCheck,
+  LuCopy,
   LuUser,
   LuStar,
   LuWrench,
@@ -88,6 +89,7 @@ export function AnaliseDetalhe() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
+  const [copiadoDescricao, setCopiadoDescricao] = useState(false);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
 
@@ -108,6 +110,17 @@ export function AnaliseDetalhe() {
     }
     if (id) carregarAnalise();
   }, [id]);
+
+  async function handleCopiarDescricao() {
+    if (!analise?.descricao_vaga) return;
+    try {
+      await navigator.clipboard.writeText(analise.descricao_vaga);
+      setCopiadoDescricao(true);
+      setTimeout(() => setCopiadoDescricao(false), 2000);
+    } catch (err) {
+      console.error("Falha ao copiar:", err);
+    }
+  }
 
   async function handleExcluir() {
     if (!id) return;
@@ -208,20 +221,44 @@ export function AnaliseDetalhe() {
           style={{ fontSize: 12.5, color: "var(--text-secondary)" }}
         >
           <summary
+            className="d-inline-flex align-items-center gap-2"
             style={{ cursor: "pointer", color: "var(--primary)", fontWeight: 600 }}
           >
             Ver descrição completa da vaga
           </summary>
-          <p
-            className="mt-2 p-3 rounded"
+
+          <div
+            className="mt-2 p-3 rounded position-relative"
             style={{
-              whiteSpace: "pre-wrap",
               background: "var(--surface-alt)",
               border: "1px solid var(--border)",
             }}
           >
-            {analise.descricao_vaga}
-          </p>
+            <div className="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+              <span className="fw-semibold text-secondary" style={{ fontSize: 12 }}>
+                Descrição da oportunidade
+              </span>
+              <button
+                type="button"
+                onClick={handleCopiarDescricao}
+                className="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1"
+                style={{ fontSize: 12, borderRadius: 6, padding: "3px 10px" }}
+              >
+                {copiadoDescricao ? (
+                  <>
+                    <LuCheck size={13} className="text-success" /> Copiado!
+                  </>
+                ) : (
+                  <>
+                    <LuCopy size={13} /> Copiar descrição
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="mb-0" style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>
+              {analise.descricao_vaga}
+            </p>
+          </div>
         </details>
       </div>
 
