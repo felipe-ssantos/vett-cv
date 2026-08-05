@@ -31,7 +31,7 @@ Criado para demonstrar habilidades práticas de desenvolvimento web: front-end, 
 
 ## 🔄 Como Funciona
 
-\`\`\`text
+```textile
 Descrição da vaga + Currículo
             │
             ▼
@@ -47,7 +47,7 @@ Descrição da vaga + Currículo
             │
             ▼
         Supabase
-\`\`\`
+```
 
 **Colar → Analisar → Entender → Melhorar**
 
@@ -87,7 +87,7 @@ Descrição da vaga + Currículo
 
 ## 🏗️ Arquitetura
 
-\`\`\`text
+```textile
 src/
 ├── api/
 ├── components/layout/
@@ -97,7 +97,7 @@ src/
 │   └── vagas/
 ├── lib/
 └── types/
-\`\`\`
+```
 
 Organizado em torno de três domínios: **vagas** (oportunidades), **candidaturas** (currículo submetido) e **análises** (avaliação gerada por IA).
 
@@ -105,11 +105,11 @@ Organizado em torno de três domínios: **vagas** (oportunidades), **candidatura
 
 ## ⚙️ Configuração
 
-\`\`\`env
+```env
 VITE_SUPABASE_URL=sua_url_do_supabase
 VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
 GEMINI_API_KEY=sua_chave_da_api_gemini
-\`\`\`
+```
 
 ⚠️ Nunca faça commit de chaves ou segredos no repositório.
 
@@ -117,13 +117,13 @@ GEMINI_API_KEY=sua_chave_da_api_gemini
 
 ## 🚀 Instalação
 
-\`\`\`bash
+```bash
 git clone https://github.com/felipe-ssantos/vett-cv.git
 cd vett-cv
 npm install
 cp .env.example .env
 npm run dev
-\`\`\`
+```
 
 ---
 
@@ -132,14 +132,18 @@ npm run dev
 - \`main\` → versão estável/produção
 - \`develop\` → integração e testes de novas features
 
-\`\`\`bash
+```bash
 git checkout develop
 git pull origin develop
+```
+
 # implementar e testar
+
+```bash
 git add .
 git commit -m "feat: melhora fluxo de análise de currículo"
 git push origin develop
-\`\`\`
+```
 
 Segue o padrão **Conventional Commits** (\`feat\`, \`fix\`, \`refactor\`, \`style\`, \`docs\`, \`test\`, \`chore\`).
 
