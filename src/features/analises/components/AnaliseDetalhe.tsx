@@ -462,7 +462,7 @@ export function AnaliseDetalhe() {
               className="mb-0 text-secondary"
               style={{ fontSize: 13, lineHeight: 1.45 }}
             >
-              {analise.dicaFinal}
+              {analise.dica_final}
             </p>
           </div>
         </div>
