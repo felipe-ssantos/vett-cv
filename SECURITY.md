@@ -3,36 +3,23 @@
 Este é um projeto de portfólio, com código aberto e demo pública. Este
 documento registra o estado conhecido de segurança do projeto e as decisões
 tomadas conscientemente, para que qualquer pessoa que revise o repositório
-entenda o contexto por trás dos alertas abertos no GitHub.
+entenda o contexto.
 
-## Vulnerabilidades de dependências — risco aceito
+## Vulnerabilidades de dependências
 
-O `npm audit` reporta hoje 4 vulnerabilidades sem correção segura disponível.
-Todas vêm de dependências transitivas do `@vercel/node` (ferramenta de build
-da Vercel usada só durante `vercel dev` / deploy), não de código que roda em
-produção nem que processa dados enviados pelos usuários do site.
+O `npm audit` reporta **0 vulnerabilidades** no estado atual do projeto.
 
-| Pacote | Severidade | Motivo do risco aceito |
+As vulnerabilidades anteriormente conhecidas foram todas corrigidas:
+
+| Pacote | Situação anterior | Correção aplicada |
 |---|---|---|
-| `path-to-regexp` | Alta | Corrigir exige salto para a major 8.x. A própria Vercel já tentou uma atualização menor (6.1.0 → 6.3.0) internamente e reverteu por quebrar comportamento de roteamento. Sem correção segura disponível hoje. |
-| `undici` | Alta | Corrigir exigiria rebaixar `@vercel/node` para a versão `4.0.0` (downgrade grande, pior que o problema atual). |
-| `ajv` | Moderada | Mesma cadeia de dependência do `path-to-regexp`/`undici`, mesmo bloqueio. |
-| `react-router` | Alta (CSRF em modo RSC) | Corrigir exige subir de React Router 7.x para 8.x — mudança de major version com possíveis breaking changes de API (rotas, `useParams`, `useNavigate`), usada em todo o app. Requer teste de regressão completo antes de aplicar; não é seguro fazer via `npm audit fix --force` sem validação manual. |
+| `react-router` (CSRF em modo RSC) | Risco aceito na v7.x — migração para a major 8.x exigia testes de regressão | Migrado para **v8.3.0** com testes de regressão concluídos |
+| `path-to-regexp` | Risco aceito, sem correção segura na cadeia do `@vercel/node` | Corrigido via `overrides` para `6.3.0` |
+| `undici` | Risco aceito, downgrade pior que o problema | Corrigido via `overrides` para `6.28.0` |
+| `ajv` | Risco aceito, mesma cadeia de dependência | Corrigido via `overrides` para `8.20.0` |
 
-**Mitigação real:** os três primeiros itens (`path-to-regexp`, `undici`, `ajv`)
-afetam apenas o roteamento e HTTP internos das ferramentas de build da
-Vercel — não recebem texto de currículo, descrição de vaga, nem qualquer
-input de quem usa o site. O `react-router` roda no navegador do usuário, mas
-o vetor da CVE (RSC — React Server Components) não é usado neste projeto
-(o app é uma SPA client-side, sem RSC).
-
-Este documento deve ser revisado periodicamente — em especial o item do
-`react-router`, que tem um caminho de correção conhecido (upgrade para a
-major 8.x) e pode ser resolvido numa etapa dedicada de teste.
-
-Outras vulnerabilidades já foram corrigidas via `overrides` no
-`package.json` (`minimatch`, `smol-toml`, `js-yaml`), sem necessidade de
-downgrade de nenhuma dependência principal.
+Correções adicionais aplicadas via `overrides` no `package.json`:
+`minimatch`, `smol-toml` e `js-yaml`.
 
 ## Row Level Security (Supabase)
 
