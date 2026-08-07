@@ -74,9 +74,13 @@ cp .env.local.example .env.local
 
 ### Configure o banco (uma vez)
 
-No SQL Editor do Supabase (Dashboard → SQL Editor), execute o conteúdo de
-`supabase/migrations/0001_uso_analises.sql` — cria a tabela `uso_analises` e a
-função `incrementar_uso` usadas no limite diário de análises.
+No SQL Editor do Supabase (Dashboard → SQL Editor), execute **em ordem** o
+conteúdo dos arquivos de `supabase/migrations/`:
+
+1. `0001_uso_analises.sql` — tabela `uso_analises` + função `incrementar_uso`
+   (limite diário de análises);
+2. `0002_analises.sql` — tabela `analises` + políticas de RLS por sessão
+   (cada navegador enxerga apenas o próprio histórico).
 
 ### Variáveis de ambiente
 
