@@ -10,10 +10,12 @@ import {
 } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
-import type { Analise, AnaliseMatchIA } from "../../../types";
+import { enviarAnalise } from "../../../lib/analisarApi";
+import type { Analise } from "../../../types";
 
-const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024; // 5 MB
-const ROTULO_TAMANHO_MAXIMO = "5 MB";
+// Mantido abaixo do limite de ~4.5 MB de body das funções do Vercel.
+const TAMANHO_MAXIMO_ARQUIVO = 4 * 1024 * 1024; // 4 MB
+const ROTULO_TAMANHO_MAXIMO = "4 MB";
 
 export function ReanalisarForm() {
   const { id } = useParams();
@@ -97,20 +99,8 @@ export function ReanalisarForm() {
         formData.append("curriculoTexto", curriculoTexto);
       }
 
-      const resposta = await fetch("/api/analisar", {
-        method: "POST",
-        body: formData,
-      });
-      if (!resposta.ok) {
-        const corpo = await resposta.json().catch(() => null);
-        throw new Error(corpo?.erro ?? "Falha na análise");
-      }
-
-      const {
-        curriculoTexto: textoExtraido,
-        analise,
-      }: { curriculoTexto: string; analise: AnaliseMatchIA } =
-        await resposta.json();
+      const { curriculoTexto: textoExtraido, analise } =
+        await enviarAnalise(formData);
 
       const { data: novaAnalise, error: erroAnalise } = await supabase
         .from("analises")

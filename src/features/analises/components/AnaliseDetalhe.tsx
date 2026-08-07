@@ -19,6 +19,7 @@ import {
   LuChevronDown,
 } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
+import { escreverTextoNaAreaDeTransferencia } from "../../../lib/areaTransferencia";
 import type { Analise } from "../../../types";
 
 function classificarScore(score: number): string {
@@ -116,13 +117,9 @@ export function AnaliseDetalhe() {
 
   async function handleCopiarDescricao() {
     if (!analise?.descricao_vaga) return;
-    try {
-      await navigator.clipboard.writeText(analise.descricao_vaga);
-      setCopiadoDescricao(true);
-      setTimeout(() => setCopiadoDescricao(false), 2000);
-    } catch (err) {
-      console.error("Falha ao copiar:", err);
-    }
+    await escreverTextoNaAreaDeTransferencia(analise.descricao_vaga);
+    setCopiadoDescricao(true);
+    setTimeout(() => setCopiadoDescricao(false), 2000);
   }
 
   async function handleExcluir() {

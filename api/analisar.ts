@@ -2,13 +2,37 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import formidable from "formidable";
 import fs from "fs/promises";
 import mammoth from "mammoth";
-import pdfParse from "pdf-parse";
+// Importamos do subpath interno (lib/pdf-parse.js) para evitar o bloco de
+// debug do entrypoint principal, que lê um PDF de teste inexistente e derruba
+// a função com ENOENT em cold starts de serverless.
+import pdfParse from "pdf-parse/lib/pdf-parse.js";
 
 export const config = {
+  maxDuration: 60,
   api: { bodyParser: false },
 };
 
-const LIMITE_TAMANHO_ARQUIVO_BYTES = 5 * 1024 * 1024; // 5 MB
+// O Vercel rejeita corpos acima de ~4.5 MB (HTTP 413) antes mesmo de a função
+// executar. O limite do app fica abaixo disso para a falha vir com mensagem
+// clara, tanto no cliente quanto no servidor.
+const LIMITE_TAMANHO_ARQUIVO_BYTES = 4 * 1024 * 1024; // 4 MB
+
+const EXTENSOES_POR_MIMETYPE: Record<string, string> = {
+  "application/pdf": "pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    "docx",
+};
+
+// Navegadores com foco em privacidade (ex.: Firefox) podem codificar o nome do
+// arquivo de formas diferentes no multipart; por isso não dependemos só dele.
+function extrairExtensao(
+  nomeArquivo: string | undefined,
+  mimetype: string | undefined,
+): string {
+  const ext = nomeArquivo?.split(".").pop()?.toLowerCase() ?? "";
+  if (ext === "pdf" || ext === "doc" || ext === "docx") return ext;
+  return EXTENSOES_POR_MIMETYPE[mimetype ?? ""] ?? "";
+}
 
 interface MatchPorCategoria {
   skills_tecnicas: number;
@@ -38,9 +62,10 @@ interface VagaExtraidaIA {
 
 async function extrairTextoDoArquivo(
   filepath: string,
-  filename: string,
+  nomeArquivo: string | undefined,
+  mimetype: string | undefined,
 ): Promise<string> {
-  const ext = filename.split(".").pop()?.toLowerCase();
+  const ext = extrairExtensao(nomeArquivo, mimetype);
 
   if (ext === "pdf") {
     const buffer = await fs.readFile(filepath);
@@ -48,10 +73,18 @@ async function extrairTextoDoArquivo(
     return resultado.text;
   }
 
-  if (ext === "docx" || ext === "doc") {
+  if (ext === "docx") {
     const buffer = await fs.readFile(filepath);
     const resultado = await mammoth.extractRawText({ buffer });
     return resultado.value;
+  }
+
+  if (ext === "doc") {
+    // O mammoth só extrai texto de DOCX; .doc legado (binário) falharia com
+    // erro genérico 500. Preferimos uma mensagem clara para o usuário.
+    throw new Error(
+      "Arquivos .doc antigos não são suportados. Envie o currículo em PDF ou DOCX.",
+    );
   }
 
   throw new Error("Formato de arquivo não suportado. Envie PDF ou DOCX.");
@@ -274,7 +307,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (arquivo && arquivo.size > LIMITE_TAMANHO_ARQUIVO_BYTES) {
       return res.status(400).json({
-        erro: "O arquivo excede o limite de 5 MB. Envie um arquivo menor.",
+        erro: "O arquivo excede o limite de 4 MB. Envie um arquivo menor.",
       });
     }
 
@@ -282,7 +315,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (arquivo) {
       curriculoTexto = await extrairTextoDoArquivo(
         arquivo.filepath,
-        arquivo.originalFilename ?? "",
+        arquivo.originalFilename ?? undefined,
+        arquivo.mimetype ?? undefined,
       );
     }
 

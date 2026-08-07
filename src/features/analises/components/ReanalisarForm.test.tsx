@@ -24,7 +24,7 @@ beforeEach(() => {
   });
 });
 
-const TAMANHO_MAXIMO = 5 * 1024 * 1024; // 5 MB
+const TAMANHO_MAXIMO = 4 * 1024 * 1024; // 4 MB
 
 function criarArquivoPdf() {
   return new File(["conteúdo do currículo"], "curriculo.pdf", {
@@ -103,7 +103,7 @@ describe("ReanalisarForm — remoção do arquivo", () => {
 });
 
 describe("ReanalisarForm — validação de tamanho do arquivo", () => {
-  it("rejeita arquivo acima de 5 MB com mensagem de erro", async () => {
+  it("rejeita arquivo acima de 4 MB com mensagem de erro", async () => {
     renderizarFormulario();
     const input = await screen.findByLabelText(
       "Envie o arquivo do currículo",
@@ -115,13 +115,13 @@ describe("ReanalisarForm — validação de tamanho do arquivo", () => {
 
     expect(
       screen.getByText(
-        "O arquivo excede o limite de 5 MB. Envie um arquivo menor.",
+        "O arquivo excede o limite de 4 MB. Envie um arquivo menor.",
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Selecionado:/)).not.toBeInTheDocument();
   });
 
-  it("aceita arquivo exatamente no limite de 5 MB", async () => {
+  it("aceita arquivo exatamente no limite de 4 MB", async () => {
     renderizarFormulario();
     const input = await screen.findByLabelText(
       "Envie o arquivo do currículo",

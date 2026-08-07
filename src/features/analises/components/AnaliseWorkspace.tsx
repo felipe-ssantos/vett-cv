@@ -19,11 +19,15 @@ import {
 } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
-import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
+import { enviarAnalise } from "../../../lib/analisarApi";
+import { lerTextoDaAreaDeTransferencia } from "../../../lib/areaTransferencia";
+import type { AnaliseMatchIA } from "../../../types";
 
 const LIMITE_CARACTERES = 5000;
-const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024; // 5 MB
-const ROTULO_TAMANHO_MAXIMO = "5 MB";
+// Mantido abaixo do limite de ~4.5 MB de body das funções do Vercel, para a
+// falha vir com mensagem clara em vez de 413 HTML.
+const TAMANHO_MAXIMO_ARQUIVO = 4 * 1024 * 1024; // 4 MB
+const ROTULO_TAMANHO_MAXIMO = "4 MB";
 
 const ETAPAS_ANALISE = [
   "Lendo seu currículo...",
@@ -97,6 +101,7 @@ export function AnaliseWorkspace() {
   const [analisando, setAnalisando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [erroArquivo, setErroArquivo] = useState<string | null>(null);
+  const [avisoSalvamento, setAvisoSalvamento] = useState<string | null>(null);
 
   const [analise, setAnalise] = useState<AnaliseMatchIA | null>(null);
   const [tempoAnalise, setTempoAnalise] = useState<number | null>(null);
@@ -138,26 +143,26 @@ export function AnaliseWorkspace() {
 
   async function handleColarDescricao() {
     try {
-      const texto = await navigator.clipboard.readText();
+      const texto = await lerTextoDaAreaDeTransferencia();
       if (texto) {
         setDescricaoVaga(texto.slice(0, LIMITE_CARACTERES));
       }
     } catch (err) {
       console.error("Falha ao colar:", err);
-      alert("Para colar, use o atalho Ctrl + V diretamente na caixa de texto.");
+      alert(err instanceof Error ? err.message : "Não foi possível colar.");
     }
   }
 
   async function handleColarCurriculo() {
     try {
-      const texto = await navigator.clipboard.readText();
+      const texto = await lerTextoDaAreaDeTransferencia();
       if (texto) {
         setCurriculoTexto(texto.slice(0, LIMITE_CARACTERES));
         setArquivo(null);
       }
     } catch (err) {
       console.error("Falha ao colar:", err);
-      alert("Para colar, use o atalho Ctrl + V diretamente na caixa de texto.");
+      alert(err instanceof Error ? err.message : "Não foi possível colar.");
     }
   }
 
@@ -175,6 +180,7 @@ export function AnaliseWorkspace() {
 
     setAnalisando(true);
     setErro(null);
+    setAvisoSalvamento(null);
     setEtapaAtual(0);
     const inicio = performance.now();
 
@@ -187,28 +193,15 @@ export function AnaliseWorkspace() {
         formData.append("curriculoTexto", curriculoTexto);
       }
 
-      const resposta = await fetch("/api/analisar", {
-        method: "POST",
-        body: formData,
-      });
-      if (!resposta.ok) {
-        const corpo = await resposta.json().catch(() => null);
-        throw new Error(corpo?.erro ?? "Falha na análise");
+      const dados = await enviarAnalise(formData);
+      const vagaExtraida = dados.vaga;
+      if (!vagaExtraida) {
+        throw new Error(
+          "A resposta da análise veio incompleta. Tente novamente.",
+        );
       }
 
-      const {
-        curriculoTexto: textoExtraido,
-        descricaoVaga: descricaoOriginal,
-        vaga: vagaExtraida,
-        analise: analiseResultado,
-      }: {
-        curriculoTexto: string;
-        descricaoVaga: string;
-        vaga: VagaExtraidaIA;
-        analise: AnaliseMatchIA;
-      } = await resposta.json();
-
-      setAnalise(analiseResultado);
+      setAnalise(dados.analise);
       setTempoAnalise((performance.now() - inicio) / 1000);
 
       supabase
@@ -216,22 +209,27 @@ export function AnaliseWorkspace() {
         .insert({
           titulo_vaga: vagaExtraida.titulo,
           empresa: vagaExtraida.empresa,
-          descricao_vaga: descricaoOriginal,
+          descricao_vaga: descricaoVaga,
           hard_skills: vagaExtraida.hardSkills,
           soft_skills: vagaExtraida.softSkills,
           senioridade: vagaExtraida.senioridade,
-          curriculo_texto: textoExtraido,
-          score_match: analiseResultado.scoreMatch,
-          match_por_categoria: analiseResultado.matchPorCategoria,
-          keywords_presentes: analiseResultado.keywordsPresentes,
-          keywords_faltando: analiseResultado.keywordsFaltando,
-          pontos_fortes: analiseResultado.pontosFortes,
-          sugestoes_ajuste: analiseResultado.sugestoesAjuste,
-          resumo_ia: analiseResultado.resumoIA,
-          dica_final: analiseResultado.dicaFinal,
+          curriculo_texto: dados.curriculoTexto,
+          score_match: dados.analise.scoreMatch,
+          match_por_categoria: dados.analise.matchPorCategoria,
+          keywords_presentes: dados.analise.keywordsPresentes,
+          keywords_faltando: dados.analise.keywordsFaltando,
+          pontos_fortes: dados.analise.pontosFortes,
+          sugestoes_ajuste: dados.analise.sugestoesAjuste,
+          resumo_ia: dados.analise.resumoIA,
+          dica_final: dados.analise.dicaFinal,
         })
         .then(({ error }) => {
-          if (error) console.error("Falha ao salvar no histórico:", error);
+          if (error) {
+            console.error("Falha ao salvar no histórico:", error);
+            setAvisoSalvamento(
+              "A análise foi gerada, mas não foi possível salvá-la no histórico. Verifique bloqueios de privacidade/anti-rastreamento do navegador e tente novamente.",
+            );
+          }
         });
     } catch (err) {
       setErro(
@@ -485,6 +483,16 @@ export function AnaliseWorkspace() {
             </span>
           )}
         </div>
+
+        {avisoSalvamento && (
+          <div
+            className="alert alert-warning py-2 mb-3"
+            role="status"
+            style={{ fontSize: 12.5 }}
+          >
+            {avisoSalvamento}
+          </div>
+        )}
 
         {analisando ? (
           <div className="vett-empty-state" aria-live="polite">

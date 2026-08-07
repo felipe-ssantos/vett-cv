@@ -7,7 +7,7 @@ vi.mock("../../../lib/supabaseClient", () => ({
   supabase: {},
 }));
 
-const TAMANHO_MAXIMO = 5 * 1024 * 1024; // 5 MB
+const TAMANHO_MAXIMO = 4 * 1024 * 1024; // 4 MB
 
 function criarArquivoPdf() {
   return new File(["conteúdo do currículo"], "curriculo.pdf", {
@@ -81,7 +81,7 @@ describe("AnaliseWorkspace — remoção do arquivo", () => {
 });
 
 describe("AnaliseWorkspace — validação de tamanho do arquivo", () => {
-  it("rejeita arquivo acima de 5 MB com mensagem de erro", () => {
+  it("rejeita arquivo acima de 4 MB com mensagem de erro", () => {
     renderizarWorkspace();
     const input = screen.getByLabelText("Ou envie o arquivo do currículo");
 
@@ -91,13 +91,13 @@ describe("AnaliseWorkspace — validação de tamanho do arquivo", () => {
 
     expect(
       screen.getByText(
-        "O arquivo excede o limite de 5 MB. Envie um arquivo menor.",
+        "O arquivo excede o limite de 4 MB. Envie um arquivo menor.",
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Selecionado:/)).not.toBeInTheDocument();
   });
 
-  it("aceita arquivo exatamente no limite de 5 MB", () => {
+  it("aceita arquivo exatamente no limite de 4 MB", () => {
     renderizarWorkspace();
     const input = screen.getByLabelText("Ou envie o arquivo do currículo");
 

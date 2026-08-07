@@ -9,7 +9,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 ## ✨ Funcionalidades
 
 - **Análise com IA** — score de match geral e por categoria (skills técnicas, ferramentas, experiência e soft skills)
-- **Upload de currículo** — PDF, DOC ou DOCX (até 5 MB), com extração automática do texto
+- **Upload de currículo** — PDF, DOC ou DOCX (até 4 MB), com extração automática do texto
 - **Ou cola o texto** — alternativa para quem prefere colar o currículo diretamente
 - **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
 - **Histórico privado** — análises salvas no Supabase e isoladas por sessão anônima
@@ -99,7 +99,7 @@ npm run test:watch # Modo watch — reexecuta a cada mudança
 **Cobertura:**
 
 - Acessibilidade (`*.a11y.test.tsx`) com as regras do `axe`
-- Unitários dos formulários de análise: upload de arquivo, atalho Esc, foco automático e limite de 5 MB
+- Unitários dos formulários de análise: upload de arquivo, atalho Esc, foco automático e limite de 4 MB
 - O build de produção (`npm run build`) também valida o TypeScript via `tsc -b`
 
 Os testes ficam colocalizados ao lado dos componentes e não entram no bundle de produção.
