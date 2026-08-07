@@ -45,7 +45,7 @@ describe("ReanalisarForm (acessibilidade)", () => {
       await screen.findByLabelText("Cole o novo texto do currículo"),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Envie o arquivo (PDF ou DOCX)"),
+      screen.getByLabelText("Envie o arquivo do currículo"),
     ).toBeInTheDocument();
 
     const results = await axe(container);

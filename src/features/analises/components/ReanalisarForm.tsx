@@ -1,8 +1,19 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { LuArrowLeft, LuArrowRight, LuUser, LuCheck } from "react-icons/lu";
+import {
+  LuArrowLeft,
+  LuArrowRight,
+  LuUser,
+  LuCheck,
+  LuFileText,
+  LuX,
+} from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
+import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
 import type { Analise, AnaliseMatchIA } from "../../../types";
+
+const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024; // 5 MB
+const ROTULO_TAMANHO_MAXIMO = "5 MB";
 
 export function ReanalisarForm() {
   const { id } = useParams();
@@ -13,6 +24,8 @@ export function ReanalisarForm() {
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [analisando, setAnalisando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroArquivo, setErroArquivo] = useState<string | null>(null);
+  const arquivoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function carregarAnaliseBase() {
@@ -32,8 +45,26 @@ export function ReanalisarForm() {
 
   function handleArquivoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
+    if (file && file.size > TAMANHO_MAXIMO_ARQUIVO) {
+      setErroArquivo(
+        `O arquivo excede o limite de ${ROTULO_TAMANHO_MAXIMO}. Envie um arquivo menor.`,
+      );
+      setArquivo(null);
+      e.target.value = "";
+      return;
+    }
+    setErroArquivo(null);
     setArquivo(file);
     if (file) setCurriculoTexto("");
+  }
+
+  function handleRemoverArquivo() {
+    setArquivo(null);
+    setErroArquivo(null);
+    if (arquivoInputRef.current) {
+      arquivoInputRef.current.value = "";
+      arquivoInputRef.current.focus();
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -179,17 +210,69 @@ export function ReanalisarForm() {
               className="vett-field-label mb-2"
               htmlFor="reanalisar-arquivo"
             >
-              Envie o arquivo (PDF ou DOCX)
+              Envie o arquivo do currículo
             </label>
             <input
               id="reanalisar-arquivo"
+              ref={arquivoInputRef}
               type="file"
               accept=".pdf,.doc,.docx"
               onChange={handleArquivoChange}
+              onKeyDown={(e) => {
+                if (e.key === "Escape" && arquivo) {
+                  e.preventDefault();
+                  handleRemoverArquivo();
+                }
+              }}
               className="form-control"
+              aria-describedby="reanalisar-arquivo-desc"
             />
+            <div
+              id="reanalisar-arquivo-desc"
+              className="form-text"
+              style={{ fontSize: 11.5 }}
+            >
+              Formatos aceitos: <strong>PDF, DOC ou DOCX</strong> (máx.{" "}
+              {ROTULO_TAMANHO_MAXIMO}) — o texto do currículo será extraído
+              automaticamente.
+            </div>
+            {erroArquivo && (
+              <div
+                className="form-text text-danger"
+                style={{ fontSize: 11.5 }}
+                role="alert"
+              >
+                {erroArquivo}
+              </div>
+            )}
             {arquivo && (
-              <div className="form-text mt-1">Selecionado: {arquivo.name}</div>
+              <div
+                className="d-flex align-items-center justify-content-between gap-2 mt-1"
+                role="status"
+              >
+                <div
+                  className="form-text mb-0 text-truncate"
+                  style={{ fontSize: 11.5, minWidth: 0 }}
+                >
+                  <LuFileText
+                    size={12}
+                    className="me-1"
+                    aria-hidden="true"
+                  />
+                  Selecionado: {arquivo.name} (
+                  {formatarTamanhoArquivo(arquivo.size)})
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoverArquivo}
+                  className="btn btn-sm btn-outline-secondary border-0 p-0 text-danger d-inline-flex align-items-center gap-1"
+                  style={{ fontSize: 11, flexShrink: 0 }}
+                  title="Remover arquivo selecionado"
+                  aria-label="Remover arquivo selecionado"
+                >
+                  <LuX size={13} aria-hidden="true" /> Remover
+                </button>
+              </div>
             )}
           </div>
 

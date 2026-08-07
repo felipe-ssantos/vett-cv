@@ -8,6 +8,8 @@ export const config = {
   api: { bodyParser: false },
 };
 
+const LIMITE_TAMANHO_ARQUIVO_BYTES = 5 * 1024 * 1024; // 5 MB
+
 interface MatchPorCategoria {
   skills_tecnicas: number;
   ferramentas: number;
@@ -269,6 +271,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const vagaExistenteJson = fields.vagaExistente?.[0];
     const curriculoTextoColado = fields.curriculoTexto?.[0];
     const arquivo = files.arquivo?.[0];
+
+    if (arquivo && arquivo.size > LIMITE_TAMANHO_ARQUIVO_BYTES) {
+      return res.status(400).json({
+        erro: "O arquivo excede o limite de 5 MB. Envie um arquivo menor.",
+      });
+    }
 
     let curriculoTexto = curriculoTextoColado ?? "";
     if (arquivo) {

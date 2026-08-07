@@ -37,3 +37,6 @@ lerna-debug.log*
 .env.local
 .vercel
 .env*
+
+# Freebuff (tooling local)
+.freebuff/

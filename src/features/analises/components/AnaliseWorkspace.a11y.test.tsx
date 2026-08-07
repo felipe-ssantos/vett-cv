@@ -22,7 +22,7 @@ describe("AnaliseWorkspace (acessibilidade)", () => {
     expect(screen.getByLabelText("Currículo")).toBeInTheDocument();
     expect(screen.getByLabelText("Descrição da vaga")).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Enviar arquivo do currículo em PDF, DOC ou DOCX"),
+      screen.getByLabelText("Ou envie o arquivo do currículo"),
     ).toBeInTheDocument();
 
     const results = await axe(container);
