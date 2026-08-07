@@ -27,8 +27,8 @@ import statusStyles from "../../../styles/ui/Status.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
 import reportStyles from "../../../styles/ui/Report.module.css";
 import pageStyles from "../../../styles/ui/Page.module.css";
-import modalStyles from "../../../styles/ui/Modal.module.css";
 import styles from "./AnaliseDetalhe.module.css";
+import { ConfirmModal } from "./ConfirmModal";
 import type { Analise } from "../../../types";
 
 function classificarScore(score: number): string {
@@ -488,56 +488,21 @@ export function AnaliseDetalhe() {
 
       {/* Confirmation Modal */}
       {confirmandoExclusao && (
-        <div
-          className={`modal fade show d-block ${modalStyles.backdrop}`}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-detalhe-excluir-titulo"
-          aria-describedby="modal-detalhe-excluir-desc"
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className={`modal-content ${cardStyles.card} border-0 p-4`}>
-              <div className="d-flex align-items-center gap-3 mb-3">
-                <div
-                  className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}
-                >
-                  <LuTriangleAlert aria-hidden="true" />
-                </div>
-                <h2
-                  className="h5 fw-bold mb-0"
-                  id="modal-detalhe-excluir-titulo"
-                >
-                  Excluir análise?
-                </h2>
-              </div>
-              <p
-                className={`text-secondary mb-4 ${modalStyles.modalText}`}
-                id="modal-detalhe-excluir-desc"
-              >
-                Tem certeza que deseja excluir esta análise para{" "}
-                <strong>"{analise.titulo_vaga}"</strong>? Esta ação não pode ser desfeita.
-              </p>
-              <div className="d-flex justify-content-end gap-2">
-                <button
-                  onClick={() => setConfirmandoExclusao(false)}
-                  disabled={excluindo}
-                  autoFocus
-                  className={`btn btn-light px-3 ${modalStyles.modalButtonLight}`}
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleExcluir}
-                  disabled={excluindo}
-                  className={`btn btn-danger px-4 ${modalStyles.modalButtonDanger}`}
-                >
-                  {excluindo ? "Excluindo..." : "Sim, excluir"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          titulo="Excluir análise?"
+          descricao={
+            <>
+              Tem certeza que deseja excluir esta análise para{" "}
+              <strong>"{analise.titulo_vaga}"</strong>? Esta ação não pode ser
+              desfeita.
+            </>
+          }
+          rotuloConfirmar="Sim, excluir"
+          rotuloEmProcessamento="Excluindo..."
+          processando={excluindo}
+          aoCancelar={() => setConfirmandoExclusao(false)}
+          aoConfirmar={handleExcluir}
+        />
       )}
     </div>
   );

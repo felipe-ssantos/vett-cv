@@ -6,7 +6,6 @@ import {
   LuSearch,
   LuSparkles,
   LuTrash2,
-  LuTriangleAlert,
   LuX,
 } from "react-icons/lu";
 import { Link } from "react-router";
@@ -17,8 +16,8 @@ import formStyles from "../../../styles/ui/Form.module.css";
 import emptyStyles from "../../../styles/ui/EmptyState.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
 import pageStyles from "../../../styles/ui/Page.module.css";
-import modalStyles from "../../../styles/ui/Modal.module.css";
 import styles from "./AnaliseList.module.css";
+import { ConfirmModal } from "./ConfirmModal";
 import type { Analise } from "../../../types";
 
 export function AnaliseList() {
@@ -327,106 +326,40 @@ export function AnaliseList() {
 
       {/* Modal / Diálogo de Confirmação para Excluir UMA */}
       {itemParaExcluir && (
-        <div
-          className={`modal fade show d-block ${modalStyles.backdrop}`}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-excluir-titulo"
-          aria-describedby="modal-excluir-desc"
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className={`modal-content ${cardStyles.card} border-0 p-4`}>
-              <div className="d-flex align-items-center gap-3 mb-3">
-                <div className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}>
-                  <LuTriangleAlert aria-hidden="true" />
-                </div>
-                <h2 className="h5 fw-bold mb-0" id="modal-excluir-titulo">
-                  Excluir análise?
-                </h2>
-              </div>
-              <p
-                className={`text-secondary mb-4 ${modalStyles.modalText}`}
-                id="modal-excluir-desc"
-              >
-                Tem certeza que deseja excluir a análise para a vaga{" "}
-                <strong>"{itemParaExcluir.titulo_vaga}"</strong>? Esta ação não
-                pode ser desfeita.
-              </p>
-              <div className="d-flex justify-content-end gap-2">
-                <button
-                  onClick={() => setItemParaExcluir(null)}
-                  disabled={excluindo}
-                  autoFocus
-                  className={`btn btn-light px-3 ${modalStyles.modalButtonLight}`}
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleExcluirUma}
-                  disabled={excluindo}
-                  className={`btn btn-danger px-4 ${modalStyles.modalButtonDanger}`}
-                >
-                  {excluindo ? "Excluindo..." : "Sim, excluir"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          titulo="Excluir análise?"
+          descricao={
+            <>
+              Tem certeza que deseja excluir a análise para a vaga{" "}
+              <strong>"{itemParaExcluir.titulo_vaga}"</strong>? Esta ação não
+              pode ser desfeita.
+            </>
+          }
+          rotuloConfirmar="Sim, excluir"
+          rotuloEmProcessamento="Excluindo..."
+          processando={excluindo}
+          aoCancelar={() => setItemParaExcluir(null)}
+          aoConfirmar={handleExcluirUma}
+        />
       )}
 
       {/* Modal / Diálogo de Confirmação para Excluir TODAS */}
       {confirmandoExcluirTodas && (
-        <div
-          className={`modal fade show d-block ${modalStyles.backdrop}`}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-excluir-todas-titulo"
-          aria-describedby="modal-excluir-todas-desc"
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className={`modal-content ${cardStyles.card} border-0 p-4`}>
-              <div className="d-flex align-items-center gap-3 mb-3">
-                <div className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}>
-                  <LuTriangleAlert aria-hidden="true" />
-                </div>
-                <h2
-                  className="h5 fw-bold mb-0"
-                  id="modal-excluir-todas-titulo"
-                >
-                  Excluir todo o histórico?
-                </h2>
-              </div>
-              <p
-                className={`text-secondary mb-4 ${modalStyles.modalText}`}
-                id="modal-excluir-todas-desc"
-              >
-                Tem certeza que deseja apagar{" "}
-                <strong>todas as {analises.length} análises</strong> salvas?
-                Esta ação removerá permanentemente o histórico do banco de
-                dados.
-              </p>
-              <div className="d-flex justify-content-end gap-2">
-                <button
-                  onClick={() => setConfirmandoExcluirTodas(false)}
-                  disabled={excluindo}
-                  autoFocus
-                  className={`btn btn-light px-3 ${modalStyles.modalButtonLight}`}
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleExcluirTodas}
-                  disabled={excluindo}
-                  className={`btn btn-danger px-4 ${modalStyles.modalButtonDanger}`}
-                >
-                  {excluindo ? "Excluindo..." : "Excluir tudo"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          titulo="Excluir todo o histórico?"
+          descricao={
+            <>
+              Tem certeza que deseja apagar{" "}
+              <strong>todas as {analises.length} análises</strong> salvas? Esta
+              ação removerá permanentemente o histórico do banco de dados.
+            </>
+          }
+          rotuloConfirmar="Excluir tudo"
+          rotuloEmProcessamento="Excluindo..."
+          processando={excluindo}
+          aoCancelar={() => setConfirmandoExcluirTodas(false)}
+          aoConfirmar={handleExcluirTodas}
+        />
       )}
     </div>
   );
