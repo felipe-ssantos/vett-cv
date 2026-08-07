@@ -24,8 +24,16 @@ beforeEach(() => {
   });
 });
 
+const TAMANHO_MAXIMO = 5 * 1024 * 1024; // 5 MB
+
 function criarArquivoPdf() {
   return new File(["conteúdo do currículo"], "curriculo.pdf", {
+    type: "application/pdf",
+  });
+}
+
+function criarArquivoDeTamanho(bytes: number) {
+  return new File(["x".repeat(bytes)], "arquivo.pdf", {
     type: "application/pdf",
   });
 }
@@ -88,6 +96,65 @@ describe("ReanalisarForm — remoção do arquivo", () => {
 
     fireEvent.keyDown(input, { key: "Enter" });
 
+    expect(
+      screen.getByText(/Selecionado: curriculo\.pdf/),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("ReanalisarForm — validação de tamanho do arquivo", () => {
+  it("rejeita arquivo acima de 5 MB com mensagem de erro", async () => {
+    renderizarFormulario();
+    const input = await screen.findByLabelText(
+      "Envie o arquivo do currículo",
+    );
+
+    fireEvent.change(input, {
+      target: { files: [criarArquivoDeTamanho(TAMANHO_MAXIMO + 1)] },
+    });
+
+    expect(
+      screen.getByText(
+        "O arquivo excede o limite de 5 MB. Envie um arquivo menor.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Selecionado:/)).not.toBeInTheDocument();
+  });
+
+  it("aceita arquivo exatamente no limite de 5 MB", async () => {
+    renderizarFormulario();
+    const input = await screen.findByLabelText(
+      "Envie o arquivo do currículo",
+    );
+
+    fireEvent.change(input, {
+      target: { files: [criarArquivoDeTamanho(TAMANHO_MAXIMO)] },
+    });
+
+    expect(screen.getByText(/Selecionado: arquivo\.pdf/)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/O arquivo excede o limite/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("limpa a mensagem de erro ao escolher um arquivo válido depois", async () => {
+    renderizarFormulario();
+    const input = await screen.findByLabelText(
+      "Envie o arquivo do currículo",
+    );
+
+    fireEvent.change(input, {
+      target: { files: [criarArquivoDeTamanho(TAMANHO_MAXIMO + 1)] },
+    });
+    expect(
+      screen.getByText(/O arquivo excede o limite/),
+    ).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { files: [criarArquivoPdf()] } });
+
+    expect(
+      screen.queryByText(/O arquivo excede o limite/),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByText(/Selecionado: curriculo\.pdf/),
     ).toBeInTheDocument();
