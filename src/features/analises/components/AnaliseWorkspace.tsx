@@ -306,7 +306,7 @@ export function AnaliseWorkspace() {
 
           <div className={`text-center mt-2 ${workspaceStyles.privacyNote}`}>
             <LuLock size={12} className="me-1" />
-            Suas análises ficam salvas somente neste navegador.
+            Suas análises são privadas e vinculadas à sua sessão.
           </div>
 
           {erro && <div className="alert alert-danger mt-2 mb-0">{erro}</div>}
