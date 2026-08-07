@@ -30,7 +30,6 @@ vi.mock("../../../lib/analisarApi", () => ({
 }));
 
 const respostaMock = {
-  curriculoTexto: "Currículo extraído",
   vaga: {
     titulo: "Analista de Dados",
     empresa: "Tech Corp",
@@ -137,6 +136,8 @@ describe("useAnaliseCurriculo", () => {
     expect(registro.titulo_vaga).toBe("Analista de Dados");
     expect(registro.score_match).toBe(85);
     expect(registro.descricao_vaga).toBe("Vaga de analista");
+    // Guarda de PII: o texto integral do currículo não deve ser persistido.
+    expect(registro.curriculo_texto).toBeUndefined();
   });
 
   it("digitar no campo de currículo descarta o arquivo selecionado", () => {

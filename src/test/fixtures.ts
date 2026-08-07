@@ -8,7 +8,6 @@ export const analiseFixture: Analise = {
   hard_skills: ["SQL", "Python"],
   soft_skills: ["Comunicação"],
   senioridade: "Sênior",
-  curriculo_texto: "Perfil com experiência em SQL e Python.",
   score_match: 75,
   match_por_categoria: {
     skills_tecnicas: 80,

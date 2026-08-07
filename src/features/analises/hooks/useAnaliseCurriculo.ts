@@ -178,7 +178,6 @@ export function useAnaliseCurriculo(): UseAnaliseCurriculoReturn {
         hard_skills: vaga.hardSkills,
         soft_skills: vaga.softSkills,
         senioridade: vaga.senioridade,
-        curriculo_texto: dados.curriculoTexto,
         score_match: dados.analise.scoreMatch,
         match_por_categoria: dados.analise.matchPorCategoria,
         keywords_presentes: dados.analise.keywordsPresentes,

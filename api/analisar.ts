@@ -474,7 +474,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const analise = validarAnaliseIA(respostaJson);
-      return res.status(200).json({ curriculoTexto, analise });
+      return res.status(200).json({ analise });
     }
 
     if (!descricaoVaga?.trim()) {
@@ -497,7 +497,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res
       .status(200)
-      .json({ curriculoTexto, descricaoVaga, vaga, analise });
+      .json({ descricaoVaga, vaga, analise });
   } catch (erro) {
     console.error(erro);
     if (erro instanceof ErroDeArquivo) {

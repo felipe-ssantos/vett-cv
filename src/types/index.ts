@@ -13,7 +13,6 @@ export interface Analise {
   hard_skills: string[];
   soft_skills: string[];
   senioridade?: string;
-  curriculo_texto: string;
   score_match: number;
   match_por_categoria?: MatchPorCategoria;
   keywords_presentes: string[];

@@ -85,6 +85,8 @@ conteúdo dos arquivos de `supabase/migrations/`:
    (limite diário de análises);
 2. `0002_analises.sql` — tabela `analises` + políticas de RLS por sessão
    (cada navegador enxerga apenas o próprio histórico).
+3. `0003_remover_curriculo_texto.sql` — remove a coluna `curriculo_texto`
+   (o texto integral do currículo não é persistido — minimização de PII).
 
 ### Variáveis de ambiente
 
@@ -128,6 +130,7 @@ Os testes ficam colocalizados ao lado dos componentes e não entram no bundle de
 - Chave da IA somente no back-end (nunca exposta no front)
 - Validação de entrada no cliente e no servidor (incluindo formato e tamanho do arquivo)
 - Políticas de RLS no Supabase para isolamento das análises por sessão
+- O texto integral do currículo não é armazenado: é usado apenas na análise e descartado
 - Acesso ao banco via sessão anônima — dados tratados com cautela
 
 ---

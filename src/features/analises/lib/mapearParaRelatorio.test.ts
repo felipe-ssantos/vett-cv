@@ -11,7 +11,6 @@ function criarAnalise(sobrescrever?: Partial<Analise>): Analise {
     hard_skills: ["SQL"],
     soft_skills: ["Comunicação"],
     senioridade: "Pleno",
-    curriculo_texto: "Perfil com SQL.",
     score_match: 75,
     match_por_categoria: {
       skills_tecnicas: 80,

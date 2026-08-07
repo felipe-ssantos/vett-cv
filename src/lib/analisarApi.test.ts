@@ -24,7 +24,6 @@ function respostaFalsa(status: number, corpo: unknown, json = true) {
 }
 
 const RESPOSTA_SUCESSO = {
-  curriculoTexto: "texto do currículo",
   analise: {
     scoreMatch: 90,
     matchPorCategoria: {

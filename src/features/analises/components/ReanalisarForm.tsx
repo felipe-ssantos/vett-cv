@@ -90,8 +90,7 @@ export function ReanalisarForm() {
         formData.append("curriculoTexto", curriculoTexto);
       }
 
-      const { curriculoTexto: textoExtraido, analise } =
-        await enviarAnalise(formData);
+      const { analise } = await enviarAnalise(formData);
 
       const { data: novaAnalise, error: erroAnalise } = await supabase
         .from("analises")
@@ -102,7 +101,6 @@ export function ReanalisarForm() {
           hard_skills: analiseBase.hard_skills,
           soft_skills: analiseBase.soft_skills,
           senioridade: analiseBase.senioridade,
-          curriculo_texto: textoExtraido,
           score_match: analise.scoreMatch,
           match_por_categoria: analise.matchPorCategoria,
           keywords_presentes: analise.keywordsPresentes,
