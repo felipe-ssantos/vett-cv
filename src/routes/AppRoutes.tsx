@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router";
 import { Layout } from "../components/layout/Layout";
 import { AnaliseDetalhe } from "../features/analises/components/AnaliseDetalhe";
 import { AnaliseList } from "../features/analises/components/AnaliseList";

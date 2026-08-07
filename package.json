@@ -22,7 +22,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-icons": "^5.7.0",
-    "react-router-dom": "^7.11.0"
+    "react-router": "^8.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -45,7 +45,12 @@
       "@vercel/python-analysis": {
         "minimatch": "10.2.6",
         "smol-toml": "1.7.1"
-      }
+      },
+      "path-to-regexp": "6.3.0",
+      "undici": "6.28.0"
+    },
+    "@vercel/static-config": {
+      "ajv": "8.20.0"
     },
     "js-yaml": "4.3.1"
   }

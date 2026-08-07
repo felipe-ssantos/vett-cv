@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router";
 import { garantirSessaoAnonima } from "./lib/authAnonimo";
 import { AppRoutes } from "./routes/AppRoutes";
 

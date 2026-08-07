@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router";
 import { LuArrowLeft, LuArrowRight, LuUser, LuCheck } from "react-icons/lu";
 import { supabase } from "../../../lib/supabaseClient";
 import type { Analise, AnaliseMatchIA } from "../../../types";

@@ -9,7 +9,7 @@ import {
   LuTriangleAlert,
   LuX,
 } from "react-icons/lu";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { supabase } from "../../../lib/supabaseClient";
 import type { Analise } from "../../../types";
 
