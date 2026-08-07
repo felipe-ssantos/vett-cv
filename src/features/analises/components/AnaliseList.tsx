@@ -32,10 +32,22 @@ export function AnaliseList() {
     async function carregar() {
       setCarregando(true);
       setErro(null);
-      const { data, error } = await supabase
-        .from("analises")
-        .select("*")
-        .order("created_at", { ascending: false });
+
+      // Filtra pelo usuário atual (sessão anônima) como camada extra de
+      // isolamento — em conjunto com as políticas de RLS do Supabase, cada
+      // visitante só vê as próprias análises.
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      let query = supabase.from("analises").select("*");
+      if (user?.id) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
       if (cancelado) return;
       if (error) {
         setErro("Não foi possível carregar o histórico.");
