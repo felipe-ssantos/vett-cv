@@ -1,8 +1,10 @@
 # 🎯 Vett
 
+[![CI](https://github.com/felipe-ssantos/vett-cv/actions/workflows/ci.yml/badge.svg)](https://github.com/felipe-ssantos/vett-cv/actions/workflows/ci.yml)
+
 > Ferramenta com IA que analisa a compatibilidade entre um currículo e uma descrição de vaga.
 
-O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportunidade antes de se candidatarem. Basta colar a descrição da vaga, adicionar o currículo (texto ou arquivo PDF/DOC/DOCX) e a IA compara os dois, retornando um score de compatibilidade, palavras-chave presentes e faltantes, pontos fortes e sugestões objetivas de ajuste.
+O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportunidade antes de se candidatarem. Basta colar a descrição da vaga, adicionar o currículo (texto ou arquivo PDF/DOCX) e a IA compara os dois, retornando um score de compatibilidade, palavras-chave presentes e faltantes, pontos fortes e sugestões objetivas de ajuste.
 
 ---
 
