@@ -23,6 +23,10 @@ const EXTENSOES_POR_MIMETYPE: Record<string, string> = {
     "docx",
 };
 
+// Erros de arquivo são responsabilidade do usuário (formato/arquivo inválido):
+// voltam como 400 com mensagem clara, em vez do 500 genérico.
+class ErroDeArquivo extends Error {}
+
 // Navegadores com foco em privacidade (ex.: Firefox) podem codificar o nome do
 // arquivo de formas diferentes no multipart; por isso não dependemos só dele.
 function extrairExtensao(
@@ -32,6 +36,49 @@ function extrairExtensao(
   const ext = nomeArquivo?.split(".").pop()?.toLowerCase() ?? "";
   if (ext === "pdf" || ext === "doc" || ext === "docx") return ext;
   return EXTENSOES_POR_MIMETYPE[mimetype ?? ""] ?? "";
+}
+
+// Detecta o tipo real pelo conteúdo (magic bytes). Em mobile, navegadores como
+// Firefox Android, Brave e Safari podem enviar o arquivo com MIME
+// "application/octet-stream" e nome truncado/sem extensão; o conteúdo é a
+// única fonte confiável.
+const CABECALHO_PDF = Buffer.from("%PDF-", "latin1");
+
+async function detectarTipoPorConteudo(
+  filepath: string,
+): Promise<string | null> {
+  const handle = await fs.open(filepath, "r");
+  try {
+    const cabecalho = Buffer.alloc(8);
+    const { bytesRead } = await handle.read(cabecalho, 0, 8, 0);
+
+    if (bytesRead >= 5 && cabecalho.subarray(0, 5).equals(CABECALHO_PDF)) {
+      return "pdf";
+    }
+    // DOCX é um ZIP (assinatura "PK\x03\x04").
+    if (
+      bytesRead >= 4 &&
+      cabecalho[0] === 0x50 &&
+      cabecalho[1] === 0x4b &&
+      cabecalho[2] === 0x03 &&
+      cabecalho[3] === 0x04
+    ) {
+      return "docx";
+    }
+    // .doc legado é OLE2 (assinatura "D0 CF 11 E0").
+    if (
+      bytesRead >= 8 &&
+      cabecalho[0] === 0xd0 &&
+      cabecalho[1] === 0xcf &&
+      cabecalho[2] === 0x11 &&
+      cabecalho[3] === 0xe0
+    ) {
+      return "doc";
+    }
+  } finally {
+    await handle.close();
+  }
+  return null;
 }
 
 interface MatchPorCategoria {
@@ -65,29 +112,46 @@ async function extrairTextoDoArquivo(
   nomeArquivo: string | undefined,
   mimetype: string | undefined,
 ): Promise<string> {
-  const ext = extrairExtensao(nomeArquivo, mimetype);
+  // O conteúdo tem prioridade: independe de como o navegador nomeou o arquivo.
+  const tipo =
+    (await detectarTipoPorConteudo(filepath)) ??
+    extrairExtensao(nomeArquivo, mimetype);
 
-  if (ext === "pdf") {
+  if (tipo === "pdf") {
     const buffer = await fs.readFile(filepath);
-    const resultado = await pdfParse(buffer);
-    return resultado.text;
+    try {
+      const resultado = await pdfParse(buffer);
+      return resultado.text;
+    } catch {
+      throw new ErroDeArquivo(
+        "Não foi possível ler o PDF. Ele pode estar corrompido ou ser uma imagem sem texto extraível.",
+      );
+    }
   }
 
-  if (ext === "docx") {
+  if (tipo === "docx") {
     const buffer = await fs.readFile(filepath);
-    const resultado = await mammoth.extractRawText({ buffer });
-    return resultado.value;
+    try {
+      const resultado = await mammoth.extractRawText({ buffer });
+      return resultado.value;
+    } catch {
+      throw new ErroDeArquivo(
+        "Não foi possível ler o DOCX. Ele pode estar corrompido ou não ser um documento Word válido.",
+      );
+    }
   }
 
-  if (ext === "doc") {
+  if (tipo === "doc") {
     // O mammoth só extrai texto de DOCX; .doc legado (binário) falharia com
     // erro genérico 500. Preferimos uma mensagem clara para o usuário.
-    throw new Error(
+    throw new ErroDeArquivo(
       "Arquivos .doc antigos não são suportados. Envie o currículo em PDF ou DOCX.",
     );
   }
 
-  throw new Error("Formato de arquivo não suportado. Envie PDF ou DOCX.");
+  throw new ErroDeArquivo(
+    "Formato de arquivo não suportado. Envie PDF ou DOCX.",
+  );
 }
 
 const FORMATO_ANALISE = `{
@@ -305,6 +369,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const curriculoTextoColado = fields.curriculoTexto?.[0];
     const arquivo = files.arquivo?.[0];
 
+    if (arquivo && arquivo.size === 0) {
+      return res.status(400).json({ erro: "O arquivo enviado está vazio." });
+    }
+
     if (arquivo && arquivo.size > LIMITE_TAMANHO_ARQUIVO_BYTES) {
       return res.status(400).json({
         erro: "O arquivo excede o limite de 4 MB. Envie um arquivo menor.",
@@ -365,6 +433,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .json({ curriculoTexto, descricaoVaga, vaga, analise });
   } catch (erro) {
     console.error(erro);
+    if (erro instanceof ErroDeArquivo) {
+      return res.status(400).json({ erro: erro.message });
+    }
     if (erro instanceof RespostaIAInvalidaError) {
       return res.status(502).json({
         erro: `A IA retornou uma resposta inválida: ${erro.message}`,

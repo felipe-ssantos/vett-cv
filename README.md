@@ -9,7 +9,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 ## ✨ Funcionalidades
 
 - **Análise com IA** — score de match geral e por categoria (skills técnicas, ferramentas, experiência e soft skills)
-- **Upload de currículo** — PDF, DOC ou DOCX (até 4 MB), com extração automática do texto
+- **Upload de currículo** — PDF ou DOCX (até 4 MB), com extração automática do texto
 - **Ou cola o texto** — alternativa para quem prefere colar o currículo diretamente
 - **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
 - **Histórico privado** — análises salvas no Supabase e isoladas por sessão anônima

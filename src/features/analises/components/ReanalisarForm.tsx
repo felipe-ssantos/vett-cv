@@ -206,7 +206,7 @@ export function ReanalisarForm() {
               id="reanalisar-arquivo"
               ref={arquivoInputRef}
               type="file"
-              accept=".pdf,.doc,.docx"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleArquivoChange}
               onKeyDown={(e) => {
                 if (e.key === "Escape" && arquivo) {
@@ -222,7 +222,7 @@ export function ReanalisarForm() {
               className="form-text"
               style={{ fontSize: 11.5 }}
             >
-              Formatos aceitos: <strong>PDF, DOC ou DOCX</strong> (máx.{" "}
+              Formatos aceitos: <strong>PDF ou DOCX</strong> (máx.{" "}
               {ROTULO_TAMANHO_MAXIMO}) — o texto do currículo será extraído
               automaticamente.
             </div>
