@@ -1,6 +1,4 @@
-// Firefox exige permissão "clipboard-read" e o Brave pode bloquear a API
-// assíncrona de área de transferência. Estes helpers tentam a API moderna e,
-// na escrita, caem para o fallback clássico com document.execCommand.
+// Estes helpers testam a API moderna e, na escrita, caem para o fallback clássico com document.execCommand.
 
 async function tentarLerComFallback(): Promise<string> {
   if (typeof navigator !== "undefined" && navigator.clipboard?.readText) {
@@ -14,7 +12,7 @@ export async function lerTextoDaAreaDeTransferencia(): Promise<string> {
     return await tentarLerComFallback();
   } catch {
     // Alguns navegadores rejeitam readText() sem permissão (NotAllowedError).
-    // Sem API de leitura síncrona confiável, orientamos o usuário a usar Ctrl+V.
+    // Sem API de leitura síncrona confiável, o usuário e orientado a usar Ctrl+V.
     throw new Error(
       "Para colar, use o atalho Ctrl + V diretamente na caixa de texto.",
     );
@@ -46,7 +44,7 @@ export async function escreverTextoNaAreaDeTransferencia(
   try {
     await tentarEscreverComFallback(texto);
   } catch {
-    // Não lançamos para fora: a cópia é um extra de conveniência na UI.
+    // Não lançado para fora: a cópia é um extra de conveniência na UI.
     console.error("Falha ao copiar para a área de transferência.");
   }
 }

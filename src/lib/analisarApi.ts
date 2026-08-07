@@ -11,8 +11,7 @@ export interface RespostaAnalisar {
 }
 
 // Navegadores com proteção de privacidade (ex.: Brave) e o próprio servidor
-// podem responder com HTML em vez de JSON (ex.: 413/502/504). Aqui extraímos a
-// melhor mensagem possível em vez de cair no genérico "Falha na análise".
+// podem responder com HTML em vez de JSON (ex.: 413/502/504). Aqui extraío a melhor mensagem possível.
 async function extrairMensagemDeErro(resposta: Response): Promise<string> {
   const contentType = resposta.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
@@ -32,7 +31,7 @@ async function extrairMensagemDeErro(resposta: Response): Promise<string> {
 }
 
 // Identifica a sessão anônima do Supabase para o limite de análises por dia.
-// Falhas aqui nunca devem impedir a análise (o servidor também cobre a cota).
+// Falhas aqui nunca devem impedir a análise 
 async function obterIdSessao(): Promise<string | null> {
   try {
     const { data } = await supabase.auth.getSession();
