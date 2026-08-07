@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import {
   LuArrowLeft,
@@ -17,11 +17,11 @@ import buttonStyles from "../../../styles/ui/Button.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
 import pageStyles from "../../../styles/ui/Page.module.css";
 import styles from "./ReanalisarForm.module.css";
+import {
+  ROTULO_TAMANHO_MAXIMO,
+  useArquivoCurriculo,
+} from "../hooks/useArquivoCurriculo";
 import type { Analise } from "../../../types";
-
-// Mantido abaixo do limite de ~4.5 MB de body das funções do Vercel.
-const TAMANHO_MAXIMO_ARQUIVO = 4 * 1024 * 1024; // 4 MB
-const ROTULO_TAMANHO_MAXIMO = "4 MB";
 
 export function ReanalisarForm() {
   const { id } = useParams();
@@ -29,11 +29,20 @@ export function ReanalisarForm() {
 
   const [analiseBase, setAnaliseBase] = useState<Analise | null>(null);
   const [curriculoTexto, setCurriculoTexto] = useState("");
-  const [arquivo, setArquivo] = useState<File | null>(null);
   const [analisando, setAnalisando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [erroArquivo, setErroArquivo] = useState<string | null>(null);
-  const arquivoInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    arquivo,
+    erroArquivo,
+    arquivoInputRef,
+    handleArquivoChange,
+    handleRemoverArquivo,
+    limparArquivo,
+  } = useArquivoCurriculo({
+    // Selecionar um arquivo invalida o texto colado (o arquivo tem prioridade).
+    onArquivoSelecionado: () => setCurriculoTexto(""),
+  });
 
   useEffect(() => {
     async function carregarAnaliseBase() {
@@ -50,30 +59,6 @@ export function ReanalisarForm() {
     }
     if (id) carregarAnaliseBase();
   }, [id]);
-
-  function handleArquivoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    if (file && file.size > TAMANHO_MAXIMO_ARQUIVO) {
-      setErroArquivo(
-        `O arquivo excede o limite de ${ROTULO_TAMANHO_MAXIMO}. Envie um arquivo menor.`,
-      );
-      setArquivo(null);
-      e.target.value = "";
-      return;
-    }
-    setErroArquivo(null);
-    setArquivo(file);
-    if (file) setCurriculoTexto("");
-  }
-
-  function handleRemoverArquivo() {
-    setArquivo(null);
-    setErroArquivo(null);
-    if (arquivoInputRef.current) {
-      arquivoInputRef.current.value = "";
-      arquivoInputRef.current.focus();
-    }
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -185,7 +170,7 @@ export function ReanalisarForm() {
                 value={curriculoTexto}
                 onChange={(e) => {
                   setCurriculoTexto(e.target.value);
-                  if (e.target.value) setArquivo(null);
+                  if (e.target.value) limparArquivo();
                 }}
                 disabled={!!arquivo}
               />

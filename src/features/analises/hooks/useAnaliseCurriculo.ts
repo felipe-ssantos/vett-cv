@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -9,20 +8,17 @@ import {
 import { supabase } from "../../../lib/supabaseClient";
 import { enviarAnalise, type RespostaAnalisar } from "../../../lib/analisarApi";
 import { lerTextoDaAreaDeTransferencia } from "../../../lib/areaTransferencia";
+import { useArquivoCurriculo } from "./useArquivoCurriculo";
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
 
 export const LIMITE_CARACTERES = 5000;
-export const ROTULO_TAMANHO_MAXIMO = "4 MB";
+export { ROTULO_TAMANHO_MAXIMO } from "./useArquivoCurriculo";
 export const ETAPAS_ANALISE = [
   "Lendo seu currículo...",
   "Interpretando a oportunidade...",
   "Comparando skills e experiência...",
   "Gerando recomendações...",
 ];
-
-// Mantido abaixo do limite de ~4.5 MB de body das funções do Vercel, para a
-// falha vir com mensagem clara em vez de 413 HTML.
-const TAMANHO_MAXIMO_ARQUIVO = 4 * 1024 * 1024; // 4 MB
 
 const INTERVALO_ETAPA_MS = 1800;
 
@@ -62,16 +58,24 @@ export interface UseAnaliseCurriculoReturn {
 export function useAnaliseCurriculo(): UseAnaliseCurriculoReturn {
   const [descricaoVaga, setDescricaoVaga] = useState("");
   const [curriculoTexto, setCurriculoTexto] = useState("");
-  const [arquivo, setArquivo] = useState<File | null>(null);
   const [analisando, setAnalisando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [erroArquivo, setErroArquivo] = useState<string | null>(null);
   const [avisoSalvamento, setAvisoSalvamento] = useState<string | null>(null);
   const [analise, setAnalise] = useState<AnaliseMatchIA | null>(null);
   const [tempoAnalise, setTempoAnalise] = useState<number | null>(null);
   const [etapaAtual, setEtapaAtual] = useState(0);
 
-  const arquivoInputRef = useRef<HTMLInputElement>(null);
+  const {
+    arquivo,
+    erroArquivo,
+    arquivoInputRef,
+    handleArquivoChange,
+    handleRemoverArquivo,
+    limparArquivo,
+  } = useArquivoCurriculo({
+    // Selecionar um arquivo invalida o texto colado (o arquivo tem prioridade).
+    onArquivoSelecionado: () => setCurriculoTexto(""),
+  });
 
   // Rotaciona a etapa exibida enquanto a análise está em andamento.
   useEffect(() => {
@@ -86,35 +90,11 @@ export function useAnaliseCurriculo(): UseAnaliseCurriculoReturn {
     const texto = e.target.value;
     setCurriculoTexto(texto);
     // Digitar no campo invalida o arquivo selecionado (o texto tem prioridade).
-    if (texto) setArquivo(null);
+    if (texto) limparArquivo();
   }
 
   function handleDescricaoChange(e: ChangeEvent<HTMLTextAreaElement>) {
     setDescricaoVaga(e.target.value);
-  }
-
-  function handleArquivoChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    if (file && file.size > TAMANHO_MAXIMO_ARQUIVO) {
-      setErroArquivo(
-        `O arquivo excede o limite de ${ROTULO_TAMANHO_MAXIMO}. Envie um arquivo menor.`,
-      );
-      setArquivo(null);
-      e.target.value = "";
-      return;
-    }
-    setErroArquivo(null);
-    setArquivo(file);
-    if (file) setCurriculoTexto("");
-  }
-
-  function handleRemoverArquivo() {
-    setArquivo(null);
-    setErroArquivo(null);
-    if (arquivoInputRef.current) {
-      arquivoInputRef.current.value = "";
-      arquivoInputRef.current.focus();
-    }
   }
 
   /** Lê a área de transferência e aplica o texto (limitado) a um campo. */
@@ -135,7 +115,7 @@ export function useAnaliseCurriculo(): UseAnaliseCurriculoReturn {
   }
 
   function handleColarCurriculo(): Promise<void> {
-    return colarDaAreaDeTransferencia(setCurriculoTexto, () => setArquivo(null));
+    return colarDaAreaDeTransferencia(setCurriculoTexto, limparArquivo);
   }
 
   function handleColarDescricao(): Promise<void> {
