@@ -1,255 +1,112 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  LuUser,
+  LuArrowRight,
   LuBriefcase,
   LuCheck,
-  LuArrowRight,
-  LuLock,
-  LuStar,
-  LuWrench,
-  LuGlobe,
-  LuClipboardList,
-  LuLightbulb,
-  LuSparkles,
   LuClipboard,
-  LuThumbsUp,
-  LuTriangleAlert,
   LuFileText,
+  LuLock,
+  LuSparkles,
+  LuUser,
   LuX,
 } from "react-icons/lu";
-import { supabase } from "../../../lib/supabaseClient";
 import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
-import { enviarAnalise } from "../../../lib/analisarApi";
-import { lerTextoDaAreaDeTransferencia } from "../../../lib/areaTransferencia";
 import cardStyles from "../../../styles/ui/Card.module.css";
 import formStyles from "../../../styles/ui/Form.module.css";
 import buttonStyles from "../../../styles/ui/Button.module.css";
 import emptyStyles from "../../../styles/ui/EmptyState.module.css";
 import statusStyles from "../../../styles/ui/Status.module.css";
-import motionStyles from "../../../styles/ui/Motion.module.css";
 import reportStyles from "../../../styles/ui/Report.module.css";
 import workspaceStyles from "./AnaliseWorkspace.module.css";
+import {
+  ETAPAS_ANALISE,
+  LIMITE_CARACTERES,
+  ROTULO_TAMANHO_MAXIMO,
+  useAnaliseCurriculo,
+} from "../hooks/useAnaliseCurriculo";
+import { RelatorioAnalise } from "./RelatorioAnalise";
 import type { AnaliseMatchIA } from "../../../types";
 
-const LIMITE_CARACTERES = 5000;
-// Mantido abaixo do limite de ~4.5 MB de body das funções do Vercel, para a
-// falha vir com mensagem clara em vez de 413 HTML.
-const TAMANHO_MAXIMO_ARQUIVO = 4 * 1024 * 1024; // 4 MB
-const ROTULO_TAMANHO_MAXIMO = "4 MB";
-
-const ETAPAS_ANALISE = [
-  "Lendo seu currículo...",
-  "Interpretando a oportunidade...",
-  "Comparando skills e experiência...",
-  "Gerando recomendações...",
-];
-
-function classificarScore(score: number): string {
-  if (score < 40) return "Baixa compatibilidade";
-  if (score < 60) return "Compatibilidade moderada";
-  if (score < 80) return "Boa compatibilidade";
-  return "Forte compatibilidade";
+interface PainelAnalisandoProps {
+  etapaAtual: number;
 }
 
-function getCategoriaIcon(chave: string) {
-  switch (chave) {
-    case "experiencia":
-      return <LuUser size={15} />;
-    case "competencias":
-    case "skills_tecnicas":
-      return <LuStar size={15} />;
-    case "ferramentas":
-      return <LuWrench size={15} />;
-    case "contexto_vaga":
-    case "contexto":
-    case "soft_skills":
-    default:
-      return <LuGlobe size={15} />;
-  }
-}
-
-const LABELS_CATEGORIA: Record<string, string> = {
-  experiencia: "Experiência",
-  skills_tecnicas: "Competências",
-  competencias: "Competências",
-  ferramentas: "Ferramentas",
-  contexto_vaga: "Contexto da vaga",
-  soft_skills: "Contexto da vaga",
-};
-
-function DimensaoBarra({
-  label,
-  valor,
-  iconKey,
-}: {
-  label: string;
-  valor: number;
-  iconKey: string;
-}) {
+/** Estado "analisando": spinner, etapa atual e barra de progresso. */
+function PainelAnalisando({ etapaAtual }: PainelAnalisandoProps) {
   return (
-    <div className={reportStyles.dimensionRow}>
-      <div className={reportStyles.dimensionLabel}>
-        <span className="text-secondary">{getCategoriaIcon(iconKey)}</span>
-        <span>{label}</span>
+    <div className={emptyStyles.emptyState} aria-live="polite">
+      <div
+        className={`${emptyStyles.emptyIcon} spinner-border text-teal`}
+        role="status"
+      >
+        <span className="visually-hidden">Carregando...</span>
       </div>
-      <div className={reportStyles.dimensionBarWrapper}>
-        <div className={reportStyles.dimensionTrack}>
-          <div
-            className={reportStyles.dimensionFill}
-            style={{ width: `${valor}%` }}
-          />
-        </div>
+      <h3 className="h6 fw-bold mb-2">{ETAPAS_ANALISE[etapaAtual]}</h3>
+      <div className={`${reportStyles.scaleTrack} ${reportStyles.loadingTrack} mt-3`}>
+        <div className={`${reportStyles.scaleFill} ${reportStyles.loadingFill}`} />
       </div>
-      <div className={reportStyles.dimensionScore}>{valor}/100</div>
     </div>
   );
 }
 
+/** Estado vazio: nenhuma análise ainda. */
+function PainelVazio() {
+  return (
+    <div className={emptyStyles.emptyState}>
+      <div className={emptyStyles.emptyIcon}>
+        <LuSparkles />
+      </div>
+      <h3 className="h6 fw-bold mb-1">Sua análise aparecerá aqui</h3>
+      <p className={`mb-0 text-secondary ${emptyStyles.emptyTextNarrow}`}>
+        Preencha seu perfil e a oportunidade ao lado. O Vett analisará o
+        alinhamento entre os dois.
+      </p>
+    </div>
+  );
+}
+
+interface PainelResultadoAnaliseProps {
+  analisando: boolean;
+  etapaAtual: number;
+  analise: AnaliseMatchIA | null;
+}
+
+/** Alterna entre os três estados do painel de resultado usando guard clauses. */
+function PainelResultadoAnalise({
+  analisando,
+  etapaAtual,
+  analise,
+}: PainelResultadoAnaliseProps) {
+  if (analisando) return <PainelAnalisando etapaAtual={etapaAtual} />;
+  if (!analise) return <PainelVazio />;
+  return <RelatorioAnalise analise={analise} />;
+}
+
 export function AnaliseWorkspace() {
-  const [descricaoVaga, setDescricaoVaga] = useState("");
-  const [curriculoTexto, setCurriculoTexto] = useState("");
-  const [arquivo, setArquivo] = useState<File | null>(null);
-  const [analisando, setAnalisando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-  const [erroArquivo, setErroArquivo] = useState<string | null>(null);
-  const [avisoSalvamento, setAvisoSalvamento] = useState<string | null>(null);
+  const {
+    descricaoVaga,
+    curriculoTexto,
+    arquivo,
+    arquivoInputRef,
+    analisando,
+    erro,
+    erroArquivo,
+    avisoSalvamento,
+    analise,
+    tempoAnalise,
+    etapaAtual,
+    handleCurriculoChange,
+    handleDescricaoChange,
+    handleArquivoChange,
+    handleRemoverArquivo,
+    handleColarCurriculo,
+    handleColarDescricao,
+    handleSubmit,
+  } = useAnaliseCurriculo();
 
-  const [analise, setAnalise] = useState<AnaliseMatchIA | null>(null);
-  const [tempoAnalise, setTempoAnalise] = useState<number | null>(null);
-
-  const [etapaAtual, setEtapaAtual] = useState(0);
-  const arquivoInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!analisando) return;
-    const intervalo = setInterval(() => {
-      setEtapaAtual((atual) => (atual + 1) % ETAPAS_ANALISE.length);
-    }, 1800);
-    return () => clearInterval(intervalo);
-  }, [analisando]);
-
-  function handleArquivoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    if (file && file.size > TAMANHO_MAXIMO_ARQUIVO) {
-      setErroArquivo(
-        `O arquivo excede o limite de ${ROTULO_TAMANHO_MAXIMO}. Envie um arquivo menor.`,
-      );
-      setArquivo(null);
-      e.target.value = "";
-      return;
-    }
-    setErroArquivo(null);
-    setArquivo(file);
-    if (file) setCurriculoTexto("");
-  }
-
-  function handleRemoverArquivo() {
-    setArquivo(null);
-    setErroArquivo(null);
-    if (arquivoInputRef.current) {
-      arquivoInputRef.current.value = "";
-      arquivoInputRef.current.focus();
-    }
-  }
-
-  async function handleColarDescricao() {
-    try {
-      const texto = await lerTextoDaAreaDeTransferencia();
-      if (texto) {
-        setDescricaoVaga(texto.slice(0, LIMITE_CARACTERES));
-      }
-    } catch (err) {
-      console.error("Falha ao colar:", err);
-      alert(err instanceof Error ? err.message : "Não foi possível colar.");
-    }
-  }
-
-  async function handleColarCurriculo() {
-    try {
-      const texto = await lerTextoDaAreaDeTransferencia();
-      if (texto) {
-        setCurriculoTexto(texto.slice(0, LIMITE_CARACTERES));
-        setArquivo(null);
-      }
-    } catch (err) {
-      console.error("Falha ao colar:", err);
-      alert(err instanceof Error ? err.message : "Não foi possível colar.");
-    }
-  }
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (!descricaoVaga.trim()) {
-      setErro("Cole a descrição da oportunidade.");
-      return;
-    }
-    if (!curriculoTexto.trim() && !arquivo) {
-      setErro("Cole o texto do currículo ou envie um arquivo PDF/DOCX.");
-      return;
-    }
-
-    setAnalisando(true);
-    setErro(null);
-    setAvisoSalvamento(null);
-    setEtapaAtual(0);
-    const inicio = performance.now();
-
-    try {
-      const formData = new FormData();
-      formData.append("descricaoVaga", descricaoVaga);
-      if (arquivo) {
-        formData.append("arquivo", arquivo);
-      } else {
-        formData.append("curriculoTexto", curriculoTexto);
-      }
-
-      const dados = await enviarAnalise(formData);
-      const vagaExtraida = dados.vaga;
-      if (!vagaExtraida) {
-        throw new Error(
-          "A resposta da análise veio incompleta. Tente novamente.",
-        );
-      }
-
-      setAnalise(dados.analise);
-      setTempoAnalise((performance.now() - inicio) / 1000);
-
-      supabase
-        .from("analises")
-        .insert({
-          titulo_vaga: vagaExtraida.titulo,
-          empresa: vagaExtraida.empresa,
-          descricao_vaga: descricaoVaga,
-          hard_skills: vagaExtraida.hardSkills,
-          soft_skills: vagaExtraida.softSkills,
-          senioridade: vagaExtraida.senioridade,
-          curriculo_texto: dados.curriculoTexto,
-          score_match: dados.analise.scoreMatch,
-          match_por_categoria: dados.analise.matchPorCategoria,
-          keywords_presentes: dados.analise.keywordsPresentes,
-          keywords_faltando: dados.analise.keywordsFaltando,
-          pontos_fortes: dados.analise.pontosFortes,
-          sugestoes_ajuste: dados.analise.sugestoesAjuste,
-          resumo_ia: dados.analise.resumoIA,
-          dica_final: dados.analise.dicaFinal,
-        })
-        .then(({ error }) => {
-          if (error) {
-            console.error("Falha ao salvar no histórico:", error);
-            setAvisoSalvamento(
-              "A análise foi gerada, mas não foi possível salvá-la no histórico. Verifique bloqueios de privacidade/anti-rastreamento do navegador e tente novamente.",
-            );
-          }
-        });
-    } catch (err) {
-      setErro(
-        err instanceof Error ? err.message : "Erro inesperado na análise.",
-      );
-    } finally {
-      setAnalisando(false);
-    }
-  }
+  // Estado derivado: condições simples calculadas a partir de outros estados.
+  const temConteudoCurriculo =
+    curriculoTexto.trim().length > 0 || arquivo !== null;
+  const temDescricaoVaga = descricaoVaga.trim().length > 0;
 
   return (
     <div className="row g-3">
@@ -300,14 +157,11 @@ export function AnaliseWorkspace() {
                 placeholder="Analista de Dados com experiência em SQL, Python, Power BI..."
                 maxLength={LIMITE_CARACTERES}
                 value={curriculoTexto}
-                onChange={(e) => {
-                  setCurriculoTexto(e.target.value);
-                  if (e.target.value) setArquivo(null);
-                }}
+                onChange={handleCurriculoChange}
                 disabled={!!arquivo}
                 aria-describedby="curriculo-contador"
               />
-              {(curriculoTexto.trim().length > 0 || arquivo) && (
+              {temConteudoCurriculo && (
                 <div className={formStyles.checkBadge} aria-hidden="true">
                   <LuCheck />
                 </div>
@@ -419,10 +273,10 @@ export function AnaliseWorkspace() {
                 placeholder="Buscamos Analista de Dados com experiência em SQL, Python, Looker..."
                 maxLength={LIMITE_CARACTERES}
                 value={descricaoVaga}
-                onChange={(e) => setDescricaoVaga(e.target.value)}
+                onChange={handleDescricaoChange}
                 aria-describedby="descricao-contador"
               />
-              {descricaoVaga.trim().length > 0 && (
+              {temDescricaoVaga && (
                 <div className={formStyles.checkBadge} aria-hidden="true">
                   <LuCheck />
                 </div>
@@ -468,7 +322,7 @@ export function AnaliseWorkspace() {
               Veja o quanto seu perfil se alinha com esta oportunidade.
             </p>
           </div>
-          {tempoAnalise !== null && !analisando && (
+          {!analisando && tempoAnalise !== null && (
             <span className={statusStyles.statusPill}>
               <LuCheck size={14} />
               Análise concluída em {tempoAnalise.toFixed(1)}s
@@ -485,193 +339,11 @@ export function AnaliseWorkspace() {
           </div>
         )}
 
-        {analisando ? (
-          <div className={emptyStyles.emptyState} aria-live="polite">
-            <div
-              className={`${emptyStyles.emptyIcon} spinner-border text-teal`}
-              role="status"
-            >
-              <span className="visually-hidden">Carregando...</span>
-            </div>
-            <h3 className="h6 fw-bold mb-2">{ETAPAS_ANALISE[etapaAtual]}</h3>
-            <div className={`${reportStyles.scaleTrack} ${reportStyles.loadingTrack} mt-3`}>
-              <div className={`${reportStyles.scaleFill} ${reportStyles.loadingFill}`} />
-            </div>
-          </div>
-        ) : !analise ? (
-          <div className={emptyStyles.emptyState}>
-            <div className={emptyStyles.emptyIcon}>
-              <LuSparkles />
-            </div>
-            <h3 className="h6 fw-bold mb-1">Sua análise aparecerá aqui</h3>
-            <p className={`mb-0 text-secondary ${emptyStyles.emptyTextNarrow}`}>
-              Preencha seu perfil e a oportunidade ao lado. O Vett analisará o
-              alinhamento entre os dois.
-            </p>
-          </div>
-        ) : (
-          <div className={motionStyles.fadeInUp}>
-            {/* Top Score Compatibility Card */}
-            <div className={`${cardStyles.card} mb-3`}>
-              <div className={reportStyles.scoreHeader}>
-                <div className={reportStyles.scoreNumberGroup}>
-                  <span className={reportStyles.scoreNumber}>
-                    {analise.scoreMatch}
-                  </span>
-                  <span className={reportStyles.scoreMax}>/100</span>
-                </div>
-                <div className={reportStyles.scoreInfo}>
-                  <h3 className={reportStyles.scoreTitle}>
-                    {classificarScore(analise.scoreMatch)}
-                  </h3>
-                  <p className={reportStyles.scoreDescription}>
-                    {analise.resumoIA}
-                  </p>
-                </div>
-              </div>
-
-              {/* Progress scale bar with labels 0 - 50 - 100 */}
-              <div className={reportStyles.scaleContainer}>
-                <div className={reportStyles.scaleTrack}>
-                  <div
-                    className={reportStyles.scaleFill}
-                    style={{ width: `${analise.scoreMatch}%` }}
-                  />
-                </div>
-                <div className={reportStyles.scaleLabels}>
-                  <span>0</span>
-                  <span>50</span>
-                  <span>100</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-cards row: Onde você se encaixa / Favor / Lacuna */}
-            <div className="row g-3 mb-3">
-              {/* Onde você se encaixa (Compacto) */}
-              <div className="col-md-6">
-                <div className={`${cardStyles.card} h-100`}>
-                  <h3 className={`h6 fw-bold mb-3 ${reportStyles.sectionTitle}`}>
-                    Onde você se encaixa
-                  </h3>
-                  {Object.entries(analise.matchPorCategoria).map(
-                    ([chave, valor]) => (
-                      <DimensaoBarra
-                        key={chave}
-                        iconKey={chave}
-                        label={LABELS_CATEGORIA[chave] ?? chave}
-                        valor={valor}
-                      />
-                    ),
-                  )}
-                </div>
-              </div>
-
-              {/* Right column: Favor & Lacuna */}
-              <div className="col-md-6 d-flex flex-column gap-3">
-                {/* Favor */}
-                <div className={`${cardStyles.card} flex-fill`}>
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <div
-                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleSuccess}`}
-                    >
-                      <LuThumbsUp />
-                    </div>
-                    <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
-                      O que joga a seu favor
-                    </h3>
-                  </div>
-                  <ul className={reportStyles.evidenceList}>
-                    {analise.keywordsPresentes.map((k) => (
-                      <li key={k} className={reportStyles.evidenceItem}>
-                        <span
-                          className={`${reportStyles.evidenceIcon} ${reportStyles.evidenceIconFavor}`}
-                        >
-                          <LuCheck />
-                        </span>
-                        <span>{k}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Lacuna */}
-                <div className={`${cardStyles.card} flex-fill`}>
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <div
-                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleWarning}`}
-                    >
-                      <LuTriangleAlert />
-                    </div>
-                    <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
-                      Onde existe uma lacuna
-                    </h3>
-                  </div>
-                  <ul className={reportStyles.evidenceList}>
-                    {analise.keywordsFaltando.map((k) => (
-                      <li key={k} className={reportStyles.evidenceItem}>
-                        <span
-                          className={`${reportStyles.evidenceIcon} ${reportStyles.evidenceIconLacuna}`}
-                        >
-                          <LuTriangleAlert />
-                        </span>
-                        <span>{k}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom row: Antes de aplicar & Insight */}
-            <div className="row g-3">
-              {/* Antes de aplicar */}
-              <div className="col-md-6">
-                <div className={`${cardStyles.card} h-100`}>
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <div
-                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm}`}
-                    >
-                      <LuClipboardList />
-                    </div>
-                    <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
-                      Antes de aplicar
-                    </h3>
-                  </div>
-                  <ol className={reportStyles.numberedList}>
-                    {analise.sugestoesAjuste.map((sugestao, index) => (
-                      <li key={index} className={reportStyles.numberedItem}>
-                        <span className={reportStyles.numberedBadge}>
-                          {index + 1}
-                        </span>
-                        <span>{sugestao}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              </div>
-
-              {/* Insight */}
-              <div className="col-md-6">
-                <div className={`${cardStyles.card} h-100`}>
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <div
-                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCirclePrimary}`}
-                    >
-                      <LuLightbulb />
-                    </div>
-                    <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
-                      Insight
-                    </h3>
-                  </div>
-                  <p className={`mb-0 text-secondary ${reportStyles.insightText}`}>
-                    {analise.dicaFinal}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <PainelResultadoAnalise
+          analisando={analisando}
+          etapaAtual={etapaAtual}
+          analise={analise}
+        />
       </div>
     </div>
   );

@@ -39,12 +39,15 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 .
 ├── api/                     # Serverless functions (análise com IA)
 ├── public/
+├── supabase/migrations/     # SQL versionado (tabelas, RLS e função de limite)
 └── src/
-    ├── components/layout/   # Header, Footer, Layout
-    ├── features/
-    │   └── analises/        # Lista, detalhe, workspace e reanálise
+    ├── components/layout/   # Header, Footer, Layout (com seus CSS Modules)
+    ├── features/analises/   # Workspace, histórico, detalhe e reanálise
+    │   ├── components/      # Telas + RelatorioAnalise (apresentação pura)
+    │   └── hooks/           # useAnaliseCurriculo (estado, efeitos e envio)
     ├── lib/                 # Cliente Supabase e utilitários
     ├── routes/              # Rotas da aplicação
+    ├── styles/ui/           # Primitivas CSS Modules (Card, Form, Button...)
     ├── test/                # Setup, fixtures e matchers de teste
     └── types/               # Tipos compartilhados
 ```
