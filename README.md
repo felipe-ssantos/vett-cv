@@ -127,6 +127,28 @@ npm run dev
 
 ---
 
+## 🧪 Testes
+
+A suíte usa [Vitest](https://vitest.dev) com Testing Library e `vitest-axe` para checagem de acessibilidade.
+
+```bash
+# Executa todos os testes uma única vez
+npm test
+
+# Modo watch — reexecuta a cada mudança
+npm run test:watch
+```
+
+**O que é coberto:**
+
+- ✅ Testes de acessibilidade (`*.a11y.test.tsx`) com as regras do `axe`: labels, landmarks, diálogos e foco
+- ✅ Testes unitários dos formulários de análise: upload de arquivo, atalho Esc, foco automático e limite de 5 MB
+- ✅ Build de produção (`npm run build`), que também valida a compilação TypeScript via `tsc -b`
+
+Os testes ficam colocalizados ao lado dos componentes (`*.test.tsx`) e não entram no bundle de produção.
+
+---
+
 ## 🌿 Fluxo de Desenvolvimento
 
 - \`main\` → versão estável/produção
