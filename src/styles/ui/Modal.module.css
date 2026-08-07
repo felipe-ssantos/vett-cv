@@ -1,0 +1,20 @@
+/* Primitive UI: confirmation modal overlay (shared by AnaliseList and
+   AnaliseDetalhe). Structure comes from Bootstrap .modal classes. */
+.backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modalText {
+  font-size: 13.5px;
+}
+
+.modalButtonLight {
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+
+.modalButtonDanger {
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+}

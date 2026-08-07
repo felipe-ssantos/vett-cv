@@ -41,3 +41,15 @@
   background: var(--primary-light);
   color: var(--primary);
 }
+
+.iconCircleSm {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+}
+
+.iconCircleScore {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}

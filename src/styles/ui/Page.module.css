@@ -1,0 +1,21 @@
+/* Primitive UI: page-level layout and back navigation (shared by the
+   AnaliseList, AnaliseDetalhe and ReanalisarForm pages). */
+.wide {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.narrow {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.backLink {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.backLinkLarge {
+  font-size: 14px;
+  font-weight: 500;
+}

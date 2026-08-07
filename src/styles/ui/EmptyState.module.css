@@ -25,3 +25,21 @@
   font-size: 22px;
   margin-bottom: 12px;
 }
+
+.compact {
+  min-height: 220px;
+}
+
+.loadingText {
+  font-size: 13px;
+}
+
+.emptyText {
+  font-size: 13px;
+  max-width: 360px;
+}
+
+.emptyTextNarrow {
+  font-size: 13px;
+  max-width: 340px;
+}

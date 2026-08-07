@@ -196,3 +196,26 @@
   flex-shrink: 0;
   margin-top: 1px;
 }
+
+/* ===== Section titles & misc ===== */
+.sectionTitle {
+  font-size: 14px;
+}
+
+.sectionTitleCompact {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.insightText {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.loadingTrack {
+  width: 220px;
+}
+
+.loadingFill {
+  width: 65%;
+}

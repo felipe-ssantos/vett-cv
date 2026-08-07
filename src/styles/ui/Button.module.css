@@ -27,3 +27,15 @@
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+/* Compact / auto-width variants for links styled as primary buttons. */
+.primaryAuto {
+  width: auto;
+  height: 38px;
+}
+
+.primaryCompact {
+  width: auto;
+  height: 36px;
+  font-size: 13px;
+}

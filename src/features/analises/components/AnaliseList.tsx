@@ -16,6 +16,9 @@ import buttonStyles from "../../../styles/ui/Button.module.css";
 import formStyles from "../../../styles/ui/Form.module.css";
 import emptyStyles from "../../../styles/ui/EmptyState.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
+import pageStyles from "../../../styles/ui/Page.module.css";
+import modalStyles from "../../../styles/ui/Modal.module.css";
+import styles from "./AnaliseList.module.css";
 import type { Analise } from "../../../types";
 
 export function AnaliseList() {
@@ -148,14 +151,14 @@ export function AnaliseList() {
   });
 
   return (
-    <div className={motionStyles.fadeInUp} style={{ maxWidth: 920, margin: "0 auto" }}>
+    <div className={`${motionStyles.fadeInUp} ${pageStyles.wide}`}>
       {/* Header section */}
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
         <div>
           <h1 className="h5 fw-bold mb-0 d-flex align-items-center gap-2">
             <LuClock className="text-teal" size={20} /> Histórico de Análises
           </h1>
-          <p className="mb-0 text-secondary" style={{ fontSize: 13 }}>
+          <p className={`mb-0 text-secondary ${styles.pageSubtitle}`}>
             Suas análises são privadas e vinculadas à sua sessão.
           </p>
         </div>
@@ -164,21 +167,14 @@ export function AnaliseList() {
           {analises.length > 0 && (
             <button
               onClick={() => setConfirmandoExcluirTodas(true)}
-              className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3"
-              style={{
-                height: 36,
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 600,
-              }}
+              className={`btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
             >
               <LuTrash2 size={14} /> Limpar histórico
             </button>
           )}
           <Link
             to="/"
-            className={`${buttonStyles.primary} px-3 text-decoration-none`}
-            style={{ height: 36, borderRadius: 8, fontSize: 13 }}
+            className={`${buttonStyles.primary} ${buttonStyles.primaryCompact} px-3 text-decoration-none`}
           >
             <LuPlus size={15} /> Nova análise
           </Link>
@@ -191,24 +187,21 @@ export function AnaliseList() {
           <div className="position-relative">
             <input
               type="text"
-              className={`form-control ${formStyles.textarea} py-2 pe-4`}
-              style={{ paddingLeft: 38, height: 40, fontSize: 13.5 }}
+              className={`form-control ${formStyles.textarea} ${styles.searchInput} py-2 pe-4`}
               placeholder="Pesquise em suas analises por cargo, empresa ou palavra-chave..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
               aria-label="Pesquisar no histórico de análises"
             />
             <LuSearch
-              className="position-absolute top-50 translate-middle-y text-secondary"
-              style={{ left: 12 }}
+              className={`position-absolute top-50 translate-middle-y text-secondary ${styles.searchIcon}`}
               size={16}
             />
             {filtro && (
               <button
                 type="button"
                 onClick={() => setFiltro("")}
-                className="btn btn-sm text-secondary position-absolute top-50 translate-middle-y border-0 p-1"
-                style={{ right: 8 }}
+                className={`btn btn-sm text-secondary position-absolute top-50 translate-middle-y border-0 p-1 ${styles.clearFilterIconButton}`}
                 title="Limpar filtro"
                 aria-label="Limpar filtro de pesquisa"
               >
@@ -218,8 +211,7 @@ export function AnaliseList() {
           </div>
           {filtro && (
             <div
-              className="mt-1 text-secondary"
-              style={{ fontSize: 12 }}
+              className={`mt-1 text-secondary ${styles.resultsCount}`}
               role="status"
             >
               Exibindo {analisesFiltradas.length} de {analises.length}{" "}
@@ -232,7 +224,7 @@ export function AnaliseList() {
       {carregando && (
         <div className={emptyStyles.emptyState} role="status">
           <div className="spinner-border text-teal" aria-hidden="true" />
-          <p className="mt-3 text-secondary" style={{ fontSize: 13 }}>
+          <p className={`mt-3 text-secondary ${emptyStyles.loadingText}`}>
             Carregando histórico...
           </p>
         </div>
@@ -246,17 +238,13 @@ export function AnaliseList() {
             <LuSparkles />
           </div>
           <h3 className="h6 fw-bold mb-2">Nenhuma análise salva ainda</h3>
-          <p
-            className="text-secondary mb-4"
-            style={{ fontSize: 13, maxWidth: 360 }}
-          >
+          <p className={`text-secondary mb-4 ${emptyStyles.emptyText}`}>
             Realize sua primeira comparação de currículo com uma vaga para ver
             os resultados aqui.
           </p>
           <Link
             to="/"
-            className={`${buttonStyles.primary} text-decoration-none px-4`}
-            style={{ width: "auto", height: 38 }}
+            className={`${buttonStyles.primary} ${buttonStyles.primaryAuto} text-decoration-none px-4`}
           >
             Realizar análise
           </Link>
@@ -264,14 +252,13 @@ export function AnaliseList() {
       )}
 
       {!carregando && analises.length > 0 && analisesFiltradas.length === 0 && (
-        <div className={emptyStyles.emptyState} style={{ minHeight: 220 }}>
-          <p className="text-secondary mb-2" style={{ fontSize: 14 }}>
+        <div className={`${emptyStyles.emptyState} ${emptyStyles.compact}`}>
+          <p className={`text-secondary mb-2 ${styles.noResultsText}`}>
             Nenhuma análise encontrada para <strong>"{filtro}"</strong>.
           </p>
           <button
             onClick={() => setFiltro("")}
-            className="btn btn-sm btn-light border text-secondary"
-            style={{ borderRadius: 6, fontSize: 13 }}
+            className={`btn btn-sm btn-light border text-secondary ${styles.clearFilterButton}`}
           >
             Limpar filtro
           </button>
@@ -287,24 +274,22 @@ export function AnaliseList() {
             >
               <Link
                 to={`/analises/${analise.id}`}
-                className="text-decoration-none flex-fill me-3"
-                style={{ color: "inherit" }}
+                className={`text-decoration-none flex-fill me-3 ${styles.itemLink}`}
               >
                 <div className="d-flex align-items-center gap-3">
                   <div
-                    className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary} flex-shrink-0`}
-                    style={{ width: 40, height: 40, fontSize: 18 }}
+                    className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary} ${cardStyles.iconCircleScore} flex-shrink-0`}
                   >
-                    <span className="fw-bold" style={{ fontSize: 14 }}>
+                    <span className={`fw-bold ${styles.scoreValue}`}>
                       {analise.score_match}%
                     </span>
                   </div>
 
                   <div>
-                    <div className="fw-bold text-dark" style={{ fontSize: 15 }}>
+                    <div className={`fw-bold text-dark ${styles.itemTitle}`}>
                       {analise.titulo_vaga}
                     </div>
-                    <div className="text-secondary" style={{ fontSize: 12.5 }}>
+                    <div className={`text-secondary ${styles.itemSubtitle}`}>
                       {analise.empresa ? `${analise.empresa} · ` : ""}
                       {new Date(analise.created_at).toLocaleDateString(
                         "pt-BR",
@@ -322,21 +307,15 @@ export function AnaliseList() {
               <div className="d-flex align-items-center gap-2">
                 <Link
                   to={`/analises/${analise.id}`}
-                  className="btn btn-light btn-sm text-secondary d-flex align-items-center gap-1"
-                  style={{
-                    borderRadius: 6,
-                    fontSize: 12.5,
-                    padding: "5px 10px",
-                  }}
+                  className={`btn btn-light btn-sm text-secondary d-flex align-items-center gap-1 ${styles.viewButton}`}
                 >
                   Ver <LuChevronRight size={14} />
                 </Link>
                 <button
                   onClick={() => setItemParaExcluir(analise)}
-                  className="btn btn-outline-secondary btn-sm p-2 text-danger border-0"
+                  className={`btn btn-outline-secondary btn-sm p-2 text-danger border-0 ${styles.deleteButton}`}
                   title="Excluir esta análise"
                   aria-label="Excluir esta análise"
-                  style={{ borderRadius: 6 }}
                 >
                   <LuTrash2 size={16} />
                 </button>
@@ -349,9 +328,8 @@ export function AnaliseList() {
       {/* Modal / Diálogo de Confirmação para Excluir UMA */}
       {itemParaExcluir && (
         <div
-          className="modal fade show d-block"
+          className={`modal fade show d-block ${modalStyles.backdrop}`}
           tabIndex={-1}
-          style={{ background: "rgba(0, 0, 0, 0.4)" }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-excluir-titulo"
@@ -368,8 +346,7 @@ export function AnaliseList() {
                 </h2>
               </div>
               <p
-                className="text-secondary mb-4"
-                style={{ fontSize: 13.5 }}
+                className={`text-secondary mb-4 ${modalStyles.modalText}`}
                 id="modal-excluir-desc"
               >
                 Tem certeza que deseja excluir a análise para a vaga{" "}
@@ -381,16 +358,14 @@ export function AnaliseList() {
                   onClick={() => setItemParaExcluir(null)}
                   disabled={excluindo}
                   autoFocus
-                  className="btn btn-light px-3"
-                  style={{ borderRadius: 8, fontSize: 13.5 }}
+                  className={`btn btn-light px-3 ${modalStyles.modalButtonLight}`}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleExcluirUma}
                   disabled={excluindo}
-                  className="btn btn-danger px-4"
-                  style={{ borderRadius: 8, fontSize: 13.5, fontWeight: 600 }}
+                  className={`btn btn-danger px-4 ${modalStyles.modalButtonDanger}`}
                 >
                   {excluindo ? "Excluindo..." : "Sim, excluir"}
                 </button>
@@ -403,9 +378,8 @@ export function AnaliseList() {
       {/* Modal / Diálogo de Confirmação para Excluir TODAS */}
       {confirmandoExcluirTodas && (
         <div
-          className="modal fade show d-block"
+          className={`modal fade show d-block ${modalStyles.backdrop}`}
           tabIndex={-1}
-          style={{ background: "rgba(0, 0, 0, 0.4)" }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-excluir-todas-titulo"
@@ -425,8 +399,7 @@ export function AnaliseList() {
                 </h2>
               </div>
               <p
-                className="text-secondary mb-4"
-                style={{ fontSize: 13.5 }}
+                className={`text-secondary mb-4 ${modalStyles.modalText}`}
                 id="modal-excluir-todas-desc"
               >
                 Tem certeza que deseja apagar{" "}
@@ -439,16 +412,14 @@ export function AnaliseList() {
                   onClick={() => setConfirmandoExcluirTodas(false)}
                   disabled={excluindo}
                   autoFocus
-                  className="btn btn-light px-3"
-                  style={{ borderRadius: 8, fontSize: 13.5 }}
+                  className={`btn btn-light px-3 ${modalStyles.modalButtonLight}`}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleExcluirTodas}
                   disabled={excluindo}
-                  className="btn btn-danger px-4"
-                  style={{ borderRadius: 8, fontSize: 13.5, fontWeight: 600 }}
+                  className={`btn btn-danger px-4 ${modalStyles.modalButtonDanger}`}
                 >
                   {excluindo ? "Excluindo..." : "Excluir tudo"}
                 </button>

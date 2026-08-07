@@ -15,6 +15,8 @@ import cardStyles from "../../../styles/ui/Card.module.css";
 import formStyles from "../../../styles/ui/Form.module.css";
 import buttonStyles from "../../../styles/ui/Button.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
+import pageStyles from "../../../styles/ui/Page.module.css";
+import styles from "./ReanalisarForm.module.css";
 import type { Analise } from "../../../types";
 
 // Mantido abaixo do limite de ~4.5 MB de body das funções do Vercel.
@@ -142,12 +144,11 @@ export function ReanalisarForm() {
   }
 
   return (
-    <div className={motionStyles.fadeInUp} style={{ maxWidth: 720, margin: "0 auto" }}>
+    <div className={`${motionStyles.fadeInUp} ${pageStyles.narrow}`}>
       <div className="mb-4">
         <Link
           to={analiseBase ? `/analises/${analiseBase.id}` : "/historico"}
-          className="text-decoration-none d-inline-flex align-items-center gap-1 text-secondary"
-          style={{ fontSize: 14, fontWeight: 500 }}
+          className={`text-decoration-none d-inline-flex align-items-center gap-1 text-secondary ${pageStyles.backLinkLarge}`}
         >
           <LuArrowLeft size={16} /> Voltar à análise
         </Link>
@@ -161,7 +162,7 @@ export function ReanalisarForm() {
           <div>
             <h1 className="h5 fw-bold mb-1">Reanalisar currículo</h1>
             {analiseBase && (
-              <p className="mb-0 text-secondary" style={{ fontSize: 14 }}>
+              <p className={`mb-0 text-secondary ${styles.subtitle}`}>
                 Comparando novo currículo para: <strong>{analiseBase.titulo_vaga}</strong>
               </p>
             )}
@@ -179,8 +180,7 @@ export function ReanalisarForm() {
             <div className={formStyles.inputWrapper}>
               <textarea
                 id="reanalisar-curriculo"
-                className={`form-control ${formStyles.textarea} w-100`}
-                style={{ height: 220 }}
+                className={`form-control ${formStyles.textarea} ${formStyles.textareaLg} w-100`}
                 placeholder="Cole aqui o texto do seu currículo atualizado..."
                 value={curriculoTexto}
                 onChange={(e) => {
@@ -223,8 +223,7 @@ export function ReanalisarForm() {
             />
             <div
               id="reanalisar-arquivo-desc"
-              className="form-text"
-              style={{ fontSize: 11.5 }}
+              className={`form-text ${formStyles.fieldHint}`}
             >
               Formatos aceitos: <strong>PDF ou DOCX</strong> (máx.{" "}
               {ROTULO_TAMANHO_MAXIMO}) — o texto do currículo será extraído
@@ -232,8 +231,7 @@ export function ReanalisarForm() {
             </div>
             {erroArquivo && (
               <div
-                className="form-text text-danger"
-                style={{ fontSize: 11.5 }}
+                className={`form-text text-danger ${formStyles.fieldHint}`}
                 role="alert"
               >
                 {erroArquivo}
@@ -245,8 +243,7 @@ export function ReanalisarForm() {
                 role="status"
               >
                 <div
-                  className="form-text mb-0 text-truncate"
-                  style={{ fontSize: 11.5, minWidth: 0 }}
+                  className={`form-text mb-0 text-truncate ${formStyles.fileInfo}`}
                 >
                   <LuFileText
                     size={12}
@@ -259,8 +256,7 @@ export function ReanalisarForm() {
                 <button
                   type="button"
                   onClick={handleRemoverArquivo}
-                  className="btn btn-sm btn-outline-secondary border-0 p-0 text-danger d-inline-flex align-items-center gap-1"
-                  style={{ fontSize: 11, flexShrink: 0 }}
+                  className={`btn btn-sm btn-outline-secondary border-0 p-0 text-danger d-inline-flex align-items-center gap-1 ${formStyles.fileRemove}`}
                   title="Remover arquivo selecionado"
                   aria-label="Remover arquivo selecionado"
                 >

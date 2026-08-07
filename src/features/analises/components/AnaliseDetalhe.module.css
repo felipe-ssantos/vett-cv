@@ -1,5 +1,6 @@
-/* AnaliseDetalhe — page-scoped styles only (details/summary disclosure).
-   All cards, report widgets and buttons come from the shared UI modules. */
+/* AnaliseDetalhe — page-scoped styles only (details/summary disclosure,
+   page typography and action buttons). All cards, report widgets and shared
+   buttons come from the UI modules in src/styles/ui. */
 
 /* Wrapper that scopes the details/summary tag selectors to this page. */
 .page details summary::-webkit-details-marker {
@@ -8,4 +9,68 @@
 
 .page details summary {
   list-style: none;
+}
+
+/* ===== Page typography ===== */
+.jobMeta {
+  font-size: 13px;
+}
+
+.seniorityBadge {
+  font-size: 12px;
+  border-radius: 20px;
+}
+
+.skillsLine {
+  font-size: 12.5px;
+}
+
+/* ===== Description disclosure ===== */
+.summaryButton {
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  background: var(--surface-alt);
+}
+
+.chevron {
+  transition: transform 200ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.descriptionPanel {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+}
+
+.descriptionTitle {
+  font-size: 12px;
+}
+
+.copyButton {
+  font-size: 12px;
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+.descriptionText {
+  white-space: pre-wrap;
+  font-size: 13px;
+}
+
+/* ===== Action buttons ===== */
+.actionButton {
+  height: 38px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.actionLink {
+  width: auto;
+  height: 38px;
+  font-size: 13px;
 }

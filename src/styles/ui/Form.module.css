@@ -73,3 +73,35 @@
   font-size: 11.5px;
   color: var(--text-muted);
 }
+
+/* ===== Field sizes & helpers ===== */
+.textareaTall {
+  height: 135px;
+}
+
+.textareaLg {
+  height: 220px;
+}
+
+.pasteButton {
+  font-size: 11.5px;
+  border-radius: 5px;
+}
+
+.fileInput {
+  font-size: 12px;
+}
+
+.fieldHint {
+  font-size: 11.5px;
+}
+
+.fileInfo {
+  font-size: 11.5px;
+  min-width: 0;
+}
+
+.fileRemove {
+  font-size: 11px;
+  flex-shrink: 0;
+}

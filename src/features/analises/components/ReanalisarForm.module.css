@@ -1,0 +1,5 @@
+/* ReanalisarForm — page-scoped styles only. Shared primitives (Card, Form,
+   Button, Motion, Page) come from src/styles/ui. */
+.subtitle {
+  font-size: 14px;
+}

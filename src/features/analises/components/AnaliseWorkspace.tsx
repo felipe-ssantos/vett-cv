@@ -28,6 +28,7 @@ import emptyStyles from "../../../styles/ui/EmptyState.module.css";
 import statusStyles from "../../../styles/ui/Status.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
 import reportStyles from "../../../styles/ui/Report.module.css";
+import workspaceStyles from "./AnaliseWorkspace.module.css";
 import type { AnaliseMatchIA } from "../../../types";
 
 const LIMITE_CARACTERES = 5000;
@@ -266,7 +267,7 @@ export function AnaliseWorkspace() {
               </div>
               <div>
                 <h2 className="h6 mb-0 fw-bold">Seu perfil</h2>
-                <div style={{ fontSize: 12.5, color: "var(--text-tertiary)" }}>
+                <div className={workspaceStyles.helperText}>
                   Conte ao Vett sobre sua experiência profissional.
                 </div>
               </div>
@@ -281,8 +282,7 @@ export function AnaliseWorkspace() {
                   type="button"
                   onClick={handleColarCurriculo}
                   disabled={!!arquivo}
-                  className="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1 py-0 px-2"
-                  style={{ fontSize: 11.5, borderRadius: 5 }}
+                  className={`btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1 py-0 px-2 ${formStyles.pasteButton}`}
                   title="Colar texto do currículo"
                 >
                   <LuClipboard size={12} /> Colar
@@ -296,8 +296,7 @@ export function AnaliseWorkspace() {
             <div className={`${formStyles.inputWrapper} mb-2`}>
               <textarea
                 id="curriculo-texto"
-                className={`form-control ${formStyles.textarea} w-100`}
-                style={{ height: 135 }}
+                className={`form-control ${formStyles.textarea} ${formStyles.textareaTall} w-100`}
                 placeholder="Analista de Dados com experiência em SQL, Python, Power BI..."
                 maxLength={LIMITE_CARACTERES}
                 value={curriculoTexto}
@@ -331,14 +330,12 @@ export function AnaliseWorkspace() {
                     handleRemoverArquivo();
                   }
                 }}
-                className="form-control form-control-sm mt-1"
-                style={{ fontSize: 12 }}
+                className={`form-control form-control-sm mt-1 ${formStyles.fileInput}`}
                 aria-describedby="curriculo-arquivo-desc"
               />
               <div
                 id="curriculo-arquivo-desc"
-                className="form-text"
-                style={{ fontSize: 11.5 }}
+                className={`form-text ${formStyles.fieldHint}`}
               >
                 Formatos aceitos: <strong>PDF ou DOCX</strong> (máx.{" "}
                 {ROTULO_TAMANHO_MAXIMO}) — o texto do currículo será extraído
@@ -346,8 +343,7 @@ export function AnaliseWorkspace() {
               </div>
               {erroArquivo && (
                 <div
-                  className="form-text text-danger"
-                  style={{ fontSize: 11.5 }}
+                  className={`form-text text-danger ${formStyles.fieldHint}`}
                   role="alert"
                 >
                   {erroArquivo}
@@ -359,8 +355,7 @@ export function AnaliseWorkspace() {
                   role="status"
                 >
                   <div
-                    className="form-text mb-0 text-truncate"
-                    style={{ fontSize: 11.5, minWidth: 0 }}
+                    className={`form-text mb-0 text-truncate ${formStyles.fileInfo}`}
                   >
                     <LuFileText
                       size={12}
@@ -373,8 +368,7 @@ export function AnaliseWorkspace() {
                   <button
                     type="button"
                     onClick={handleRemoverArquivo}
-                    className="btn btn-sm btn-outline-secondary border-0 p-0 text-danger d-inline-flex align-items-center gap-1"
-                    style={{ fontSize: 11, flexShrink: 0 }}
+                    className={`btn btn-sm btn-outline-secondary border-0 p-0 text-danger d-inline-flex align-items-center gap-1 ${formStyles.fileRemove}`}
                     title="Remover arquivo selecionado"
                     aria-label="Remover arquivo selecionado"
                   >
@@ -393,7 +387,7 @@ export function AnaliseWorkspace() {
               </div>
               <div>
                 <h2 className="h6 mb-0 fw-bold">Oportunidade</h2>
-                <div style={{ fontSize: 12.5, color: "var(--text-tertiary)" }}>
+                <div className={workspaceStyles.helperText}>
                   Cole a descrição da vaga que você está considerando.
                 </div>
               </div>
@@ -407,8 +401,7 @@ export function AnaliseWorkspace() {
                 <button
                   type="button"
                   onClick={handleColarDescricao}
-                  className="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1 py-0 px-2"
-                  style={{ fontSize: 11.5, borderRadius: 5 }}
+                  className={`btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1 py-0 px-2 ${formStyles.pasteButton}`}
                   title="Colar descrição da vaga"
                 >
                   <LuClipboard size={12} /> Colar
@@ -422,8 +415,7 @@ export function AnaliseWorkspace() {
             <div className={formStyles.inputWrapper}>
               <textarea
                 id="descricao-vaga"
-                className={`form-control ${formStyles.textarea} w-100`}
-                style={{ height: 135 }}
+                className={`form-control ${formStyles.textarea} ${formStyles.textareaTall} w-100`}
                 placeholder="Buscamos Analista de Dados com experiência em SQL, Python, Looker..."
                 maxLength={LIMITE_CARACTERES}
                 value={descricaoVaga}
@@ -458,15 +450,8 @@ export function AnaliseWorkspace() {
             )}
           </button>
 
-          <div
-            className="text-center mt-2"
-            style={{ fontSize: 11.5, color: "var(--text-tertiary)" }}
-          >
-            <LuLock
-              size={12}
-              className="me-1"
-              style={{ verticalAlign: "-1px" }}
-            />
+          <div className={`text-center mt-2 ${workspaceStyles.privacyNote}`}>
+            <LuLock size={12} className="me-1" />
             Suas análises ficam salvas somente neste navegador.
           </div>
 
@@ -479,10 +464,7 @@ export function AnaliseWorkspace() {
         <div className="d-flex justify-content-between align-items-start mb-2">
           <div>
             <h2 className="h6 mb-0 fw-bold">Sua análise</h2>
-            <p
-              className="mb-0"
-              style={{ fontSize: 12.5, color: "var(--text-tertiary)" }}
-            >
+            <p className={`mb-0 ${workspaceStyles.helperText}`}>
               Veja o quanto seu perfil se alinha com esta oportunidade.
             </p>
           </div>
@@ -496,9 +478,8 @@ export function AnaliseWorkspace() {
 
         {avisoSalvamento && (
           <div
-            className="alert alert-warning py-2 mb-3"
+            className={`alert alert-warning py-2 mb-3 ${workspaceStyles.saveWarning}`}
             role="status"
-            style={{ fontSize: 12.5 }}
           >
             {avisoSalvamento}
           </div>
@@ -513,8 +494,8 @@ export function AnaliseWorkspace() {
               <span className="visually-hidden">Carregando...</span>
             </div>
             <h3 className="h6 fw-bold mb-2">{ETAPAS_ANALISE[etapaAtual]}</h3>
-            <div className={`${reportStyles.scaleTrack} mt-3`} style={{ width: 220 }}>
-              <div className={reportStyles.scaleFill} style={{ width: "65%" }} />
+            <div className={`${reportStyles.scaleTrack} ${reportStyles.loadingTrack} mt-3`}>
+              <div className={`${reportStyles.scaleFill} ${reportStyles.loadingFill}`} />
             </div>
           </div>
         ) : !analise ? (
@@ -523,10 +504,7 @@ export function AnaliseWorkspace() {
               <LuSparkles />
             </div>
             <h3 className="h6 fw-bold mb-1">Sua análise aparecerá aqui</h3>
-            <p
-              className="mb-0 text-secondary"
-              style={{ fontSize: 13, maxWidth: 340 }}
-            >
+            <p className={`mb-0 text-secondary ${emptyStyles.emptyTextNarrow}`}>
               Preencha seu perfil e a oportunidade ao lado. O Vett analisará o
               alinhamento entre os dois.
             </p>
@@ -573,7 +551,7 @@ export function AnaliseWorkspace() {
               {/* Onde você se encaixa (Compacto) */}
               <div className="col-md-6">
                 <div className={`${cardStyles.card} h-100`}>
-                  <h3 className="h6 fw-bold mb-3" style={{ fontSize: 14 }}>
+                  <h3 className={`h6 fw-bold mb-3 ${reportStyles.sectionTitle}`}>
                     Onde você se encaixa
                   </h3>
                   {Object.entries(analise.matchPorCategoria).map(
@@ -595,15 +573,11 @@ export function AnaliseWorkspace() {
                 <div className={`${cardStyles.card} flex-fill`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSuccess}`}
-                      style={{ width: 26, height: 26, fontSize: 13 }}
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleSuccess}`}
                     >
                       <LuThumbsUp />
                     </div>
-                    <h3
-                      className="h6 fw-bold mb-0 text-dark"
-                      style={{ fontSize: 14, lineHeight: 1 }}
-                    >
+                    <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
                       O que joga a seu favor
                     </h3>
                   </div>
@@ -625,15 +599,11 @@ export function AnaliseWorkspace() {
                 <div className={`${cardStyles.card} flex-fill`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}
-                      style={{ width: 26, height: 26, fontSize: 13 }}
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleWarning}`}
                     >
                       <LuTriangleAlert />
                     </div>
-                    <h3
-                      className="h6 fw-bold mb-0 text-dark"
-                      style={{ fontSize: 14, lineHeight: 1 }}
-                    >
+                    <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
                       Onde existe uma lacuna
                     </h3>
                   </div>
@@ -660,12 +630,11 @@ export function AnaliseWorkspace() {
                 <div className={`${cardStyles.card} h-100`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className={cardStyles.iconCircle}
-                      style={{ width: 26, height: 26, fontSize: 13 }}
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm}`}
                     >
                       <LuClipboardList />
                     </div>
-                    <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                    <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
                       Antes de aplicar
                     </h3>
                   </div>
@@ -687,19 +656,15 @@ export function AnaliseWorkspace() {
                 <div className={`${cardStyles.card} h-100`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary}`}
-                      style={{ width: 26, height: 26, fontSize: 13 }}
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCirclePrimary}`}
                     >
                       <LuLightbulb />
                     </div>
-                    <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+                    <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
                       Insight
                     </h3>
                   </div>
-                  <p
-                    className="mb-0 text-secondary"
-                    style={{ fontSize: 13, lineHeight: 1.45 }}
-                  >
+                  <p className={`mb-0 text-secondary ${reportStyles.insightText}`}>
                     {analise.dicaFinal}
                   </p>
                 </div>

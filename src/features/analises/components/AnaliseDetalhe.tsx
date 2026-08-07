@@ -26,6 +26,8 @@ import emptyStyles from "../../../styles/ui/EmptyState.module.css";
 import statusStyles from "../../../styles/ui/Status.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
 import reportStyles from "../../../styles/ui/Report.module.css";
+import pageStyles from "../../../styles/ui/Page.module.css";
+import modalStyles from "../../../styles/ui/Modal.module.css";
 import styles from "./AnaliseDetalhe.module.css";
 import type { Analise } from "../../../types";
 
@@ -177,7 +179,7 @@ export function AnaliseDetalhe() {
     return (
       <div className={emptyStyles.emptyState} role="status">
         <div className="spinner-border text-teal" aria-hidden="true" />
-        <p className="mt-3 text-secondary" style={{ fontSize: 13 }}>
+        <p className={`mt-3 text-secondary ${emptyStyles.loadingText}`}>
           Carregando análise...
         </p>
       </div>
@@ -193,16 +195,12 @@ export function AnaliseDetalhe() {
   }
 
   return (
-    <div
-      className={`${motionStyles.fadeInUp} ${styles.page}`}
-      style={{ maxWidth: 920, margin: "0 auto" }}
-    >
+    <div className={`${motionStyles.fadeInUp} ${pageStyles.wide} ${styles.page}`}>
       {/* Top back navigation */}
       <div className="mb-3">
         <Link
           to="/historico"
-          className="text-decoration-none d-inline-flex align-items-center gap-1 text-secondary"
-          style={{ fontSize: 13, fontWeight: 500 }}
+          className={`text-decoration-none d-inline-flex align-items-center gap-1 text-secondary ${pageStyles.backLink}`}
         >
           <LuArrowLeft size={15} /> Voltar ao histórico
         </Link>
@@ -214,23 +212,20 @@ export function AnaliseDetalhe() {
           <div>
             <h1 className="h5 fw-bold mb-1">{analise.titulo_vaga}</h1>
             {analise.empresa && (
-              <p className="mb-0 text-secondary" style={{ fontSize: 13 }}>
+              <p className={`mb-0 text-secondary ${styles.jobMeta}`}>
                 {analise.empresa}
               </p>
             )}
           </div>
           {analise.senioridade && (
-            <span
-              className="badge bg-light text-dark border px-3 py-1"
-              style={{ fontSize: 12, borderRadius: 20 }}
-            >
+            <span className={`badge bg-light text-dark border px-3 py-1 ${styles.seniorityBadge}`}>
               {analise.senioridade}
             </span>
           )}
         </div>
 
         {(analise.hard_skills.length > 0 || analise.soft_skills.length > 0) && (
-          <div className="mt-1 text-tertiary" style={{ fontSize: 12.5 }}>
+          <div className={`mt-1 text-tertiary ${styles.skillsLine}`}>
             {[...analise.hard_skills, ...analise.soft_skills].join(" · ")}
           </div>
         )}
@@ -243,13 +238,7 @@ export function AnaliseDetalhe() {
           }
         >
           <summary
-            className="btn btn-light border text-dark fw-semibold d-flex align-items-center justify-content-between w-100 px-3 py-2"
-            style={{
-              borderRadius: 8,
-              fontSize: 13,
-              cursor: "pointer",
-              background: "var(--surface-alt)",
-            }}
+            className={`btn btn-light border text-dark fw-semibold d-flex align-items-center justify-content-between w-100 px-3 py-2 ${styles.summaryButton}`}
           >
             <span className="d-inline-flex align-items-center gap-2">
               <LuEye size={16} className="text-teal" />
@@ -261,29 +250,21 @@ export function AnaliseDetalhe() {
             </span>
             <LuChevronDown
               size={16}
-              style={{
-                transform: descricaoAberta ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 200ms ease",
-              }}
+              className={`${styles.chevron}${descricaoAberta ? ` ${styles.chevronOpen}` : ""}`}
             />
           </summary>
 
           <div
-            className="mt-2 p-3 rounded position-relative"
-            style={{
-              background: "var(--surface-alt)",
-              border: "1px solid var(--border)",
-            }}
+            className={`mt-2 p-3 rounded position-relative ${styles.descriptionPanel}`}
           >
             <div className="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-              <span className="fw-semibold text-secondary" style={{ fontSize: 12 }}>
+              <span className={`fw-semibold text-secondary ${styles.descriptionTitle}`}>
                 Descrição da oportunidade
               </span>
               <button
                 type="button"
                 onClick={handleCopiarDescricao}
-                className="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1"
-                style={{ fontSize: 12, borderRadius: 6, padding: "3px 10px" }}
+                className={`btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1 ${styles.copyButton}`}
               >
                 {copiadoDescricao ? (
                   <>
@@ -296,7 +277,7 @@ export function AnaliseDetalhe() {
                 )}
               </button>
             </div>
-            <p className="mb-0" style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>
+            <p className={`mb-0 ${styles.descriptionText}`}>
               {analise.descricao_vaga}
             </p>
           </div>
@@ -352,7 +333,7 @@ export function AnaliseDetalhe() {
         {analise.match_por_categoria && (
           <div className="col-md-6">
             <div className={`${cardStyles.card} h-100`}>
-              <h3 className="h6 fw-bold mb-3" style={{ fontSize: 14 }}>
+              <h3 className={`h6 fw-bold mb-3 ${reportStyles.sectionTitle}`}>
                 Onde você se encaixa
               </h3>
               {Object.entries(analise.match_por_categoria).map(
@@ -381,15 +362,11 @@ export function AnaliseDetalhe() {
           <div className={`${cardStyles.card} flex-fill`}>
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
-                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSuccess}`}
-                style={{ width: 26, height: 26, fontSize: 13 }}
+                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleSuccess}`}
               >
                 <LuThumbsUp />
               </div>
-              <h3
-                className="h6 fw-bold mb-0 text-dark"
-                style={{ fontSize: 14, lineHeight: 1 }}
-              >
+              <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
                 O que joga a seu favor
               </h3>
             </div>
@@ -411,15 +388,11 @@ export function AnaliseDetalhe() {
           <div className={`${cardStyles.card} flex-fill`}>
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
-                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}
-                style={{ width: 26, height: 26, fontSize: 13 }}
+                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleWarning}`}
               >
                 <LuTriangleAlert />
               </div>
-              <h3
-                className="h6 fw-bold mb-0 text-dark"
-                style={{ fontSize: 14, lineHeight: 1 }}
-              >
+              <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
                 Onde existe uma lacuna
               </h3>
             </div>
@@ -446,12 +419,11 @@ export function AnaliseDetalhe() {
           <div className={`${cardStyles.card} h-100`}>
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
-                className={cardStyles.iconCircle}
-                style={{ width: 26, height: 26, fontSize: 13 }}
+                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm}`}
               >
                 <LuClipboardList />
               </div>
-              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+              <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
                 Antes de aplicar
               </h3>
             </div>
@@ -473,19 +445,15 @@ export function AnaliseDetalhe() {
           <div className={`${cardStyles.card} h-100`}>
             <div className="d-flex align-items-center gap-2 mb-2">
               <div
-                className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary}`}
-                style={{ width: 26, height: 26, fontSize: 13 }}
+                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCirclePrimary}`}
               >
                 <LuLightbulb />
               </div>
-              <h3 className="h6 fw-bold mb-0" style={{ fontSize: 14 }}>
+              <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
                 Insight
               </h3>
             </div>
-            <p
-              className="mb-0 text-secondary"
-              style={{ fontSize: 13, lineHeight: 1.45 }}
-            >
+            <p className={`mb-0 text-secondary ${reportStyles.insightText}`}>
               {analise.dica_final}
             </p>
           </div>
@@ -496,8 +464,7 @@ export function AnaliseDetalhe() {
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top mt-4 mb-4">
         <button
           onClick={scrollToTop}
-          className="btn btn-light text-secondary d-inline-flex align-items-center gap-2"
-          style={{ height: 38, borderRadius: 8, fontSize: 13, fontWeight: 600 }}
+          className={`btn btn-light text-secondary d-inline-flex align-items-center gap-2 ${styles.actionButton}`}
         >
           <LuArrowUp size={16} /> Voltar ao topo
         </button>
@@ -505,16 +472,14 @@ export function AnaliseDetalhe() {
         <div className="d-flex align-items-center gap-2">
           <button
             onClick={() => setConfirmandoExclusao(true)}
-            className="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3"
-            style={{ height: 38, borderRadius: 8, fontWeight: 600, fontSize: 13 }}
+            className={`btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3 ${styles.actionButton}`}
           >
             <LuTrash2 size={15} /> Excluir análise
           </button>
 
           <Link
             to={`/analises/${analise.id}/reanalisar`}
-            className={`${buttonStyles.primary} text-decoration-none px-3`}
-            style={{ width: "auto", height: 38, fontSize: 13 }}
+            className={`${buttonStyles.primary} ${styles.actionLink} text-decoration-none px-3`}
           >
             <LuRotateCw size={15} /> Reanalisar
           </Link>
@@ -524,9 +489,8 @@ export function AnaliseDetalhe() {
       {/* Confirmation Modal */}
       {confirmandoExclusao && (
         <div
-          className="modal fade show d-block"
+          className={`modal fade show d-block ${modalStyles.backdrop}`}
           tabIndex={-1}
-          style={{ background: "rgba(0, 0, 0, 0.4)" }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-detalhe-excluir-titulo"
@@ -548,8 +512,7 @@ export function AnaliseDetalhe() {
                 </h2>
               </div>
               <p
-                className="text-secondary mb-4"
-                style={{ fontSize: 13.5 }}
+                className={`text-secondary mb-4 ${modalStyles.modalText}`}
                 id="modal-detalhe-excluir-desc"
               >
                 Tem certeza que deseja excluir esta análise para{" "}
@@ -560,16 +523,14 @@ export function AnaliseDetalhe() {
                   onClick={() => setConfirmandoExclusao(false)}
                   disabled={excluindo}
                   autoFocus
-                  className="btn btn-light px-3"
-                  style={{ borderRadius: 8, fontSize: 13.5 }}
+                  className={`btn btn-light px-3 ${modalStyles.modalButtonLight}`}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleExcluir}
                   disabled={excluindo}
-                  className="btn btn-danger px-4"
-                  style={{ borderRadius: 8, fontSize: 13.5, fontWeight: 600 }}
+                  className={`btn btn-danger px-4 ${modalStyles.modalButtonDanger}`}
                 >
                   {excluindo ? "Excluindo..." : "Sim, excluir"}
                 </button>
