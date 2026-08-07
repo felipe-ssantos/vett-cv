@@ -3,6 +3,7 @@ import formidable from "formidable";
 import fs from "fs/promises";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
+import { createClient } from "@supabase/supabase-js";
 
 export const config = {
   maxDuration: 60,
@@ -10,6 +11,65 @@ export const config = {
 };
 
 const LIMITE_TAMANHO_ARQUIVO_BYTES = 4 * 1024 * 1024; // 4 MB
+
+// Limites de uso para proteger a cota gratuita do Gemini e do Supabase.
+const LIMITE_ANALISES_POR_SESSAO_DIA = 5;
+const LIMITE_ANALISES_GLOBAIS_DIA = 100;
+
+// Cliente do Supabase usado apenas no back-end (chave de serviço, nunca
+// exposta ao cliente). Sem a chave configurada, o limite é ignorado
+// (fail-open) para não derrubar a aplicação.
+const supabaseAdmin = criarClienteSupabaseAdmin();
+
+function criarClienteSupabaseAdmin() {
+  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const chaveServico = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !chaveServico) {
+    console.warn(
+      "[rate-limit] SUPABASE_SERVICE_ROLE_KEY ausente — limite de análises desativado.",
+    );
+    return null;
+  }
+  return createClient(url, chaveServico);
+}
+
+// Incremento atômico no PostgreSQL (INSERT ... ON CONFLICT DO UPDATE) via
+// função incrementar_uso. Retorna null se o contador não estiver disponível.
+async function incrementarUso(chave: string): Promise<number | null> {
+  if (!supabaseAdmin) return null;
+  const { data, error } = await supabaseAdmin.rpc("incrementar_uso", {
+    p_chave: chave,
+  });
+  if (error) {
+    console.error("[rate-limit] falha ao incrementar uso:", error.message);
+    return null;
+  }
+  return typeof data === "number" ? data : null;
+}
+
+// Retorna a mensagem de bloqueio (429) ou null se a análise pode prosseguir.
+async function verificarLimites(
+  sessaoId: string | null,
+): Promise<string | null> {
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  if (sessaoId) {
+    const totalSessao = await incrementarUso(`sessao:${sessaoId}:${hoje}`);
+    if (
+      totalSessao !== null &&
+      totalSessao > LIMITE_ANALISES_POR_SESSAO_DIA
+    ) {
+      return `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO_DIA} análises por dia neste navegador. Volte amanhã!`;
+    }
+  }
+
+  const totalGlobal = await incrementarUso(`global:${hoje}`);
+  if (totalGlobal !== null && totalGlobal > LIMITE_ANALISES_GLOBAIS_DIA) {
+    return "O limite diário de análises do Vett foi atingido. Volte amanhã!";
+  }
+
+  return null;
+}
 
 const EXTENSOES_POR_MIMETYPE: Record<string, string> = {
   "application/pdf": "pdf",
@@ -363,6 +423,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({
         erro: "O arquivo excede o limite de 4 MB. Envie um arquivo menor.",
       });
+    }
+
+    // Limite de uso (por sessão e global) — responde 429 antes de extrair o
+    // arquivo e de consumir a cota do Gemini.
+    const sessaoIdRaw = fields.sessaoId?.[0];
+    const sessaoId =
+      sessaoIdRaw &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        sessaoIdRaw,
+      )
+        ? sessaoIdRaw
+        : null;
+
+    const bloqueio = await verificarLimites(sessaoId);
+    if (bloqueio) {
+      return res.status(429).json({ erro: bloqueio });
     }
 
     let curriculoTexto = curriculoTextoColado ?? "";

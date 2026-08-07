@@ -72,6 +72,12 @@ npm install
 cp .env.local.example .env.local
 ```
 
+### Configure o banco (uma vez)
+
+No SQL Editor do Supabase (Dashboard → SQL Editor), execute o conteúdo de
+`supabase/migrations/0001_uso_analises.sql` — cria a tabela `uso_analises` e a
+função `incrementar_uso` usadas no limite diário de análises.
+
 ### Variáveis de ambiente
 
 | Variável | Descrição |
@@ -79,6 +85,7 @@ cp .env.local.example .env.local
 | `VITE_SUPABASE_URL` | URL do projeto no Supabase |
 | `VITE_SUPABASE_ANON_KEY` | Chave anônima do Supabase |
 | `GEMINI_API_KEY` | Chave da API do Google Gemini (usada apenas no back-end) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço do Supabase (apenas no back-end, para o limite diário de análises). `SUPABASE_URL` é opcional — sem ela, a API reusa `VITE_SUPABASE_URL` |
 
 ### Rodando
 
@@ -114,6 +121,18 @@ Os testes ficam colocalizados ao lado dos componentes e não entram no bundle de
 - Validação de entrada no cliente e no servidor (incluindo formato e tamanho do arquivo)
 - Políticas de RLS no Supabase para isolamento das análises por sessão
 - Acesso ao banco via sessão anônima — dados tratados com cautela
+
+---
+
+## ⚙️ Limites de uso
+
+Para proteger as cotas gratuitas do Gemini e do Supabase, cada navegador pode
+fazer **5 análises por dia** e o Vett tem um teto global de **100 análises por
+dia**. Ao atingir o limite, a API responde `429` com uma mensagem clara.
+
+O limite por navegador usa o armazenamento local da sessão anônima — não é uma
+barreira de segurança (pode ser zerado limpando os dados do navegador). O teto
+global é a proteção real contra abuso e só pode ser alterado pelo back-end.
 
 ---
 

@@ -40,3 +40,6 @@ lerna-debug.log*
 
 # Freebuff (tooling local)
 .freebuff/
+
+# Modelo de variáveis de ambiente (sem segredos) — versionado de propósito
+!.env.local.example

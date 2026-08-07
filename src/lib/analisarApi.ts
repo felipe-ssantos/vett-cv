@@ -1,4 +1,5 @@
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../types";
+import { supabase } from "./supabaseClient";
 
 const TIMEOUT_ANALISE_MS = 90_000;
 
@@ -24,12 +25,29 @@ async function extrairMensagemDeErro(resposta: Response): Promise<string> {
   if (resposta.status === 502 || resposta.status === 504) {
     return "O servidor demorou demais para responder. Tente novamente em instantes.";
   }
+  if (resposta.status === 429) {
+    return "Limite de análises diárias atingido. Tente novamente amanhã.";
+  }
   return `Falha na análise (HTTP ${resposta.status}). Tente novamente.`;
+}
+
+// Identifica a sessão anônima do Supabase para o limite de análises por dia.
+// Falhas aqui nunca devem impedir a análise (o servidor também cobre a cota).
+async function obterIdSessao(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.user.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function enviarAnalise(
   formData: FormData,
 ): Promise<RespostaAnalisar> {
+  const sessaoId = await obterIdSessao();
+  if (sessaoId) formData.append("sessaoId", sessaoId);
+
   const controlador = new AbortController();
   const timeout = setTimeout(() => controlador.abort(), TIMEOUT_ANALISE_MS);
 
