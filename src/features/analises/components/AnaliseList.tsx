@@ -191,6 +191,7 @@ export function AnaliseList() {
               placeholder="Pesquise em suas analises por cargo, empresa ou palavra-chave..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
+              aria-label="Pesquisar no histórico de análises"
             />
             <LuSearch
               className="position-absolute top-50 translate-middle-y text-secondary"
@@ -204,13 +205,18 @@ export function AnaliseList() {
                 className="btn btn-sm text-secondary position-absolute top-50 translate-middle-y border-0 p-1"
                 style={{ right: 8 }}
                 title="Limpar filtro"
+                aria-label="Limpar filtro de pesquisa"
               >
-                <LuX size={15} />
+                <LuX size={15} aria-hidden="true" />
               </button>
             )}
           </div>
           {filtro && (
-            <div className="mt-1 text-secondary" style={{ fontSize: 12 }}>
+            <div
+              className="mt-1 text-secondary"
+              style={{ fontSize: 12 }}
+              role="status"
+            >
               Exibindo {analisesFiltradas.length} de {analises.length}{" "}
               resultados para "{filtro}".
             </div>
@@ -219,8 +225,8 @@ export function AnaliseList() {
       )}
 
       {carregando && (
-        <div className="vett-empty-state">
-          <div className="spinner-border text-teal" role="status" />
+        <div className="vett-empty-state" role="status">
+          <div className="spinner-border text-teal" aria-hidden="true" />
           <p className="mt-3 text-secondary" style={{ fontSize: 13 }}>
             Carregando histórico...
           </p>
@@ -341,16 +347,26 @@ export function AnaliseList() {
           className="modal fade show d-block"
           tabIndex={-1}
           style={{ background: "rgba(0, 0, 0, 0.4)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-excluir-titulo"
+          aria-describedby="modal-excluir-desc"
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content vett-card border-0 p-4">
               <div className="d-flex align-items-center gap-3 mb-3">
                 <div className="vett-icon-circle vett-icon-circle--warning">
-                  <LuTriangleAlert />
+                  <LuTriangleAlert aria-hidden="true" />
                 </div>
-                <h2 className="h5 fw-bold mb-0">Excluir análise?</h2>
+                <h2 className="h5 fw-bold mb-0" id="modal-excluir-titulo">
+                  Excluir análise?
+                </h2>
               </div>
-              <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
+              <p
+                className="text-secondary mb-4"
+                style={{ fontSize: 13.5 }}
+                id="modal-excluir-desc"
+              >
                 Tem certeza que deseja excluir a análise para a vaga{" "}
                 <strong>"{itemParaExcluir.titulo_vaga}"</strong>? Esta ação não
                 pode ser desfeita.
@@ -359,6 +375,7 @@ export function AnaliseList() {
                 <button
                   onClick={() => setItemParaExcluir(null)}
                   disabled={excluindo}
+                  autoFocus
                   className="btn btn-light px-3"
                   style={{ borderRadius: 8, fontSize: 13.5 }}
                 >
@@ -384,16 +401,29 @@ export function AnaliseList() {
           className="modal fade show d-block"
           tabIndex={-1}
           style={{ background: "rgba(0, 0, 0, 0.4)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-excluir-todas-titulo"
+          aria-describedby="modal-excluir-todas-desc"
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content vett-card border-0 p-4">
               <div className="d-flex align-items-center gap-3 mb-3">
                 <div className="vett-icon-circle vett-icon-circle--warning">
-                  <LuTriangleAlert />
+                  <LuTriangleAlert aria-hidden="true" />
                 </div>
-                <h2 className="h5 fw-bold mb-0">Excluir todo o histórico?</h2>
+                <h2
+                  className="h5 fw-bold mb-0"
+                  id="modal-excluir-todas-titulo"
+                >
+                  Excluir todo o histórico?
+                </h2>
               </div>
-              <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
+              <p
+                className="text-secondary mb-4"
+                style={{ fontSize: 13.5 }}
+                id="modal-excluir-todas-desc"
+              >
                 Tem certeza que deseja apagar{" "}
                 <strong>todas as {analises.length} análises</strong> salvas?
                 Esta ação removerá permanentemente o histórico do banco de
@@ -403,6 +433,7 @@ export function AnaliseList() {
                 <button
                   onClick={() => setConfirmandoExcluirTodas(false)}
                   disabled={excluindo}
+                  autoFocus
                   className="btn btn-light px-3"
                   style={{ borderRadius: 8, fontSize: 13.5 }}
                 >

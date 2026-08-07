@@ -219,6 +219,9 @@ export function AnaliseWorkspace() {
 
   return (
     <div className="row g-3">
+      <h1 className="visually-hidden">
+        Análise de compatibilidade entre currículo e vaga
+      </h1>
       {/* Coluna esquerda — Seu perfil / Oportunidade */}
       <div className="col-lg-5">
         <form onSubmit={handleSubmit}>
@@ -237,7 +240,9 @@ export function AnaliseWorkspace() {
             </div>
 
             <div className="vett-label-row">
-              <span className="vett-field-label">Currículo</span>
+              <label className="vett-field-label" htmlFor="curriculo-texto">
+                Currículo
+              </label>
               <div className="d-flex align-items-center gap-2">
                 <button
                   type="button"
@@ -249,7 +254,7 @@ export function AnaliseWorkspace() {
                 >
                   <LuClipboard size={12} /> Colar
                 </button>
-                <span className="vett-char-count">
+                <span className="vett-char-count" id="curriculo-contador">
                   {curriculoTexto.length}/{LIMITE_CARACTERES}
                 </span>
               </div>
@@ -257,6 +262,7 @@ export function AnaliseWorkspace() {
 
             <div className="vett-input-wrapper mb-2">
               <textarea
+                id="curriculo-texto"
                 className="form-control vett-textarea w-100"
                 style={{ height: 135 }}
                 placeholder="Analista de Dados com experiência em SQL, Python, Power BI..."
@@ -267,9 +273,10 @@ export function AnaliseWorkspace() {
                   if (e.target.value) setArquivo(null);
                 }}
                 disabled={!!arquivo}
+                aria-describedby="curriculo-contador"
               />
               {(curriculoTexto.trim().length > 0 || arquivo) && (
-                <div className="vett-check-badge">
+                <div className="vett-check-badge" aria-hidden="true">
                   <LuCheck />
                 </div>
               )}
@@ -282,9 +289,14 @@ export function AnaliseWorkspace() {
                 onChange={handleArquivoChange}
                 className="form-control form-control-sm"
                 style={{ fontSize: 12 }}
+                aria-label="Enviar arquivo do currículo em PDF, DOC ou DOCX"
               />
               {arquivo && (
-                <div className="form-text mt-1" style={{ fontSize: 11.5 }}>
+                <div
+                  className="form-text mt-1"
+                  style={{ fontSize: 11.5 }}
+                  role="status"
+                >
                   Selecionado: {arquivo.name}
                 </div>
               )}
@@ -306,7 +318,9 @@ export function AnaliseWorkspace() {
             </div>
 
             <div className="vett-label-row">
-              <span className="vett-field-label">Descrição da vaga</span>
+              <label className="vett-field-label" htmlFor="descricao-vaga">
+                Descrição da vaga
+              </label>
               <div className="d-flex align-items-center gap-2">
                 <button
                   type="button"
@@ -317,7 +331,7 @@ export function AnaliseWorkspace() {
                 >
                   <LuClipboard size={12} /> Colar
                 </button>
-                <span className="vett-char-count">
+                <span className="vett-char-count" id="descricao-contador">
                   {descricaoVaga.length}/{LIMITE_CARACTERES}
                 </span>
               </div>
@@ -325,15 +339,17 @@ export function AnaliseWorkspace() {
 
             <div className="vett-input-wrapper">
               <textarea
+                id="descricao-vaga"
                 className="form-control vett-textarea w-100"
                 style={{ height: 135 }}
                 placeholder="Buscamos Analista de Dados com experiência em SQL, Python, Looker..."
                 maxLength={LIMITE_CARACTERES}
                 value={descricaoVaga}
                 onChange={(e) => setDescricaoVaga(e.target.value)}
+                aria-describedby="descricao-contador"
               />
               {descricaoVaga.trim().length > 0 && (
-                <div className="vett-check-badge">
+                <div className="vett-check-badge" aria-hidden="true">
                   <LuCheck />
                 </div>
               )}
@@ -349,7 +365,6 @@ export function AnaliseWorkspace() {
               <>
                 <span
                   className="spinner-border spinner-border-sm me-2"
-                  role="status"
                   aria-hidden="true"
                 />
                 Analisando...
@@ -398,7 +413,7 @@ export function AnaliseWorkspace() {
         </div>
 
         {analisando ? (
-          <div className="vett-empty-state">
+          <div className="vett-empty-state" aria-live="polite">
             <div
               className="vett-empty-icon spinner-border text-teal"
               role="status"

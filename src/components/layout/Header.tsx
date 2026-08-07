@@ -22,6 +22,8 @@ export function Header() {
             viewBox="0 0 44 32"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            focusable="false"
           >
             <circle cx="15" cy="16" r="14" fill="#0B4F46" />
             <circle cx="29" cy="16" r="14" fill="#10B981" fillOpacity="0.85" />
@@ -33,16 +35,21 @@ export function Header() {
         </span>
       </div>
 
-      <nav className="vett-nav-container">
-        <Link to="/" className={`vett-nav-link ${isInicio ? "active" : ""}`}>
-          <LuSparkles size={15} />
+      <nav className="vett-nav-container" aria-label="Navegação principal">
+        <Link
+          to="/"
+          className={`vett-nav-link ${isInicio ? "active" : ""}`}
+          aria-current={isInicio ? "page" : undefined}
+        >
+          <LuSparkles size={15} aria-hidden="true" />
           Início
         </Link>
         <Link
           to="/historico"
           className={`vett-nav-link ${isHistorico ? "active" : ""}`}
+          aria-current={isHistorico ? "page" : undefined}
         >
-          <LuClock size={15} />
+          <LuClock size={15} aria-hidden="true" />
           Histórico
         </Link>
       </nav>

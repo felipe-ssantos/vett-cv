@@ -145,9 +145,15 @@ export function ReanalisarForm() {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="vett-field-label mb-2">Cole o novo texto do currículo</label>
+            <label
+              className="vett-field-label mb-2"
+              htmlFor="reanalisar-curriculo"
+            >
+              Cole o novo texto do currículo
+            </label>
             <div className="vett-input-wrapper">
               <textarea
+                id="reanalisar-curriculo"
                 className="form-control vett-textarea w-100"
                 style={{ height: 220 }}
                 placeholder="Cole aqui o texto do seu currículo atualizado..."
@@ -159,7 +165,7 @@ export function ReanalisarForm() {
                 disabled={!!arquivo}
               />
               {curriculoTexto.trim().length > 0 && (
-                <div className="vett-check-badge">
+                <div className="vett-check-badge" aria-hidden="true">
                   <LuCheck />
                 </div>
               )}
@@ -169,8 +175,14 @@ export function ReanalisarForm() {
           <div className="text-center text-secondary small my-3">ou</div>
 
           <div className="mb-4">
-            <label className="vett-field-label mb-2">Envie o arquivo (PDF ou DOCX)</label>
+            <label
+              className="vett-field-label mb-2"
+              htmlFor="reanalisar-arquivo"
+            >
+              Envie o arquivo (PDF ou DOCX)
+            </label>
             <input
+              id="reanalisar-arquivo"
               type="file"
               accept=".pdf,.doc,.docx"
               onChange={handleArquivoChange}
@@ -188,7 +200,10 @@ export function ReanalisarForm() {
           >
             {analisando ? (
               <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" />
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  aria-hidden="true"
+                />
                 Analisando...
               </>
             ) : (

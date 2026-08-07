@@ -14,7 +14,10 @@ function App() {
 
   if (!pronto) {
     return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+      <div
+        className="min-vh-100 d-flex align-items-center justify-content-center"
+        role="status"
+      >
         <p className="text-secondary">Carregando...</p>
       </div>
     );

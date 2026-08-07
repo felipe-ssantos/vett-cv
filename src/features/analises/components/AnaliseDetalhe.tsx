@@ -157,13 +157,19 @@ export function AnaliseDetalhe() {
   }
 
   function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const reduzirMovimento = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    window.scrollTo({
+      top: 0,
+      behavior: reduzirMovimento ? "auto" : "smooth",
+    });
   }
 
   if (carregando) {
     return (
-      <div className="vett-empty-state">
-        <div className="spinner-border text-teal" role="status" />
+      <div className="vett-empty-state" role="status">
+        <div className="spinner-border text-teal" aria-hidden="true" />
         <p className="mt-3 text-secondary" style={{ fontSize: 13 }}>
           Carregando análise...
         </p>
@@ -503,16 +509,29 @@ export function AnaliseDetalhe() {
           className="modal fade show d-block"
           tabIndex={-1}
           style={{ background: "rgba(0, 0, 0, 0.4)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-detalhe-excluir-titulo"
+          aria-describedby="modal-detalhe-excluir-desc"
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content vett-card border-0 p-4">
               <div className="d-flex align-items-center gap-3 mb-3">
                 <div className="vett-icon-circle vett-icon-circle--warning">
-                  <LuTriangleAlert />
+                  <LuTriangleAlert aria-hidden="true" />
                 </div>
-                <h2 className="h5 fw-bold mb-0">Excluir análise?</h2>
+                <h2
+                  className="h5 fw-bold mb-0"
+                  id="modal-detalhe-excluir-titulo"
+                >
+                  Excluir análise?
+                </h2>
               </div>
-              <p className="text-secondary mb-4" style={{ fontSize: 13.5 }}>
+              <p
+                className="text-secondary mb-4"
+                style={{ fontSize: 13.5 }}
+                id="modal-detalhe-excluir-desc"
+              >
                 Tem certeza que deseja excluir esta análise para{" "}
                 <strong>"{analise.titulo_vaga}"</strong>? Esta ação não pode ser desfeita.
               </p>
@@ -520,6 +539,7 @@ export function AnaliseDetalhe() {
                 <button
                   onClick={() => setConfirmandoExclusao(false)}
                   disabled={excluindo}
+                  autoFocus
                   className="btn btn-light px-3"
                   style={{ borderRadius: 8, fontSize: 13.5 }}
                 >
