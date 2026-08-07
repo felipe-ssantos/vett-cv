@@ -9,6 +9,7 @@ import {
   LuUser,
   LuWrench,
 } from "react-icons/lu";
+import type { ReactNode } from "react";
 import cardStyles from "../../../styles/ui/Card.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
 import reportStyles from "../../../styles/ui/Report.module.css";
@@ -77,6 +78,8 @@ function DimensaoBarra({
 
 interface RelatorioAnaliseProps {
   analise: AnaliseMatchIA;
+  /** Slot opcional no topo do card de score (ex.: cabeçalho da página de detalhe). */
+  cabecalho?: ReactNode;
 }
 
 /**
@@ -84,11 +87,14 @@ interface RelatorioAnaliseProps {
  * categoria, pontos fortes/lacunas, recomendações e insight. Sem estado ou
  * efeitos — recebe a análise pronta.
  */
-export function RelatorioAnalise({ analise }: RelatorioAnaliseProps) {
+export function RelatorioAnalise({ analise, cabecalho }: RelatorioAnaliseProps) {
+  const temCategorias = Boolean(analise.matchPorCategoria);
+
   return (
     <div className={motionStyles.fadeInUp}>
       {/* Top Score Compatibility Card */}
       <div className={`${cardStyles.card} mb-3`}>
+        {cabecalho}
         <div className={reportStyles.scoreHeader}>
           <div className={reportStyles.scoreNumberGroup}>
             <span className={reportStyles.scoreNumber}>
@@ -123,24 +129,34 @@ export function RelatorioAnalise({ analise }: RelatorioAnaliseProps) {
       {/* Sub-cards row: Onde você se encaixa / Favor / Lacuna */}
       <div className="row g-3 mb-3">
         {/* Onde você se encaixa (Compacto) */}
-        <div className="col-md-6">
-          <div className={`${cardStyles.card} h-100`}>
-            <h3 className={`h6 fw-bold mb-3 ${reportStyles.sectionTitle}`}>
-              Onde você se encaixa
-            </h3>
-            {Object.entries(analise.matchPorCategoria).map(([chave, valor]) => (
-              <DimensaoBarra
-                key={chave}
-                iconKey={chave}
-                label={LABELS_CATEGORIA[chave] ?? chave}
-                valor={valor}
-              />
-            ))}
+        {analise.matchPorCategoria && (
+          <div className="col-md-6">
+            <div className={`${cardStyles.card} h-100`}>
+              <h3 className={`h6 fw-bold mb-3 ${reportStyles.sectionTitle}`}>
+                Onde você se encaixa
+              </h3>
+              {Object.entries(analise.matchPorCategoria).map(
+                ([chave, valor]) => (
+                  <DimensaoBarra
+                    key={chave}
+                    iconKey={chave}
+                    label={LABELS_CATEGORIA[chave] ?? chave}
+                    valor={valor}
+                  />
+                ),
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Right column: Favor & Lacuna */}
-        <div className="col-md-6 d-flex flex-column gap-3">
+        <div
+          className={
+            temCategorias
+              ? "col-md-6 d-flex flex-column gap-3"
+              : "col-12 d-flex flex-column gap-3"
+          }
+        >
           {/* Favor */}
           <div className={`${cardStyles.card} flex-fill`}>
             <div className="d-flex align-items-center gap-2 mb-2">
@@ -200,7 +216,7 @@ export function RelatorioAnalise({ analise }: RelatorioAnaliseProps) {
       </div>
 
       {/* Bottom row: Antes de aplicar & Insight */}
-      <div className="row g-3">
+      <div className="row g-3 mb-3">
         {/* Antes de aplicar */}
         <div className="col-md-6">
           <div className={`${cardStyles.card} h-100`}>

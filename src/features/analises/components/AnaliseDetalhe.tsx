@@ -5,16 +5,8 @@ import {
   LuArrowUp,
   LuCheck,
   LuCopy,
-  LuUser,
-  LuStar,
-  LuWrench,
-  LuGlobe,
-  LuClipboardList,
-  LuLightbulb,
   LuTrash2,
   LuRotateCw,
-  LuTriangleAlert,
-  LuThumbsUp,
   LuEye,
   LuChevronDown,
 } from "react-icons/lu";
@@ -25,72 +17,12 @@ import buttonStyles from "../../../styles/ui/Button.module.css";
 import emptyStyles from "../../../styles/ui/EmptyState.module.css";
 import statusStyles from "../../../styles/ui/Status.module.css";
 import motionStyles from "../../../styles/ui/Motion.module.css";
-import reportStyles from "../../../styles/ui/Report.module.css";
 import pageStyles from "../../../styles/ui/Page.module.css";
 import styles from "./AnaliseDetalhe.module.css";
+import { mapearParaRelatorio } from "../lib/mapearParaRelatorio";
 import { ConfirmModal } from "./ConfirmModal";
+import { RelatorioAnalise } from "./RelatorioAnalise";
 import type { Analise } from "../../../types";
-
-function classificarScore(score: number): string {
-  if (score < 40) return "Baixa compatibilidade";
-  if (score < 60) return "Compatibilidade moderada";
-  if (score < 80) return "Boa compatibilidade";
-  return "Forte compatibilidade";
-}
-
-function getCategoriaIcon(chave: string) {
-  switch (chave) {
-    case "experiencia":
-      return <LuUser size={15} />;
-    case "competencias":
-    case "skills_tecnicas":
-      return <LuStar size={15} />;
-    case "ferramentas":
-      return <LuWrench size={15} />;
-    case "contexto_vaga":
-    case "contexto":
-    case "soft_skills":
-    default:
-      return <LuGlobe size={15} />;
-  }
-}
-
-const LABELS_CATEGORIA: Record<string, string> = {
-  experiencia: "Experiência",
-  skills_tecnicas: "Competências",
-  competencias: "Competências",
-  ferramentas: "Ferramentas",
-  contexto_vaga: "Contexto da vaga",
-  soft_skills: "Contexto da vaga",
-};
-
-function DimensaoBarra({
-  label,
-  valor,
-  iconKey,
-}: {
-  label: string;
-  valor: number;
-  iconKey: string;
-}) {
-  return (
-    <div className={reportStyles.dimensionRow}>
-      <div className={reportStyles.dimensionLabel}>
-        <span className="text-secondary">{getCategoriaIcon(iconKey)}</span>
-        <span>{label}</span>
-      </div>
-      <div className={reportStyles.dimensionBarWrapper}>
-        <div className={reportStyles.dimensionTrack}>
-          <div
-            className={reportStyles.dimensionFill}
-            style={{ width: `${valor}%` }}
-          />
-        </div>
-      </div>
-      <div className={reportStyles.dimensionScore}>{valor}/100</div>
-    </div>
-  );
-}
 
 export function AnaliseDetalhe() {
   const { id } = useParams();
@@ -194,6 +126,8 @@ export function AnaliseDetalhe() {
     );
   }
 
+  const analiseRelatorio = mapearParaRelatorio(analise);
+
   return (
     <div className={`${motionStyles.fadeInUp} ${pageStyles.wide} ${styles.page}`}>
       {/* Top back navigation */}
@@ -284,181 +218,21 @@ export function AnaliseDetalhe() {
         </details>
       </div>
 
-      {/* Top Score Box */}
-      <div className={`${cardStyles.card} mb-3`}>
-        <div className="d-flex justify-content-between align-items-start mb-2">
-          <h2 className="h6 fw-bold mb-0">Sua análise</h2>
-          {tempoAnaliseSegundos != null && (
-            <span className={statusStyles.statusPill}>
-              <LuCheck size={14} />
-              Análise concluída em {tempoAnaliseSegundos.toFixed(1)}s
-            </span>
-          )}
-        </div>
-
-        <div className={reportStyles.scoreHeader}>
-          <div className={reportStyles.scoreNumberGroup}>
-            <span className={reportStyles.scoreNumber}>
-              {analise.score_match}
-            </span>
-            <span className={reportStyles.scoreMax}>/100</span>
+      {/* Relatório reutilizável (mesmo componente do AnaliseWorkspace) */}
+      <RelatorioAnalise
+        analise={analiseRelatorio}
+        cabecalho={
+          <div className="d-flex justify-content-between align-items-start mb-2">
+            <h2 className="h6 fw-bold mb-0">Sua análise</h2>
+            {tempoAnaliseSegundos != null && (
+              <span className={statusStyles.statusPill}>
+                <LuCheck size={14} />
+                Análise concluída em {tempoAnaliseSegundos.toFixed(1)}s
+              </span>
+            )}
           </div>
-          <div className={reportStyles.scoreInfo}>
-            <h3 className={reportStyles.scoreTitle}>
-              {classificarScore(analise.score_match)}
-            </h3>
-            <p className={reportStyles.scoreDescription}>{analise.resumo_ia}</p>
-          </div>
-        </div>
-
-        {/* Progress scale bar with markers 0 - 50 - 100 */}
-        <div className={reportStyles.scaleContainer}>
-          <div className={reportStyles.scaleTrack}>
-            <div
-              className={reportStyles.scaleFill}
-              style={{ width: `${analise.score_match}%` }}
-            />
-          </div>
-          <div className={reportStyles.scaleLabels}>
-            <span>0</span>
-            <span>50</span>
-            <span>100</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Sub-cards: Onde você se encaixa / Favor / Lacuna */}
-      <div className="row g-3 mb-3">
-        {/* Onde você se encaixa */}
-        {analise.match_por_categoria && (
-          <div className="col-md-6">
-            <div className={`${cardStyles.card} h-100`}>
-              <h3 className={`h6 fw-bold mb-3 ${reportStyles.sectionTitle}`}>
-                Onde você se encaixa
-              </h3>
-              {Object.entries(analise.match_por_categoria).map(
-                ([chave, valor]) => (
-                  <DimensaoBarra
-                    key={chave}
-                    iconKey={chave}
-                    label={LABELS_CATEGORIA[chave] ?? chave}
-                    valor={valor as number}
-                  />
-                ),
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Favor & Lacuna */}
-        <div
-          className={
-            analise.match_por_categoria
-              ? "col-md-6 d-flex flex-column gap-3"
-              : "col-12 d-flex flex-column gap-3"
-          }
-        >
-          {/* Favor */}
-          <div className={`${cardStyles.card} flex-fill`}>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <div
-                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleSuccess}`}
-              >
-                <LuThumbsUp />
-              </div>
-              <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
-                O que joga a seu favor
-              </h3>
-            </div>
-            <ul className={reportStyles.evidenceList}>
-              {analise.keywords_presentes.map((k) => (
-                <li key={k} className={reportStyles.evidenceItem}>
-                  <span
-                    className={`${reportStyles.evidenceIcon} ${reportStyles.evidenceIconFavor}`}
-                  >
-                    <LuCheck />
-                  </span>
-                  <span>{k}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Lacuna */}
-          <div className={`${cardStyles.card} flex-fill`}>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <div
-                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCircleWarning}`}
-              >
-                <LuTriangleAlert />
-              </div>
-              <h3 className={`h6 fw-bold mb-0 text-dark ${reportStyles.sectionTitleCompact}`}>
-                Onde existe uma lacuna
-              </h3>
-            </div>
-            <ul className={reportStyles.evidenceList}>
-              {analise.keywords_faltando.map((k) => (
-                <li key={k} className={reportStyles.evidenceItem}>
-                  <span
-                    className={`${reportStyles.evidenceIcon} ${reportStyles.evidenceIconLacuna}`}
-                  >
-                    <LuTriangleAlert />
-                  </span>
-                  <span>{k}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom row: Antes de aplicar & Insight */}
-      <div className="row g-3 mb-3">
-        {/* Antes de aplicar */}
-        <div className="col-md-6">
-          <div className={`${cardStyles.card} h-100`}>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <div
-                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm}`}
-              >
-                <LuClipboardList />
-              </div>
-              <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
-                Antes de aplicar
-              </h3>
-            </div>
-            <ol className={reportStyles.numberedList}>
-              {analise.sugestoes_ajuste.map((sugestao, index) => (
-                <li key={index} className={reportStyles.numberedItem}>
-                  <span className={reportStyles.numberedBadge}>
-                    {index + 1}
-                  </span>
-                  <span>{sugestao}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-
-        {/* Insight */}
-        <div className="col-md-6">
-          <div className={`${cardStyles.card} h-100`}>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <div
-                className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSm} ${cardStyles.iconCirclePrimary}`}
-              >
-                <LuLightbulb />
-              </div>
-              <h3 className={`h6 fw-bold mb-0 ${reportStyles.sectionTitle}`}>
-                Insight
-              </h3>
-            </div>
-            <p className={`mb-0 text-secondary ${reportStyles.insightText}`}>
-              {analise.dica_final}
-            </p>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Action buttons footer with Voltar ao topo */}
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top mt-4 mb-4">

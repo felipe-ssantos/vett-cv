@@ -35,7 +35,7 @@ export interface VagaExtraidaIA {
 
 export interface AnaliseMatchIA {
   scoreMatch: number;
-  matchPorCategoria: MatchPorCategoria;
+  matchPorCategoria?: MatchPorCategoria;
   keywordsPresentes: string[];
   keywordsFaltando: string[];
   pontosFortes: string[];

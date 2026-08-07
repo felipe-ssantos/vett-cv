@@ -43,8 +43,9 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 └── src/
     ├── components/layout/   # Header, Footer, Layout (com seus CSS Modules)
     ├── features/analises/   # Workspace, histórico, detalhe e reanálise
-    │   ├── components/      # Telas + RelatorioAnalise (apresentação pura)
-    │   └── hooks/           # useAnaliseCurriculo (estado, efeitos e envio)
+    │   ├── components/      # Telas + ConfirmModal e RelatorioAnalise (apresentação pura)
+    │   ├── hooks/           # useAnaliseCurriculo e useArquivoCurriculo
+    │   └── lib/             # mapearParaRelatorio (Analise → AnaliseMatchIA)
     ├── lib/                 # Cliente Supabase e utilitários
     ├── routes/              # Rotas da aplicação
     ├── styles/ui/           # Primitivas CSS Modules (Card, Form, Button...)
