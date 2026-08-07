@@ -2,9 +2,6 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import formidable from "formidable";
 import fs from "fs/promises";
 import mammoth from "mammoth";
-// Importamos do subpath interno (lib/pdf-parse.js) para evitar o bloco de
-// debug do entrypoint principal, que lê um PDF de teste inexistente e derruba
-// a função com ENOENT em cold starts de serverless.
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
 
 export const config = {
@@ -12,9 +9,6 @@ export const config = {
   api: { bodyParser: false },
 };
 
-// O Vercel rejeita corpos acima de ~4.5 MB (HTTP 413) antes mesmo de a função
-// executar. O limite do app fica abaixo disso para a falha vir com mensagem
-// clara, tanto no cliente quanto no servidor.
 const LIMITE_TAMANHO_ARQUIVO_BYTES = 4 * 1024 * 1024; // 4 MB
 
 const EXTENSOES_POR_MIMETYPE: Record<string, string> = {
@@ -23,12 +17,8 @@ const EXTENSOES_POR_MIMETYPE: Record<string, string> = {
     "docx",
 };
 
-// Erros de arquivo são responsabilidade do usuário (formato/arquivo inválido):
-// voltam como 400 com mensagem clara, em vez do 500 genérico.
 class ErroDeArquivo extends Error {}
 
-// Navegadores com foco em privacidade (ex.: Firefox) podem codificar o nome do
-// arquivo de formas diferentes no multipart; por isso não dependemos só dele.
 function extrairExtensao(
   nomeArquivo: string | undefined,
   mimetype: string | undefined,
@@ -38,10 +28,6 @@ function extrairExtensao(
   return EXTENSOES_POR_MIMETYPE[mimetype ?? ""] ?? "";
 }
 
-// Detecta o tipo real pelo conteúdo (magic bytes). Em mobile, navegadores como
-// Firefox Android, Brave e Safari podem enviar o arquivo com MIME
-// "application/octet-stream" e nome truncado/sem extensão; o conteúdo é a
-// única fonte confiável.
 const CABECALHO_PDF = Buffer.from("%PDF-", "latin1");
 
 async function detectarTipoPorConteudo(
