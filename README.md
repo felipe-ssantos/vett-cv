@@ -132,4 +132,4 @@ Segue o padrão **Conventional Commits** (`feat`, `fix`, `refactor`, `style`, `d
 
 ## 📄 Aviso
 
-Projeto educacional e de portfólio. A análise gerada por IA não substitui recrutadores ou plataformas de ATS e não deve ser tratada como verdade absoluta ou aconselhamento profissional de recrutamento, carreira ou emprego.
+Projeto de portfólio. A análise gerada por IA não substitui recrutadores ou plataformas de ATS e não deve ser tratada como verdade absoluta ou aconselhamento profissional de recrutamento, carreira ou emprego.
