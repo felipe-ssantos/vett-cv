@@ -1,198 +1,135 @@
 # 🎯 Vett
 
-> Ferramenta com IA para analisar a compatibilidade entre um currículo e uma descrição de vaga.
+> Ferramenta com IA que analisa a compatibilidade entre um currículo e uma descrição de vaga.
 
-O Vett ajuda candidatos a entender o quanto seu currículo está alinhado com uma vaga específica. Basta colar a descrição da vaga, adicionar o currículo (texto, PDF ou DOCX) e pedir a análise. A IA compara os dois e retorna um score de compatibilidade, palavras-chave, pontos fortes e sugestões de melhoria.
-
----
-
-## 📌 Status
-
-**Projeto de portfólio — em desenvolvimento ativo**
-
-Criado para demonstrar habilidades práticas de desenvolvimento web: front-end, integração com APIs, IA, banco de dados e processamento de documentos.
-
-> ⚠️ Não substitui recrutadores ou plataformas de ATS. É uma ferramenta de apoio para o candidato entender seu alinhamento com uma vaga.
+O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportunidade antes de se candidatarem. Basta colar a descrição da vaga, adicionar o currículo (texto ou arquivo PDF/DOC/DOCX) e a IA compara os dois, retornando um score de compatibilidade, palavras-chave presentes e faltantes, pontos fortes e sugestões objetivas de ajuste.
 
 ---
 
 ## ✨ Funcionalidades
 
-- 📋 Colar descrição da vaga e currículo
-- 📄 Upload de currículo em PDF ou DOCX
-- 🤖 Análise de compatibilidade com IA
-- 📊 Score de match (geral e por categoria)
-- 🔑 Palavras-chave presentes e faltantes
-- 💪 Pontos fortes do candidato
-- 💡 Sugestões de melhoria e recomendação final
-- 💾 Persistência dos resultados no Supabase
+- **Análise com IA** — score de match geral e por categoria (skills técnicas, ferramentas, experiência e soft skills)
+- **Upload de currículo** — PDF, DOC ou DOCX (até 5 MB), com extração automática do texto
+- **Ou cola o texto** — alternativa para quem prefere colar o currículo diretamente
+- **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
+- **Histórico privado** — análises salvas no Supabase e isoladas por sessão anônima
+- **Reanálise** — novo currículo comparado com uma vaga já analisada
+- **Acessível** — labels, landmarks e diálogos testados com `axe`
 
 ---
 
-## 🔄 Como Funciona
+## 🛠️ Stack
+
+| Camada | Tecnologias |
+| ------ | ----------- |
+| Front-end | React 19 · TypeScript · Vite · React Router · Bootstrap 5 |
+| Back-end | Vercel Serverless Functions · Node.js |
+| IA | Google Gemini (Flash Lite) |
+| Banco de dados | Supabase · PostgreSQL |
+| Documentos | pdf-parse · mammoth |
+| Testes | Vitest · Testing Library · vitest-axe |
+
+---
+
+## 🏗️ Estrutura
 
 ```textile
-Descrição da vaga + Currículo
-            │
-            ▼
-        API (IA)
-            │
-            ▼
-   Resultado da análise
-   ├── Score de match
-   ├── Score por categoria
-   ├── Keywords (presentes / faltantes)
-   ├── Pontos fortes
-   └── Sugestões
-            │
-            ▼
-        Supabase
+.
+├── api/                     # Serverless functions (análise com IA)
+├── public/
+└── src/
+    ├── components/layout/   # Header, Footer, Layout
+    ├── features/
+    │   └── analises/        # Lista, detalhe, workspace e reanálise
+    ├── lib/                 # Cliente Supabase e utilitários
+    ├── routes/              # Rotas da aplicação
+    ├── test/                # Setup, fixtures e matchers de teste
+    └── types/               # Tipos compartilhados
 ```
 
-**Colar → Analisar → Entender → Melhorar**
-
 ---
 
-## 🛠️ Tecnologias
+## 🚀 Como executar
 
-**Front-end**
+### Pré-requisitos
 
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)
-![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+- Node.js 20+
+- Conta no [Supabase](https://supabase.com) e chave de API do [Google AI Studio](https://aistudio.google.com)
 
-**Back-end / API**
-
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-
-**Banco de dados**
-
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-
-**Inteligência Artificial**
-
-![Google Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)
-
-**Documentos**
-
-![pdf-parse](https://img.shields.io/badge/pdf--parse-EC1C24?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)
-![mammoth](https://img.shields.io/badge/mammoth-2B579A?style=for-the-badge&logo=microsoftword&logoColor=white)
-
----
-
-## 🏗️ Arquitetura
-
-```textile
-src/
-├── api/
-├── components/layout/
-├── features/
-│   ├── analises/
-│   ├── candidaturas/
-│   └── vagas/
-├── lib/
-└── types/
-```
-
-Organizado em torno de três domínios: **vagas** (oportunidades), **candidaturas** (currículo submetido) e **análises** (avaliação gerada por IA).
-
----
-
-## ⚙️ Configuração
-
-```env
-VITE_SUPABASE_URL=sua_url_do_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
-GEMINI_API_KEY=sua_chave_da_api_gemini
-```
-
-⚠️ Nunca faça commit de chaves ou segredos no repositório.
-
----
-
-## 🚀 Instalação
+### Passo a passo
 
 ```bash
+# 1. Clone o repositório
 git clone https://github.com/felipe-ssantos/vett-cv.git
 cd vett-cv
+
+# 2. Instale as dependências
 npm install
-cp .env.example .env
-npm run dev
+
+# 3. Configure as variáveis de ambiente
+cp .env.local.example .env.local
+```
+
+### Variáveis de ambiente
+
+| Variável | Descrição |
+| -------- | --------- |
+| `VITE_SUPABASE_URL` | URL do projeto no Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Chave anônima do Supabase |
+| `GEMINI_API_KEY` | Chave da API do Google Gemini (usada apenas no back-end) |
+
+### Rodando
+
+```bash
+npm run dev        # Front-end em modo desenvolvimento
+npm run dev:api    # API local via Vercel (após build da API)
 ```
 
 ---
 
 ## 🧪 Testes
 
-A suíte usa [Vitest](https://vitest.dev) com Testing Library e `vitest-axe` para checagem de acessibilidade.
+A suíte usa Vitest, Testing Library e `vitest-axe` para checagem de acessibilidade.
 
 ```bash
-# Executa todos os testes uma única vez
-npm test
-
-# Modo watch — reexecuta a cada mudança
-npm run test:watch
+npm test           # Executa todos os testes uma única vez
+npm run test:watch # Modo watch — reexecuta a cada mudança
 ```
 
-**O que é coberto:**
+**Cobertura:**
 
-- ✅ Testes de acessibilidade (`*.a11y.test.tsx`) com as regras do `axe`: labels, landmarks, diálogos e foco
-- ✅ Testes unitários dos formulários de análise: upload de arquivo, atalho Esc, foco automático e limite de 5 MB
-- ✅ Build de produção (`npm run build`), que também valida a compilação TypeScript via `tsc -b`
+- Acessibilidade (`*.a11y.test.tsx`) com as regras do `axe`
+- Unitários dos formulários de análise: upload de arquivo, atalho Esc, foco automático e limite de 5 MB
+- O build de produção (`npm run build`) também valida o TypeScript via `tsc -b`
 
-Os testes ficam colocalizados ao lado dos componentes (`*.test.tsx`) e não entram no bundle de produção.
-
----
-
-## 🌿 Fluxo de Desenvolvimento
-
-- \`main\` → versão estável/produção
-- \`develop\` → integração e testes de novas features
-
-```bash
-git checkout develop
-git pull origin develop
-```
-
-# implementar e testar
-
-```bash
-git add .
-git commit -m "feat: melhora fluxo de análise de currículo"
-git push origin develop
-```
-
-Segue o padrão **Conventional Commits** (\`feat\`, \`fix\`, \`refactor\`, \`style\`, \`docs\`, \`test\`, \`chore\`).
+Os testes ficam colocalizados ao lado dos componentes e não entram no bundle de produção.
 
 ---
 
 ## 🔒 Segurança
 
-- Chaves de API só no back-end, nunca expostas no front
-- Validação de entrada no client e no server
-- Políticas de acesso ao Supabase revisadas antes de produção
-- Aplicação ainda sem autenticação — dados pessoais tratados com cautela
+- Chave da IA somente no back-end (nunca exposta no front)
+- Validação de entrada no cliente e no servidor (incluindo formato e tamanho do arquivo)
+- Políticas de RLS no Supabase para isolamento das análises por sessão
+- Acesso ao banco via sessão anônima — dados tratados com cautela
 
 ---
 
-## ⚠️ Limitações
+## 🌿 Fluxo de desenvolvimento
 
-A análise é gerada por IA e deve ser tratada como assistiva, não como medida objetiva de qualificação. Um score alto não garante entrevista; um score baixo não significa despreparo. O resultado depende da qualidade da vaga e do currículo informados.
+- `main` → versão estável (produção)
+- `develop` → integração de novas features
+
+Segue o padrão **Conventional Commits** (`feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`).
 
 ---
 
 ## 👤 Autor
 
-**Felipe Santos**
-Tecnólogo em Sistemas para Internet, focado em desenvolvimento web moderno.
+**Felipe Santos** — Tecnólogo em Sistemas para Internet, focado em desenvolvimento web moderno.
 
 ---
 
 ## 📄 Aviso
 
-Projeto educacional e de portfólio. A análise gerada por IA não deve ser considerada como verdade absoluta ou aconselhamento profissional de recrutamento, carreira ou emprego.
+Projeto educacional e de portfólio. A análise gerada por IA não substitui recrutadores ou plataformas de ATS e não deve ser tratada como verdade absoluta ou aconselhamento profissional de recrutamento, carreira ou emprego.
