@@ -1,0 +1,11 @@
+/* AnaliseDetalhe — page-scoped styles only (details/summary disclosure).
+   All cards, report widgets and buttons come from the shared UI modules. */
+
+/* Wrapper that scopes the details/summary tag selectors to this page. */
+.page details summary::-webkit-details-marker {
+  display: none;
+}
+
+.page details summary {
+  list-style: none;
+}

@@ -1,0 +1,25 @@
+/* Footer — pinned to the bottom of the app shell. */
+.footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 16px 0;
+}
+
+.text {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.linkMuted {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.icon {
+  font-size: 15px;
+}

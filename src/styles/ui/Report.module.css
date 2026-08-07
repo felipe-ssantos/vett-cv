@@ -1,0 +1,198 @@
+/* Primitive UI: analysis report widgets — score, scale bar, dimension bars,
+   evidence lists and numbered recommendations (shared by AnaliseWorkspace and
+   AnaliseDetalhe). */
+
+/* ===== Score header ===== */
+.scoreHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.scoreNumberGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.scoreNumber {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 58px;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+}
+
+.scoreMax {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.scoreInfo {
+  flex: 1;
+}
+
+.scoreTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.scoreDescription {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ===== Scale bar ===== */
+.scaleContainer {
+  margin-top: 8px;
+}
+
+.scaleTrack {
+  height: 6px;
+  background: var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.scaleFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 8px;
+  transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scaleLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ===== Dimension bars ===== */
+.dimensionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.dimensionRow:last-child {
+  margin-bottom: 0;
+}
+
+.dimensionLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 130px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.dimensionBarWrapper {
+  flex: 1;
+}
+
+.dimensionTrack {
+  height: 6px;
+  background: var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dimensionFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 8px;
+  transition: width 500ms ease;
+}
+
+.dimensionScore {
+  width: 50px;
+  text-align: right;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ===== Evidence lists (favor / lacuna) ===== */
+.evidenceList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.evidenceItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.evidenceIcon {
+  font-size: 15px;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.evidenceIconFavor {
+  color: var(--success);
+}
+
+.evidenceIconLacuna {
+  color: var(--warning);
+}
+
+/* ===== Numbered recommendations ===== */
+.numberedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.numberedItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.numberedBadge {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--border-subtle);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}

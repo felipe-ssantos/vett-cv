@@ -1,5 +1,16 @@
+/* =====================================================================
+   Global stylesheet — ONLY:
+   1. Design system tokens (CSS variables)
+   2. Reset / base element styles
+   3. Keyboard focus & reduced-motion accessibility
+
+   All component styles live in co-located CSS Modules
+   (src/components, src/features) or shared UI primitives (src/styles/ui).
+   ===================================================================== */
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
 
+/* ===== Design tokens ===== */
 :root {
   --bg: #f7f7f5;
   --surface: #ffffff;
@@ -21,7 +32,7 @@
   --success: #0f766e;
   --success-bg: #f0fdf4;
   --success-border: #dcfce7;
-  
+
   --warning: #c2410c;
   --warning-bg: #fff7ed;
   --warning-border: #ffedd5;
@@ -30,7 +41,8 @@
   --danger-bg: #fef2f2;
   --danger-hover: #b91c1c;
 
-  --font-heading: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   /* Bootstrap overrides */
@@ -42,7 +54,10 @@
   --bs-border-color: #e5e7eb;
 }
 
-html, body, #root {
+/* ===== Base / reset ===== */
+html,
+body,
+#root {
   min-height: 100vh;
 }
 
@@ -53,535 +68,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6, .fw-heading {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   letter-spacing: -0.01em;
 }
 
-/* ===== Container principal (Sticky Footer Pattern) ===== */
-.app-shell {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.app-main {
-  flex: 1 0 auto;
-}
-
-/* ===== Header ===== */
-.vett-header {
-  border-bottom: 1px solid transparent;
-}
-
-.vett-wordmark {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 23px;
-  color: var(--text-primary);
-  letter-spacing: -0.03em;
-}
-
-.vett-tagline {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  font-weight: 400;
-}
-
-.vett-nav-container {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--border-subtle);
-  padding: 4px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
-
-.vett-nav-link {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 7px;
-  transition: all 150ms ease;
-}
-
-.vett-nav-link:hover {
-  color: var(--primary);
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.vett-nav-link.active {
-  background: var(--surface);
-  color: var(--primary);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* ===== Footer Fixo no Rodapé ===== */
-.vett-footer {
-  margin-top: auto;
-  border-top: 1px solid var(--border);
-  padding: 16px 0;
-}
-
-/* ===== Cards Vett (Compacto) ===== */
-.vett-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-}
-
-.vett-card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.vett-icon-circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--border-subtle);
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.vett-icon-circle--success {
-  background: var(--success-bg);
-  color: var(--success);
-}
-
-.vett-icon-circle--warning {
-  background: var(--warning-bg);
-  color: var(--warning);
-}
-
-.vett-icon-circle--primary {
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
-/* ===== Inputs e Textareas ===== */
-.vett-input-wrapper {
-  position: relative;
-}
-
-.vett-textarea {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface-alt);
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--text-primary);
-  padding: 10px 12px;
-  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
-  resize: vertical;
-}
-
-.vett-textarea:focus {
-  background: var(--surface);
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(11, 79, 70, 0.08);
-  outline: none;
-}
-
-.vett-check-badge {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  pointer-events: none;
-  animation: fadeIn 200ms ease;
-}
-
-.vett-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.vett-field-label {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.vett-char-count {
-  font-size: 11.5px;
-  color: var(--text-muted);
-}
-
-/* ===== Botão Principal ===== */
-.btn-vett-primary {
-  background: var(--primary);
-  color: #ffffff;
-  border: 1px solid var(--primary);
-  height: 44px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14.5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  transition: all 150ms ease;
-  cursor: pointer;
-}
-
-.btn-vett-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
-  color: #ffffff;
-}
-
-.btn-vett-primary:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-/* ===== Status Concluído ===== */
-.vett-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--success);
-}
-
-/* ===== Score Layout ===== */
-.vett-score-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.vett-score-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.vett-score-number-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1;
-}
-
-.vett-score-number {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 58px;
-  color: var(--text-primary);
-  letter-spacing: -0.04em;
-  line-height: 0.88;
-}
-
-.vett-score-max {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  margin-top: 4px;
-}
-
-.vett-score-info {
-  flex: 1;
-}
-
-.vett-score-title {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--primary);
-  margin-bottom: 4px;
-}
-
-.vett-score-description {
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  margin: 0;
-}
-
-/* Scale Bar */
-.vett-scale-container {
-  margin-top: 8px;
-}
-
-.vett-scale-track {
-  height: 6px;
-  background: var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-}
-
-.vett-scale-fill {
-  height: 100%;
-  background: var(--primary);
-  border-radius: 8px;
-  transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.vett-scale-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11.5px;
-  color: var(--text-tertiary);
-  margin-top: 4px;
-  font-weight: 500;
-}
-
-/* ===== Sub-cards de Dimensão (Onde você se encaixa) ===== */
-.vett-dimension-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.vett-dimension-row:last-child {
-  margin-bottom: 0;
-}
-
-.vett-dimension-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 130px;
-  font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
-.vett-dimension-bar-wrapper {
-  flex: 1;
-}
-
-.vett-dimension-track {
-  height: 6px;
-  background: var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.vett-dimension-fill {
-  height: 100%;
-  background: var(--primary);
-  border-radius: 8px;
-  transition: width 500ms ease;
-}
-
-.vett-dimension-score {
-  width: 50px;
-  text-align: right;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-/* ===== Listas Favor / Lacuna ===== */
-.vett-evidence-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.vett-evidence-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.vett-evidence-icon {
-  font-size: 15px;
-  flex-shrink: 0;
-  display: inline-flex;
-}
-
-.vett-evidence-icon--favor {
-  color: var(--success);
-}
-
-.vett-evidence-icon--lacuna {
-  color: var(--warning);
-}
-
-/* ===== Details summary button styling ===== */
-details summary::-webkit-details-marker {
-  display: none;
-}
-details summary {
-  list-style: none;
-}
-
-/* ===== Numbered recommendations list ===== */
-.vett-numbered-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.vett-numbered-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.45;
-}
-
-.vett-number-badge {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background: var(--border-subtle);
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-/* ===== Empty State ===== */
-.vett-empty-state {
-  min-height: 380px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 32px 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.vett-empty-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--primary-light);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  margin-bottom: 12px;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.fade-in-up {
-  animation: fadeInUp 250ms ease both;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== Acessibilidade ===== */
-
-/* Skip link — visível apenas no foco via teclado */
-.vett-skip-link {
-  position: absolute;
-  top: -48px;
-  left: 16px;
-  z-index: 1100;
-  padding: 10px 16px;
-  background: var(--primary);
-  color: #ffffff;
-  border-radius: 0 0 8px 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: top 150ms ease;
-}
-
-.vett-skip-link:focus {
-  top: 0;
-}
-
-/* Indicador de foco visível para navegação por teclado */
+/* ===== Keyboard focus ===== */
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* O textarea já possui box-shadow de foco próprio */
-.vett-textarea:focus-visible {
-  outline: none;
-}
-
-/* O main recebe foco via skip link; não desenhar contorno no bloco inteiro */
-.app-main:focus {
-  outline: none;
-}
-
-/* Respeita usuários que preferem menos movimento */
+/* ===== Reduced motion ===== */
 @media (prefers-reduced-motion: reduce) {
-  .fade-in-up,
-  .vett-check-badge,
-  .vett-scale-fill,
-  .vett-dimension-fill,
-  .vett-nav-link {
-    animation: none !important;
-    transition: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

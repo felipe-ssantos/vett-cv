@@ -1,3 +1,5 @@
+import styles from "./Footer.module.css";
+
 export function Footer() {
   const ANO_CRIACAO = 2026;
   const anoAtual = new Date().getFullYear();
@@ -5,23 +7,19 @@ export function Footer() {
     anoAtual > ANO_CRIACAO ? `${ANO_CRIACAO}–${anoAtual}` : `${ANO_CRIACAO}`;
 
   return (
-    <footer className="vett-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+    <footer className={`${styles.footer} d-flex flex-wrap justify-content-between align-items-center gap-2`}>
+      <span className={styles.text}>
         © {textoAno} Vett · v1.0 · beta
       </span>
 
-      <div
-        className="d-flex align-items-center gap-3"
-        style={{ fontSize: 12, color: "var(--text-tertiary)" }}
-      >
+      <div className={`${styles.text} d-flex align-items-center gap-3`}>
         <span>
           Desenvolvido por{" "}
           <a
             href="https://nfelipe-dev.vercel.app/sobre"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-decoration-none fw-medium"
-            style={{ color: "var(--primary)" }}
+            className={`${styles.link} text-decoration-none fw-medium`}
           >
             Nelson Felipe
           </a>
@@ -31,11 +29,10 @@ export function Footer() {
           href="https://github.com/felipe-ssantos"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-decoration-none"
-          style={{ color: "var(--text-muted)" }}
+          className={`${styles.linkMuted} text-decoration-none`}
           aria-label="GitHub de Nelson Felipe"
         >
-          <i className="bi bi-github" style={{ fontSize: 15 }} />
+          <i className={`${styles.icon} bi bi-github`} />
         </a>
       </div>
     </footer>

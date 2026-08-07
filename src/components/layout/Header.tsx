@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router";
 import { LuClock, LuSparkles } from "react-icons/lu";
+import styles from "./Header.module.css";
 
 export function Header() {
   const location = useLocation();
@@ -10,7 +11,7 @@ export function Header() {
     location.pathname.startsWith("/analises");
 
   return (
-    <header className="d-flex justify-content-between align-items-center py-3 vett-header mb-2">
+    <header className={`d-flex justify-content-between align-items-center py-3 mb-2 ${styles.header}`}>
       <div className="d-flex align-items-center gap-3">
         <Link
           to="/"
@@ -28,17 +29,17 @@ export function Header() {
             <circle cx="15" cy="16" r="14" fill="#0B4F46" />
             <circle cx="29" cy="16" r="14" fill="#10B981" fillOpacity="0.85" />
           </svg>
-          <span className="vett-wordmark">Vett</span>
+          <span className={styles.wordmark}>Vett</span>
         </Link>
-        <span className="vett-tagline d-none d-sm-inline">
+        <span className={`${styles.tagline} d-none d-sm-inline`}>
           Saiba antes de aplicar.
         </span>
       </div>
 
-      <nav className="vett-nav-container" aria-label="Navegação principal">
+      <nav className={styles.navContainer} aria-label="Navegação principal">
         <Link
           to="/"
-          className={`vett-nav-link ${isInicio ? "active" : ""}`}
+          className={`${styles.navLink} ${isInicio ? "active" : ""}`}
           aria-current={isInicio ? "page" : undefined}
         >
           <LuSparkles size={15} aria-hidden="true" />
@@ -46,7 +47,7 @@ export function Header() {
         </Link>
         <Link
           to="/historico"
-          className={`vett-nav-link ${isHistorico ? "active" : ""}`}
+          className={`${styles.navLink} ${isHistorico ? "active" : ""}`}
           aria-current={isHistorico ? "page" : undefined}
         >
           <LuClock size={15} aria-hidden="true" />

@@ -1,0 +1,29 @@
+/* Primitive UI: primary CTA button (shared by AnaliseWorkspace,
+   ReanalisarForm, AnaliseList and AnaliseDetalhe). */
+.primary {
+  background: var(--primary);
+  color: #ffffff;
+  border: 1px solid var(--primary);
+  height: 44px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: #ffffff;
+}
+
+.primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

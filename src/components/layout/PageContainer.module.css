@@ -1,0 +1,10 @@
+/* Page container — main content region inside the sticky-footer shell. */
+.appMain {
+  flex: 1 0 auto;
+}
+
+/* The main region receives focus via the skip link; don't draw an outline
+   around the whole block. */
+.appMain:focus {
+  outline: none;
+}

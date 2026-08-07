@@ -21,6 +21,13 @@ import { supabase } from "../../../lib/supabaseClient";
 import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
 import { enviarAnalise } from "../../../lib/analisarApi";
 import { lerTextoDaAreaDeTransferencia } from "../../../lib/areaTransferencia";
+import cardStyles from "../../../styles/ui/Card.module.css";
+import formStyles from "../../../styles/ui/Form.module.css";
+import buttonStyles from "../../../styles/ui/Button.module.css";
+import emptyStyles from "../../../styles/ui/EmptyState.module.css";
+import statusStyles from "../../../styles/ui/Status.module.css";
+import motionStyles from "../../../styles/ui/Motion.module.css";
+import reportStyles from "../../../styles/ui/Report.module.css";
 import type { AnaliseMatchIA } from "../../../types";
 
 const LIMITE_CARACTERES = 5000;
@@ -79,17 +86,20 @@ function DimensaoBarra({
   iconKey: string;
 }) {
   return (
-    <div className="vett-dimension-row">
-      <div className="vett-dimension-label">
+    <div className={reportStyles.dimensionRow}>
+      <div className={reportStyles.dimensionLabel}>
         <span className="text-secondary">{getCategoriaIcon(iconKey)}</span>
         <span>{label}</span>
       </div>
-      <div className="vett-dimension-bar-wrapper">
-        <div className="vett-dimension-track">
-          <div className="vett-dimension-fill" style={{ width: `${valor}%` }} />
+      <div className={reportStyles.dimensionBarWrapper}>
+        <div className={reportStyles.dimensionTrack}>
+          <div
+            className={reportStyles.dimensionFill}
+            style={{ width: `${valor}%` }}
+          />
         </div>
       </div>
-      <div className="vett-dimension-score">{valor}/100</div>
+      <div className={reportStyles.dimensionScore}>{valor}/100</div>
     </div>
   );
 }
@@ -249,9 +259,9 @@ export function AnaliseWorkspace() {
       <div className="col-lg-5">
         <form onSubmit={handleSubmit}>
           {/* Card 1: Seu perfil */}
-          <div className="vett-card mb-3">
-            <div className="vett-card-header mb-2">
-              <div className="vett-icon-circle">
+          <div className={`${cardStyles.card} mb-3`}>
+            <div className={`${cardStyles.cardHeader} mb-2`}>
+              <div className={cardStyles.iconCircle}>
                 <LuUser />
               </div>
               <div>
@@ -262,8 +272,8 @@ export function AnaliseWorkspace() {
               </div>
             </div>
 
-            <div className="vett-label-row">
-              <label className="vett-field-label" htmlFor="curriculo-texto">
+            <div className={formStyles.labelRow}>
+              <label className={formStyles.fieldLabel} htmlFor="curriculo-texto">
                 Currículo
               </label>
               <div className="d-flex align-items-center gap-2">
@@ -277,16 +287,16 @@ export function AnaliseWorkspace() {
                 >
                   <LuClipboard size={12} /> Colar
                 </button>
-                <span className="vett-char-count" id="curriculo-contador">
+                <span className={formStyles.charCount} id="curriculo-contador">
                   {curriculoTexto.length}/{LIMITE_CARACTERES}
                 </span>
               </div>
             </div>
 
-            <div className="vett-input-wrapper mb-2">
+            <div className={`${formStyles.inputWrapper} mb-2`}>
               <textarea
                 id="curriculo-texto"
-                className="form-control vett-textarea w-100"
+                className={`form-control ${formStyles.textarea} w-100`}
                 style={{ height: 135 }}
                 placeholder="Analista de Dados com experiência em SQL, Python, Power BI..."
                 maxLength={LIMITE_CARACTERES}
@@ -299,14 +309,14 @@ export function AnaliseWorkspace() {
                 aria-describedby="curriculo-contador"
               />
               {(curriculoTexto.trim().length > 0 || arquivo) && (
-                <div className="vett-check-badge" aria-hidden="true">
+                <div className={formStyles.checkBadge} aria-hidden="true">
                   <LuCheck />
                 </div>
               )}
             </div>
 
             <div>
-              <label className="vett-field-label" htmlFor="curriculo-arquivo">
+              <label className={formStyles.fieldLabel} htmlFor="curriculo-arquivo">
                 Ou envie o arquivo do currículo
               </label>
               <input
@@ -376,9 +386,9 @@ export function AnaliseWorkspace() {
           </div>
 
           {/* Card 2: Oportunidade */}
-          <div className="vett-card mb-3">
-            <div className="vett-card-header mb-2">
-              <div className="vett-icon-circle">
+          <div className={`${cardStyles.card} mb-3`}>
+            <div className={`${cardStyles.cardHeader} mb-2`}>
+              <div className={cardStyles.iconCircle}>
                 <LuBriefcase />
               </div>
               <div>
@@ -389,8 +399,8 @@ export function AnaliseWorkspace() {
               </div>
             </div>
 
-            <div className="vett-label-row">
-              <label className="vett-field-label" htmlFor="descricao-vaga">
+            <div className={formStyles.labelRow}>
+              <label className={formStyles.fieldLabel} htmlFor="descricao-vaga">
                 Descrição da vaga
               </label>
               <div className="d-flex align-items-center gap-2">
@@ -403,16 +413,16 @@ export function AnaliseWorkspace() {
                 >
                   <LuClipboard size={12} /> Colar
                 </button>
-                <span className="vett-char-count" id="descricao-contador">
+                <span className={formStyles.charCount} id="descricao-contador">
                   {descricaoVaga.length}/{LIMITE_CARACTERES}
                 </span>
               </div>
             </div>
 
-            <div className="vett-input-wrapper">
+            <div className={formStyles.inputWrapper}>
               <textarea
                 id="descricao-vaga"
-                className="form-control vett-textarea w-100"
+                className={`form-control ${formStyles.textarea} w-100`}
                 style={{ height: 135 }}
                 placeholder="Buscamos Analista de Dados com experiência em SQL, Python, Looker..."
                 maxLength={LIMITE_CARACTERES}
@@ -421,7 +431,7 @@ export function AnaliseWorkspace() {
                 aria-describedby="descricao-contador"
               />
               {descricaoVaga.trim().length > 0 && (
-                <div className="vett-check-badge" aria-hidden="true">
+                <div className={formStyles.checkBadge} aria-hidden="true">
                   <LuCheck />
                 </div>
               )}
@@ -431,7 +441,7 @@ export function AnaliseWorkspace() {
           <button
             type="submit"
             disabled={analisando}
-            className="btn-vett-primary"
+            className={buttonStyles.primary}
           >
             {analisando ? (
               <>
@@ -477,7 +487,7 @@ export function AnaliseWorkspace() {
             </p>
           </div>
           {tempoAnalise !== null && !analisando && (
-            <span className="vett-status-pill">
+            <span className={statusStyles.statusPill}>
               <LuCheck size={14} />
               Análise concluída em {tempoAnalise.toFixed(1)}s
             </span>
@@ -495,21 +505,21 @@ export function AnaliseWorkspace() {
         )}
 
         {analisando ? (
-          <div className="vett-empty-state" aria-live="polite">
+          <div className={emptyStyles.emptyState} aria-live="polite">
             <div
-              className="vett-empty-icon spinner-border text-teal"
+              className={`${emptyStyles.emptyIcon} spinner-border text-teal`}
               role="status"
             >
               <span className="visually-hidden">Carregando...</span>
             </div>
             <h3 className="h6 fw-bold mb-2">{ETAPAS_ANALISE[etapaAtual]}</h3>
-            <div className="vett-scale-track mt-3" style={{ width: 220 }}>
-              <div className="vett-scale-fill" style={{ width: "65%" }} />
+            <div className={`${reportStyles.scaleTrack} mt-3`} style={{ width: 220 }}>
+              <div className={reportStyles.scaleFill} style={{ width: "65%" }} />
             </div>
           </div>
         ) : !analise ? (
-          <div className="vett-empty-state">
-            <div className="vett-empty-icon">
+          <div className={emptyStyles.emptyState}>
+            <div className={emptyStyles.emptyIcon}>
               <LuSparkles />
             </div>
             <h3 className="h6 fw-bold mb-1">Sua análise aparecerá aqui</h3>
@@ -522,31 +532,35 @@ export function AnaliseWorkspace() {
             </p>
           </div>
         ) : (
-          <div className="fade-in-up">
+          <div className={motionStyles.fadeInUp}>
             {/* Top Score Compatibility Card */}
-            <div className="vett-card mb-3">
-              <div className="vett-score-header">
-                <div className="vett-score-number-group">
-                  <span className="vett-score-number">{analise.scoreMatch}</span>
-                  <span className="vett-score-max">/100</span>
+            <div className={`${cardStyles.card} mb-3`}>
+              <div className={reportStyles.scoreHeader}>
+                <div className={reportStyles.scoreNumberGroup}>
+                  <span className={reportStyles.scoreNumber}>
+                    {analise.scoreMatch}
+                  </span>
+                  <span className={reportStyles.scoreMax}>/100</span>
                 </div>
-                <div className="vett-score-info">
-                  <h3 className="vett-score-title">
+                <div className={reportStyles.scoreInfo}>
+                  <h3 className={reportStyles.scoreTitle}>
                     {classificarScore(analise.scoreMatch)}
                   </h3>
-                  <p className="vett-score-description">{analise.resumoIA}</p>
+                  <p className={reportStyles.scoreDescription}>
+                    {analise.resumoIA}
+                  </p>
                 </div>
               </div>
 
               {/* Progress scale bar with labels 0 - 50 - 100 */}
-              <div className="vett-scale-container">
-                <div className="vett-scale-track">
+              <div className={reportStyles.scaleContainer}>
+                <div className={reportStyles.scaleTrack}>
                   <div
-                    className="vett-scale-fill"
+                    className={reportStyles.scaleFill}
                     style={{ width: `${analise.scoreMatch}%` }}
                   />
                 </div>
-                <div className="vett-scale-labels">
+                <div className={reportStyles.scaleLabels}>
                   <span>0</span>
                   <span>50</span>
                   <span>100</span>
@@ -558,7 +572,7 @@ export function AnaliseWorkspace() {
             <div className="row g-3 mb-3">
               {/* Onde você se encaixa (Compacto) */}
               <div className="col-md-6">
-                <div className="vett-card h-100">
+                <div className={`${cardStyles.card} h-100`}>
                   <h3 className="h6 fw-bold mb-3" style={{ fontSize: 14 }}>
                     Onde você se encaixa
                   </h3>
@@ -578,10 +592,10 @@ export function AnaliseWorkspace() {
               {/* Right column: Favor & Lacuna */}
               <div className="col-md-6 d-flex flex-column gap-3">
                 {/* Favor */}
-                <div className="vett-card flex-fill">
+                <div className={`${cardStyles.card} flex-fill`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className="vett-icon-circle vett-icon-circle--success"
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleSuccess}`}
                       style={{ width: 26, height: 26, fontSize: 13 }}
                     >
                       <LuThumbsUp />
@@ -593,10 +607,12 @@ export function AnaliseWorkspace() {
                       O que joga a seu favor
                     </h3>
                   </div>
-                  <ul className="vett-evidence-list">
+                  <ul className={reportStyles.evidenceList}>
                     {analise.keywordsPresentes.map((k) => (
-                      <li key={k} className="vett-evidence-item">
-                        <span className="vett-evidence-icon vett-evidence-icon--favor">
+                      <li key={k} className={reportStyles.evidenceItem}>
+                        <span
+                          className={`${reportStyles.evidenceIcon} ${reportStyles.evidenceIconFavor}`}
+                        >
                           <LuCheck />
                         </span>
                         <span>{k}</span>
@@ -606,10 +622,10 @@ export function AnaliseWorkspace() {
                 </div>
 
                 {/* Lacuna */}
-                <div className="vett-card flex-fill">
+                <div className={`${cardStyles.card} flex-fill`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className="vett-icon-circle vett-icon-circle--warning"
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}
                       style={{ width: 26, height: 26, fontSize: 13 }}
                     >
                       <LuTriangleAlert />
@@ -621,10 +637,12 @@ export function AnaliseWorkspace() {
                       Onde existe uma lacuna
                     </h3>
                   </div>
-                  <ul className="vett-evidence-list">
+                  <ul className={reportStyles.evidenceList}>
                     {analise.keywordsFaltando.map((k) => (
-                      <li key={k} className="vett-evidence-item">
-                        <span className="vett-evidence-icon vett-evidence-icon--lacuna">
+                      <li key={k} className={reportStyles.evidenceItem}>
+                        <span
+                          className={`${reportStyles.evidenceIcon} ${reportStyles.evidenceIconLacuna}`}
+                        >
                           <LuTriangleAlert />
                         </span>
                         <span>{k}</span>
@@ -639,10 +657,10 @@ export function AnaliseWorkspace() {
             <div className="row g-3">
               {/* Antes de aplicar */}
               <div className="col-md-6">
-                <div className="vett-card h-100">
+                <div className={`${cardStyles.card} h-100`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className="vett-icon-circle"
+                      className={cardStyles.iconCircle}
                       style={{ width: 26, height: 26, fontSize: 13 }}
                     >
                       <LuClipboardList />
@@ -651,10 +669,12 @@ export function AnaliseWorkspace() {
                       Antes de aplicar
                     </h3>
                   </div>
-                  <ol className="vett-numbered-list">
+                  <ol className={reportStyles.numberedList}>
                     {analise.sugestoesAjuste.map((sugestao, index) => (
-                      <li key={index} className="vett-numbered-item">
-                        <span className="vett-number-badge">{index + 1}</span>
+                      <li key={index} className={reportStyles.numberedItem}>
+                        <span className={reportStyles.numberedBadge}>
+                          {index + 1}
+                        </span>
                         <span>{sugestao}</span>
                       </li>
                     ))}
@@ -664,10 +684,10 @@ export function AnaliseWorkspace() {
 
               {/* Insight */}
               <div className="col-md-6">
-                <div className="vett-card h-100">
+                <div className={`${cardStyles.card} h-100`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <div
-                      className="vett-icon-circle vett-icon-circle--primary"
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary}`}
                       style={{ width: 26, height: 26, fontSize: 13 }}
                     >
                       <LuLightbulb />

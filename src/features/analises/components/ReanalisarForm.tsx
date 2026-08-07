@@ -11,6 +11,10 @@ import {
 import { supabase } from "../../../lib/supabaseClient";
 import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
 import { enviarAnalise } from "../../../lib/analisarApi";
+import cardStyles from "../../../styles/ui/Card.module.css";
+import formStyles from "../../../styles/ui/Form.module.css";
+import buttonStyles from "../../../styles/ui/Button.module.css";
+import motionStyles from "../../../styles/ui/Motion.module.css";
 import type { Analise } from "../../../types";
 
 // Mantido abaixo do limite de ~4.5 MB de body das funções do Vercel.
@@ -138,7 +142,7 @@ export function ReanalisarForm() {
   }
 
   return (
-    <div className="fade-in-up" style={{ maxWidth: 720, margin: "0 auto" }}>
+    <div className={motionStyles.fadeInUp} style={{ maxWidth: 720, margin: "0 auto" }}>
       <div className="mb-4">
         <Link
           to={analiseBase ? `/analises/${analiseBase.id}` : "/historico"}
@@ -149,9 +153,9 @@ export function ReanalisarForm() {
         </Link>
       </div>
 
-      <div className="vett-card p-4">
-        <div className="vett-card-header">
-          <div className="vett-icon-circle">
+      <div className={`${cardStyles.card} p-4`}>
+        <div className={cardStyles.cardHeader}>
+          <div className={cardStyles.iconCircle}>
             <LuUser />
           </div>
           <div>
@@ -167,15 +171,15 @@ export function ReanalisarForm() {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label
-              className="vett-field-label mb-2"
+              className={`${formStyles.fieldLabel} mb-2`}
               htmlFor="reanalisar-curriculo"
             >
               Cole o novo texto do currículo
             </label>
-            <div className="vett-input-wrapper">
+            <div className={formStyles.inputWrapper}>
               <textarea
                 id="reanalisar-curriculo"
-                className="form-control vett-textarea w-100"
+                className={`form-control ${formStyles.textarea} w-100`}
                 style={{ height: 220 }}
                 placeholder="Cole aqui o texto do seu currículo atualizado..."
                 value={curriculoTexto}
@@ -186,7 +190,7 @@ export function ReanalisarForm() {
                 disabled={!!arquivo}
               />
               {curriculoTexto.trim().length > 0 && (
-                <div className="vett-check-badge" aria-hidden="true">
+                <div className={formStyles.checkBadge} aria-hidden="true">
                   <LuCheck />
                 </div>
               )}
@@ -197,7 +201,7 @@ export function ReanalisarForm() {
 
           <div className="mb-4">
             <label
-              className="vett-field-label mb-2"
+              className={`${formStyles.fieldLabel} mb-2`}
               htmlFor="reanalisar-arquivo"
             >
               Envie o arquivo do currículo
@@ -269,7 +273,7 @@ export function ReanalisarForm() {
           <button
             type="submit"
             disabled={analisando || !analiseBase}
-            className="btn-vett-primary"
+            className={buttonStyles.primary}
           >
             {analisando ? (
               <>

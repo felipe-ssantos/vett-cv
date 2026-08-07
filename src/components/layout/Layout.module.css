@@ -1,0 +1,29 @@
+/* Layout manager — app shell (sticky footer pattern) and skip link. */
+.appShell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.skipLink {
+  position: absolute;
+  top: -48px;
+  left: 16px;
+  z-index: 1100;
+  padding: 10px 16px;
+  background: var(--primary);
+  color: #ffffff;
+  border-radius: 0 0 8px 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 150ms ease;
+}
+
+.skipLink:focus {
+  top: 0;
+}

@@ -11,6 +11,11 @@ import {
 } from "react-icons/lu";
 import { Link } from "react-router";
 import { supabase } from "../../../lib/supabaseClient";
+import cardStyles from "../../../styles/ui/Card.module.css";
+import buttonStyles from "../../../styles/ui/Button.module.css";
+import formStyles from "../../../styles/ui/Form.module.css";
+import emptyStyles from "../../../styles/ui/EmptyState.module.css";
+import motionStyles from "../../../styles/ui/Motion.module.css";
 import type { Analise } from "../../../types";
 
 export function AnaliseList() {
@@ -143,7 +148,7 @@ export function AnaliseList() {
   });
 
   return (
-    <div className="fade-in-up" style={{ maxWidth: 920, margin: "0 auto" }}>
+    <div className={motionStyles.fadeInUp} style={{ maxWidth: 920, margin: "0 auto" }}>
       {/* Header section */}
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
         <div>
@@ -172,7 +177,7 @@ export function AnaliseList() {
           )}
           <Link
             to="/"
-            className="btn-vett-primary px-3 text-decoration-none"
+            className={`${buttonStyles.primary} px-3 text-decoration-none`}
             style={{ height: 36, borderRadius: 8, fontSize: 13 }}
           >
             <LuPlus size={15} /> Nova análise
@@ -186,7 +191,7 @@ export function AnaliseList() {
           <div className="position-relative">
             <input
               type="text"
-              className="form-control vett-textarea py-2 pe-4"
+              className={`form-control ${formStyles.textarea} py-2 pe-4`}
               style={{ paddingLeft: 38, height: 40, fontSize: 13.5 }}
               placeholder="Pesquise em suas analises por cargo, empresa ou palavra-chave..."
               value={filtro}
@@ -225,7 +230,7 @@ export function AnaliseList() {
       )}
 
       {carregando && (
-        <div className="vett-empty-state" role="status">
+        <div className={emptyStyles.emptyState} role="status">
           <div className="spinner-border text-teal" aria-hidden="true" />
           <p className="mt-3 text-secondary" style={{ fontSize: 13 }}>
             Carregando histórico...
@@ -236,8 +241,8 @@ export function AnaliseList() {
       {erro && <div className="alert alert-danger mb-4">{erro}</div>}
 
       {!carregando && !erro && analises.length === 0 && (
-        <div className="vett-empty-state">
-          <div className="vett-empty-icon">
+        <div className={emptyStyles.emptyState}>
+          <div className={emptyStyles.emptyIcon}>
             <LuSparkles />
           </div>
           <h3 className="h6 fw-bold mb-2">Nenhuma análise salva ainda</h3>
@@ -250,7 +255,7 @@ export function AnaliseList() {
           </p>
           <Link
             to="/"
-            className="btn-vett-primary text-decoration-none px-4"
+            className={`${buttonStyles.primary} text-decoration-none px-4`}
             style={{ width: "auto", height: 38 }}
           >
             Realizar análise
@@ -259,7 +264,7 @@ export function AnaliseList() {
       )}
 
       {!carregando && analises.length > 0 && analisesFiltradas.length === 0 && (
-        <div className="vett-empty-state" style={{ minHeight: 220 }}>
+        <div className={emptyStyles.emptyState} style={{ minHeight: 220 }}>
           <p className="text-secondary mb-2" style={{ fontSize: 14 }}>
             Nenhuma análise encontrada para <strong>"{filtro}"</strong>.
           </p>
@@ -278,7 +283,7 @@ export function AnaliseList() {
           {analisesFiltradas.map((analise) => (
             <div
               key={analise.id}
-              className="vett-card d-flex align-items-center justify-content-between p-3"
+              className={`${cardStyles.card} d-flex align-items-center justify-content-between p-3`}
             >
               <Link
                 to={`/analises/${analise.id}`}
@@ -287,7 +292,7 @@ export function AnaliseList() {
               >
                 <div className="d-flex align-items-center gap-3">
                   <div
-                    className="vett-icon-circle vett-icon-circle--primary flex-shrink-0"
+                    className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary} flex-shrink-0`}
                     style={{ width: 40, height: 40, fontSize: 18 }}
                   >
                     <span className="fw-bold" style={{ fontSize: 14 }}>
@@ -353,9 +358,9 @@ export function AnaliseList() {
           aria-describedby="modal-excluir-desc"
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content vett-card border-0 p-4">
+            <div className={`modal-content ${cardStyles.card} border-0 p-4`}>
               <div className="d-flex align-items-center gap-3 mb-3">
-                <div className="vett-icon-circle vett-icon-circle--warning">
+                <div className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}>
                   <LuTriangleAlert aria-hidden="true" />
                 </div>
                 <h2 className="h5 fw-bold mb-0" id="modal-excluir-titulo">
@@ -407,9 +412,9 @@ export function AnaliseList() {
           aria-describedby="modal-excluir-todas-desc"
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content vett-card border-0 p-4">
+            <div className={`modal-content ${cardStyles.card} border-0 p-4`}>
               <div className="d-flex align-items-center gap-3 mb-3">
-                <div className="vett-icon-circle vett-icon-circle--warning">
+                <div className={`${cardStyles.iconCircle} ${cardStyles.iconCircleWarning}`}>
                   <LuTriangleAlert aria-hidden="true" />
                 </div>
                 <h2
