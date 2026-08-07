@@ -1,19 +1,4 @@
 -- Tabela `analises`: histórico de análises, individualizado por sessão anônima.
---
--- IMPORTANTE: esta migração é DOCUMENTAÇÃO versionada — a tabela já existe no
--- banco (criada via Dashboard) e NÃO deve ser executada de novo no projeto
--- atual. Ela existe para reproduzir o schema do zero (aplicar 0001 e 0002 em
--- ordem) e para registrar as políticas de RLS por sessão.
---
--- A DDL e o índice são idempotentes (IF NOT EXISTS). Já as políticas de RLS
--- usam CREATE POLICY, que no Postgres não tem IF NOT EXISTS: em banco novo
--- elas são criadas normalmente, mas não re-execute o arquivo num banco que já
--- tenha policies com os mesmos nomes (ex.: criadas pelo Dashboard).
---
--- As policies abaixo seguem o padrão confirmado no projeto (sessão anônima →
--- role authenticated, isolamento por user_id = auth.uid()). Antes de qualquer
--- ajuste, confira nomes e operações em Supabase > Database > Policies.
-
 create table if not exists public.analises (
   id uuid not null default gen_random_uuid(),
   score_match integer not null,
@@ -59,5 +44,5 @@ create policy "analises_delete_propria" on public.analises
   for delete to authenticated
   using (user_id = auth.uid());
 
--- O app hoje não edita análises; se um dia houver edição, adicione uma policy
+-- O app hoje não edita análises; se um dia decida implementar edição, adicionarei uma policy
 -- `for update` equivalente (using + with check user_id = auth.uid()).

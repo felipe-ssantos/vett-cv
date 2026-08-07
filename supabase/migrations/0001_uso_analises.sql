@@ -1,15 +1,10 @@
 -- Limite de análises: por sessão e global (por dia).
--- Execute este script UMA vez no SQL Editor do Supabase
--- (Dashboard > SQL Editor > New query).
-
 create table if not exists public.uso_analises (
   chave text primary key,
   contagem integer not null default 0,
   atualizado_em timestamptz not null default now()
 );
 
--- Sem políticas, o RLS bloqueia clientes anônimos; apenas o service_role
--- (back-end) consegue ler/escrever nesta tabela.
 alter table public.uso_analises enable row level security;
 
 -- Incremento atômico: retorna a contagem nova para a chave
