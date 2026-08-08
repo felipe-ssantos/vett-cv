@@ -45,6 +45,27 @@ function cspMeta(): Plugin {
 
 export default defineConfig({
   plugins: [react(), cspMeta()],
+  build: {
+    rolldownOptions: {
+      output: {
+        // Chunks de vendor separados: react/react-dom e supabase ficam em
+        // bundles próprios com hash estável, permitindo cache de longo prazo
+        // no CDN enquanto o código da aplicação muda a cada deploy.
+        manualChunks(id) {
+          if (
+            id.includes("/node_modules/react/") ||
+            id.includes("/node_modules/react-dom/") ||
+            id.includes("/node_modules/scheduler/")
+          ) {
+            return "vendor-react";
+          }
+          if (id.includes("/node_modules/@supabase/")) {
+            return "vendor-supabase";
+          }
+        },
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],

@@ -1,3 +1,4 @@
+import { LuGithub } from "react-icons/lu";
 import { Link } from "react-router";
 import styles from "./Footer.module.css";
 
@@ -40,7 +41,7 @@ export function Footer() {
           className={`${styles.linkMuted} text-decoration-none`}
           aria-label="GitHub de Nelson Felipe"
         >
-          <i className={`${styles.icon} bi bi-github`} />
+          <LuGithub size={15} aria-hidden="true" />
         </a>
       </div>
     </footer>
