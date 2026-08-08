@@ -3,6 +3,7 @@ import {
   LIMITE_ANALISES_GLOBAIS_DIA,
   LIMITE_ANALISES_POR_SESSAO_DIA,
   REGEX_UUID_SESSAO,
+  chavePorIp,
   criarClienteSupabaseAdmin,
   dataDeHojeUtc,
   proximaMeiaNoiteUtc,
@@ -56,14 +57,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : null;
 
   const hoje = dataDeHojeUtc();
+  const chaveIp = chavePorIp(req, hoje);
 
-  const [usadoSessao, usadoGlobal] = await Promise.all([
+  const [usadoSessao, usadoIp, usadoGlobal] = await Promise.all([
     sessaoId ? obterContagem(`sessao:${sessaoId}:${hoje}`) : Promise.resolve(null),
+    chaveIp ? obterContagem(chaveIp) : Promise.resolve(null),
     obterContagem(`global:${hoje}`),
   ]);
 
+  // O bloqueio por navegador acontece quando a sessão OU o IP estoura. Para
+  // exibir o contador correto, usamos o maior uso entre os dois (ou null se
+  // nenhum estiver disponível).
+  const usadoNavegador =
+    usadoSessao === null && usadoIp === null
+      ? null
+      : Math.max(usadoSessao ?? 0, usadoIp ?? 0);
+
   return res.status(200).json({
-    sessao: montarContador(usadoSessao, LIMITE_ANALISES_POR_SESSAO_DIA),
+    sessao: montarContador(usadoNavegador, LIMITE_ANALISES_POR_SESSAO_DIA),
     global: montarContador(usadoGlobal, LIMITE_ANALISES_GLOBAIS_DIA),
     renovaEm: proximaMeiaNoiteUtc(),
   });

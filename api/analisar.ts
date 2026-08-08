@@ -7,6 +7,7 @@ import {
   LIMITE_ANALISES_GLOBAIS_DIA,
   LIMITE_ANALISES_POR_SESSAO_DIA,
   REGEX_UUID_SESSAO,
+  chavePorIp,
   criarClienteSupabaseAdmin,
   dataDeHojeUtc,
 } from "./limites.js";
@@ -37,25 +38,74 @@ async function incrementarUso(chave: string): Promise<number | null> {
   return typeof data === "number" ? data : null;
 }
 
-// Retorna a mensagem de bloqueio (429) ou null se a análise pode prosseguir.
-async function verificarLimites(
-  sessaoId: string | null,
-): Promise<string | null> {
-  const hoje = dataDeHojeUtc();
+interface ResultadoDeBloqueio {
+  status: number;
+  mensagem: string;
+}
 
+// Verifica (e incrementa) os contadores de uso. O navegador é identificado
+// pela sessão anônima E pelo hash do IP — se qualquer um dos dois estourar o
+// limite diário, a análise é bloqueada (429).
+//
+// Comportamento em falha:
+// - Contadores por navegador (sessão/IP): fail-open — se o Supabase estiver
+//   fora, o limite é ignorado para não derrubar a aplicação.
+// - Teto global: fail-closed — se o contador global não puder ser lido, a
+//   análise é bloqueada (503), pois o objetivo é proteger a cota da IA.
+async function verificarLimites(
+  req: VercelRequest,
+  sessaoId: string | null,
+): Promise<ResultadoDeBloqueio | null> {
+  const hoje = dataDeHojeUtc();
+  const chaveIp = chavePorIp(req, hoje);
+
+  // Limite por sessão anônima (quando o cliente enviou um sessaoId válido).
   if (sessaoId) {
     const totalSessao = await incrementarUso(`sessao:${sessaoId}:${hoje}`);
     if (
       totalSessao !== null &&
       totalSessao > LIMITE_ANALISES_POR_SESSAO_DIA
     ) {
-      return `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO_DIA} análises por dia neste navegador. Volte amanhã!`;
+      return {
+        status: 429,
+        mensagem: `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO_DIA} análises por dia neste navegador. Volte amanhã!`,
+      };
     }
   }
 
+  // Limite por IP (hash anônimo) — cobre navegadores sem sessão e impede
+  // burlar o limite simplesmente limpando o armazenamento local.
+  if (chaveIp) {
+    const totalIp = await incrementarUso(chaveIp);
+    if (totalIp !== null && totalIp > LIMITE_ANALISES_POR_SESSAO_DIA) {
+      return {
+        status: 429,
+        mensagem: `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO_DIA} análises por dia neste navegador. Volte amanhã!`,
+      };
+    }
+  }
+
+  // Teto global — fail-closed: contador indisponível bloqueia (503).
+  // Obs.: quando chegamos aqui, os contadores por navegador (sessão/IP) já
+  // foram incrementados. Se o Supabase estiver totalmente fora, essas chamadas
+  // também falham (fail-open) e nada é contado; um 503 aqui consome cota local
+  // mesmo sem registrar no global — aceitável pela prioridade de proteger a IA.
   const totalGlobal = await incrementarUso(`global:${hoje}`);
-  if (totalGlobal !== null && totalGlobal > LIMITE_ANALISES_GLOBAIS_DIA) {
-    return "O limite diário de análises do Vett foi atingido. Volte amanhã!";
+  if (totalGlobal === null) {
+    console.error(
+      "[rate-limit] contador global indisponível — bloqueando análise (fail-closed).",
+    );
+    return {
+      status: 503,
+      mensagem:
+        "O serviço de contagem de análises está temporariamente indisponível. Tente novamente em instantes.",
+    };
+  }
+  if (totalGlobal > LIMITE_ANALISES_GLOBAIS_DIA) {
+    return {
+      status: 429,
+      mensagem: "O limite diário de análises do Vett foi atingido. Volte amanhã!",
+    };
   }
 
   return null;
@@ -426,9 +476,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sessaoId =
       sessaoIdRaw && REGEX_UUID_SESSAO.test(sessaoIdRaw) ? sessaoIdRaw : null;
 
-    const bloqueio = await verificarLimites(sessaoId);
+    const bloqueio = await verificarLimites(req, sessaoId);
     if (bloqueio) {
-      return res.status(429).json({ erro: bloqueio });
+      return res.status(bloqueio.status).json({ erro: bloqueio.mensagem });
     }
 
     let curriculoTexto = curriculoTextoColado ?? "";

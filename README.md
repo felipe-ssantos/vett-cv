@@ -99,6 +99,7 @@ conteúdo dos arquivos de `supabase/migrations/`:
 | `VITE_SUPABASE_ANON_KEY` | Chave anônima do Supabase |
 | `GEMINI_API_KEY` | Chave da API do Google Gemini (usada apenas no back-end) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço do Supabase (apenas no back-end, para o limite diário de análises). `SUPABASE_URL` é opcional — sem ela, a API reusa `VITE_SUPABASE_URL` |
+| `RATE_LIMIT_IP_SECRET` | Opcional — segredo usado no hash anônimo do IP (limite por navegador). Sem ela, a API usa `SUPABASE_SERVICE_ROLE_KEY` como segredo |
 
 ### Rodando
 
@@ -144,9 +145,17 @@ Para proteger as cotas gratuitas do Gemini e do Supabase, cada navegador pode
 fazer **5 análises por dia** e o Vett tem um teto global de **100 análises por
 dia**. Ao atingir o limite, a API responde `429` com uma mensagem clara.
 
-O limite por navegador usa o armazenamento local da sessão anônima — não é uma
-barreira de segurança (pode ser zerado limpando os dados do navegador). O teto
-global é a proteção real contra abuso e só pode ser alterado pelo back-end.
+O navegador é identificado de duas formas complementares: pela **sessão
+anônima** (armazenamento local) e por um **hash anônimo do IP** (HMAC-SHA256
+com segredo do servidor — o IP bruto nunca é persistido). O limite vale para o
+maior uso entre os dois, então limpar os dados do navegador não zera o limite
+do dia. Como IPs podem ser compartilhados (NAT/escritório), usuários na mesma
+rede dividem as 5 análises — comportamento esperado.
+
+Comportamento em falha do contador (Supabase): o teto **global é fail-closed**
+(se o contador estiver indisponível, a análise é bloqueada com `503` para
+proteger a cota da IA), enquanto os limites por navegador são fail-open (só
+são aplicados quando o contador responde).
 
 ---
 

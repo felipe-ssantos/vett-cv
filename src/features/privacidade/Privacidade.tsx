@@ -108,6 +108,13 @@ export function Privacidade() {
             armazenam nenhum dado pessoal.
           </p>
           <p>
+            O controle por navegador combina a <strong>sessão anônima</strong>{" "}
+            com um <strong>identificador anônimo derivado do seu endereço IP</strong>{" "}
+            (um hash irreversível com chave secreta do servidor). O IP em si
+            nunca é armazenado nem exposto: apenas o hash é usado para contar
+            as análises, e ele é descartado junto com o contador do dia.
+          </p>
+          <p>
             As cotas renovam automaticamente à <strong>meia-noite (horário
             UTC)</strong> — às 21h no horário de Brasília. A tela de análise
             mostra quantas análises restam no dia e quando a cota renova.

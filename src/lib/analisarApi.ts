@@ -22,6 +22,9 @@ async function extrairMensagemDeErro(resposta: Response): Promise<string> {
   if (resposta.status === 502 || resposta.status === 504) {
     return "O servidor demorou demais para responder. Tente novamente em instantes.";
   }
+  if (resposta.status === 503) {
+    return "O serviço de contagem de análises está temporariamente indisponível. Tente novamente em instantes.";
+  }
   if (resposta.status === 429) {
     return "Limite de análises diárias atingido. Tente novamente amanhã.";
   }
