@@ -4,7 +4,6 @@ import { supabase } from "./supabaseClient";
 const TIMEOUT_ANALISE_MS = 90_000;
 
 export interface RespostaAnalisar {
-  descricaoVaga?: string;
   vaga?: VagaExtraidaIA;
   analise: AnaliseMatchIA;
 }

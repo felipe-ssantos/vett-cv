@@ -497,7 +497,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res
       .status(200)
-      .json({ descricaoVaga, vaga, analise });
+      .json({ vaga, analise });
   } catch (erro) {
     console.error(erro);
     if (erro instanceof ErroDeArquivo) {
