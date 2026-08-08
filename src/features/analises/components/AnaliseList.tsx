@@ -20,6 +20,10 @@ import styles from "./AnaliseList.module.css";
 import { ConfirmModal } from "./ConfirmModal";
 import type { Analise } from "../../../types";
 
+// Limite de análises salvas por usuário. Deve permanecer em sincronia com
+// `v_limite` da migration 0005_limite_historico_analises.sql (25).
+export const LIMITE_HISTORICO = 25;
+
 export function AnaliseList() {
   const [analises, setAnalises] = useState<Analise[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -159,8 +163,8 @@ export function AnaliseList() {
           </h1>
           <p className={`mb-0 text-secondary ${styles.pageSubtitle}`}>
             Suas análises são privadas e vinculadas à sua sessão. O histórico
-            mantém as 10 análises mais recentes — as mais antigas são
-            removidas automaticamente.
+            mantém as {LIMITE_HISTORICO} análises mais recentes — as mais
+            antigas são removidas automaticamente.
           </p>
         </div>
 
@@ -181,6 +185,19 @@ export function AnaliseList() {
           </Link>
         </div>
       </div>
+
+      {/* Aviso de histórico cheio: usuário atingiu o limite de análises salvas */}
+      {!carregando && analises.length >= LIMITE_HISTORICO && (
+        <div className="alert alert-warning d-flex align-items-start gap-2 py-2" role="status">
+          <LuTrash2 size={15} className="mt-1 flex-shrink-0" aria-hidden="true" />
+          <span>
+            Você atingiu o limite de <strong>{LIMITE_HISTORICO} análises</strong>{" "}
+            salvas. Ao analisar uma nova vaga, a mais antiga será removida
+            automaticamente — exclua as que não precisa mais para liberar
+            espaço.
+          </span>
+        </div>
+      )}
 
       {/* Input de Filtro Personalizado */}
       {!carregando && analises.length > 0 && (

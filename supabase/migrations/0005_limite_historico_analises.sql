@@ -1,15 +1,19 @@
--- Limite de 10 análises salvas por usuário.
+-- Limite de 25 análises salvas por usuário.
 --
--- A cota diária (0001) limita quantas análises NOVAS podem ser feitas por
--- dia, mas o histórico (`analises`) acumula sem limite: 5 hoje + 5 amanhã =
--- 10, 15, 20... Para o usuário manter o histórico sob controle, limitamos o
--- armazenamento às 10 análises mais recentes por sessão.
+-- A cota diária (0001) limita quantas análises NOVAS podem ser feitas por dia
+-- (5 por sessão), mas o histórico (`analises`) acumularia sem limite: 5 hoje
+-- + 5 amanhã = 10, 15, 20...
 --
--- Regra: ao inserir uma análise, as mais antigas além da 10ª mais recente do
+-- Por que 25 e não 10? O teto global de 100 análises/dia protege a cota da
+-- IA (capacidade do serviço); o limite de histórico é RETENÇÃO por usuário.
+-- Com 5 análises/dia por sessão, 10 linhas = só 2 dias de uso pleno — pouco
+-- para o histórico ser útil. 25 = uma semana útil (5 dias × 5) de uso máximo.
+--
+-- Regra: ao inserir uma análise, as mais antigas além da 25ª mais recente do
 -- MESMO usuário são removidas automaticamente (nunca toca em dados de outros).
 
 -- 1) Função de trigger: apaga as análises mais antigas que ultrapassam o
---    limite de 10 para o usuário da linha inserida.
+--    limite de 25 para o usuário da linha inserida.
 --
 --    Sem `security definer`: a função roda como o usuário autenticado, então
 --    a própria RLS (política `analises_delete_propria`, user_id = auth.uid())
@@ -20,7 +24,7 @@ language plpgsql
 set search_path = public
 as $$
 declare
-  v_limite constant integer := 10;
+  v_limite constant integer := 25;
 begin
   delete from public.analises
   where user_id = new.user_id
