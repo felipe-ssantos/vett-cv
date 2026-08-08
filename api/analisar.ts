@@ -229,7 +229,7 @@ async function extrairTextoDoArquivo(
 
   if (tipo === "doc") {
     // O mammoth só extrai texto de DOCX; .doc legado (binário) falharia com
-    // erro genérico 500. Preferimos uma mensagem clara para o usuário.
+    // erro genérico 500. Preferi uma mensagem clara para o usuário.
     throw new ErroDeArquivo(
       "Arquivos .doc antigos não são suportados. Envie o currículo em PDF ou DOCX.",
     );
