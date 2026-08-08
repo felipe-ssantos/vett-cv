@@ -36,6 +36,8 @@ grant execute on function public.limpar_uso_antigo(integer) to service_role;
 --    pico de uso. Guarda por disponibilidade: se o pg_cron não puder ser
 --    instalado no plano atual, a migração continua sem erro (índice e função
 --    permanecem, e a limpeza pode ser feita manualmente via `limpar_uso_antigo`).
+--    Obs.: o corpo do agendamento usa $cron$ (tag distinta de $$) para não
+--    conflitar com o delimitador do bloco `do`.
 do $$
 begin
   if exists (select 1 from pg_available_extensions where name = 'pg_cron') then
@@ -47,7 +49,7 @@ begin
     perform cron.schedule(
       'limpar-uso-antigo',
       '0 4 * * *',
-      $$select public.limpar_uso_antigo();$$
+      $cron$select public.limpar_uso_antigo();$cron$
     );
   end if;
 end $$;
