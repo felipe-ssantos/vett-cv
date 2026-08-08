@@ -1,0 +1,48 @@
+/* Estilos da página Política de Privacidade: tipografia de leitura longa. */
+
+.updatedAt {
+  font-size: 13px;
+}
+
+.prose {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #343a40;
+}
+
+.prose h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.5rem;
+  color: #212529;
+}
+
+.prose p {
+  margin-bottom: 0.75rem;
+}
+
+.prose ul {
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose li {
+  margin-bottom: 0.375rem;
+}
+
+.prose a {
+  color: #0d9488;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.footerNote {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.875rem;
+}

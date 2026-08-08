@@ -46,6 +46,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
     │   ├── components/      # Telas + ConfirmModal e RelatorioAnalise (apresentação pura)
     │   ├── hooks/           # useAnaliseCurriculo e useArquivoCurriculo
     │   └── lib/             # mapearParaRelatorio (Analise → AnaliseMatchIA)
+    ├── features/privacidade/ # Política de Privacidade (rota /privacidade)
     ├── lib/                 # Cliente Supabase e utilitários
     ├── routes/              # Rotas da aplicação
     ├── styles/ui/           # Primitivas CSS Modules (Card, Form, Button...)

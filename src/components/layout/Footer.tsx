@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import styles from "./Footer.module.css";
 
 export function Footer() {
@@ -24,6 +25,13 @@ export function Footer() {
             Nelson Felipe
           </a>
         </span>
+
+        <Link
+          to="/privacidade"
+          className={`${styles.linkMuted} text-decoration-none`}
+        >
+          Privacidade
+        </Link>
 
         <a
           href="https://github.com/felipe-ssantos"
