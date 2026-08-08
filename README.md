@@ -3,6 +3,8 @@
 [![CI](https://github.com/felipe-ssantos/vett-cv/actions/workflows/ci.yml/badge.svg)](https://github.com/felipe-ssantos/vett-cv/actions/workflows/ci.yml)
 
 > Ferramenta com IA que analisa a compatibilidade entre um currículo e uma descrição de vaga.
+>
+> **Produção:** https://vettcv.vercel.app
 
 O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportunidade antes de se candidatarem. Basta colar a descrição da vaga, adicionar o currículo (texto ou arquivo PDF/DOCX) e a IA compara os dois, retornando um score de compatibilidade, palavras-chave presentes e faltantes, pontos fortes e sugestões objetivas de ajuste.
 
@@ -19,6 +21,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 - **Modo claro/escuro** — alternância no cabeçalho, com persistência e respeito à preferência do sistema
 - **Reanálise** — novo currículo comparado com uma vaga já analisada
 - **Acessível** — labels, landmarks e diálogos testados com `axe`
+- **Carregamento rápido** — code-splitting por rota (lazy loading) e chunks de vendor (react, supabase) com cache de longo prazo
 
 ---
 
@@ -41,7 +44,8 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 .
 ├── api/                     # Serverless functions (análise com IA)
 ├── public/
-├── supabase/migrations/     # SQL versionado (tabelas, RLS e função de limite)
+├── scripts/                 # Ferramentas de validação (ex.: check de migrations)
+├── supabase/migrations/     # SQL versionado (tabelas, RLS, limites e limpeza)
 └── src/
     ├── components/layout/   # Header, Footer, Layout (com seus CSS Modules)
     ├── features/analises/   # Workspace, histórico, detalhe e reanálise
@@ -90,6 +94,9 @@ conteúdo dos arquivos de `supabase/migrations/`:
    (cada navegador enxerga apenas o próprio histórico).
 3. `0003_remover_curriculo_texto.sql` — remove a coluna `curriculo_texto`
    (o texto integral do currículo não é persistido — minimização de PII).
+4. `0004_limpeza_uso_analises.sql` — índice, função `limpar_uso_antigo()` e
+   agendamento diário com pg_cron (purga de contadores antigos; se o plano não
+   tiver pg_cron, a migração roda sem erro e a limpeza fica manual).
 
 ### Variáveis de ambiente
 
@@ -115,9 +122,14 @@ npm run dev:api    # API local via Vercel (após build da API)
 A suíte usa Vitest, Testing Library e `vitest-axe` para checagem de acessibilidade.
 
 ```bash
-npm test           # Executa todos os testes uma única vez
-npm run test:watch # Modo watch — reexecuta a cada mudança
+npm test                 # Executa todos os testes uma única vez
+npm run test:watch       # Modo watch — reexecuta a cada mudança
+npm run check:migrations # Valida a sintaxe SQL de supabase/migrations (pgsql-parser)
 ```
+
+O `check:migrations` usa o `pgsql-parser` (libpg_query compilado para WASM — o
+mesmo parser do PostgreSQL) para validar todas as migrations sem precisar de
+banco, e o CI roda essa checagem em todo push/PR.
 
 **Cobertura:**
 

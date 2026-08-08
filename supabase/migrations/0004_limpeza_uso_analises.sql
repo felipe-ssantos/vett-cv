@@ -1,10 +1,10 @@
 -- Limpeza periódica de contadores antigos da tabela `uso_analises`.
 --
 -- A tabela cresce ~1 linha por (sessão | IP | global) por dia. Sem limpeza,
--- linhas antigas se acumulam indefinidamente. Aqui criamos:
+-- linhas antigas se acumulam indefinidamente. Aqui foi criado:
 --   1. um índice para o filtro por data (a PK é `chave`, não cobre `atualizado_em`);
 --   2. uma função `limpar_uso_antigo()` reutilizável (também executável à mão);
---   3. um agendamento diário com pg_cron, quando disponível no plano.
+--   3. um agendamento diário com pg_cron, quando disponível.
 
 -- 1) Índice que acelera o DELETE por data.
 create index if not exists uso_analises_atualizado_em_idx
@@ -34,7 +34,7 @@ grant execute on function public.limpar_uso_antigo(integer) to service_role;
 
 -- 3) Agendamento diário às 04:00 UTC (01:00 no horário de Brasília), fora do
 --    pico de uso. Guarda por disponibilidade: se o pg_cron não puder ser
---    instalado no plano atual, a migração continua sem erro (índice e função
+--    instalado no plano atual, migração sem erro (índice e função
 --    permanecem, e a limpeza pode ser feita manualmente via `limpar_uso_antigo`).
 --    Obs.: o corpo do agendamento usa $cron$ (tag distinta de $$) para não
 --    conflitar com o delimitador do bloco `do`.
