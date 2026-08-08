@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   LuArrowRight,
   LuBriefcase,
@@ -23,6 +24,8 @@ import {
   ROTULO_TAMANHO_MAXIMO,
   useAnaliseCurriculo,
 } from "../hooks/useAnaliseCurriculo";
+import { useCotaAnalises } from "../hooks/useCotaAnalises";
+import { CotaAnalises } from "./CotaAnalises";
 import { RelatorioAnalise } from "./RelatorioAnalise";
 import type { AnaliseMatchIA } from "../../../types";
 
@@ -102,6 +105,18 @@ export function AnaliseWorkspace() {
     handleColarDescricao,
     handleSubmit,
   } = useAnaliseCurriculo();
+
+  // Cota diária de análises (restantes + horário de renovação).
+  const { cota, carregando: carregandoCota, atualizarCota } =
+    useCotaAnalises();
+
+  // Recarrega a cota sempre que uma análise termina (sucesso ou erro): o
+  // servidor incrementa o contador em cada tentativa.
+  const analisandoAnterior = useRef(analisando);
+  useEffect(() => {
+    if (analisandoAnterior.current && !analisando) atualizarCota();
+    analisandoAnterior.current = analisando;
+  }, [analisando, atualizarCota]);
 
   // Estado derivado: condições simples calculadas a partir de outros estados.
   const temConteudoCurriculo =
@@ -303,6 +318,10 @@ export function AnaliseWorkspace() {
               </>
             )}
           </button>
+
+          <div className="text-center mt-2">
+            <CotaAnalises cota={cota} carregando={carregandoCota} />
+          </div>
 
           <div className={`text-center mt-2 ${workspaceStyles.privacyNote}`}>
             <LuLock size={12} className="me-1" />

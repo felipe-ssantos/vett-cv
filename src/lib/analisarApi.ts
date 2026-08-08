@@ -28,9 +28,9 @@ async function extrairMensagemDeErro(resposta: Response): Promise<string> {
   return `Falha na análise (HTTP ${resposta.status}). Tente novamente.`;
 }
 
-// Identifica a sessão anônima do Supabase para o limite de análises por dia.
-// Falhas aqui nunca devem impedir a análise 
-async function obterIdSessao(): Promise<string | null> {
+// Identifica a sessão anônima do Supabase (usada no limite de análises por dia
+// e na consulta de cota). Falhas aqui nunca devem impedir a análise.
+export async function obterIdSessao(): Promise<string | null> {
   try {
     const { data } = await supabase.auth.getSession();
     return data.session?.user.id ?? null;

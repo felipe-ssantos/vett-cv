@@ -7,6 +7,14 @@ vi.mock("../../../lib/supabaseClient", () => ({
   supabase: {},
 }));
 
+vi.mock("../hooks/useCotaAnalises", () => ({
+  useCotaAnalises: () => ({
+    cota: null,
+    carregando: false,
+    atualizarCota: vi.fn(),
+  }),
+}));
+
 const TAMANHO_MAXIMO = 4 * 1024 * 1024; // 4 MB
 
 function criarArquivoPdf() {

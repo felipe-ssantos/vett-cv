@@ -9,6 +9,14 @@ vi.mock("../../../lib/supabaseClient", () => ({
   supabase: {},
 }));
 
+vi.mock("../hooks/useCotaAnalises", () => ({
+  useCotaAnalises: () => ({
+    cota: null,
+    carregando: false,
+    atualizarCota: vi.fn(),
+  }),
+}));
+
 describe("AnaliseWorkspace (acessibilidade)", () => {
   it("expõe labels acessíveis nos campos e não viola as regras do axe", async () => {
     const { container } = render(
