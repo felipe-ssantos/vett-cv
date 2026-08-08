@@ -54,6 +54,85 @@
   --bs-border-color: #e5e7eb;
 }
 
+/* ===== Tema escuro (data-bs-theme="dark" no <html>) =====
+   O Bootstrap 5.3 inverte a própria escala de cores; aqui invertemos os
+   tokens do design system e forçamos as utilities fixas usadas no app
+   (.text-dark, .bg-light, .btn-light, .text-danger/.text-success). */
+:root[data-bs-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-alt: #111827;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border: #334155;
+  --border-subtle: #1e293b;
+
+  /* Verde/teal do Vett — mantido escuro o suficiente para texto branco. */
+  --primary: #0f766e;
+  --primary-hover: #0d9488;
+  --primary-light: #134e4a;
+
+  --success: #34d399;
+  --success-bg: #022c22;
+  --success-border: #064e3b;
+
+  --warning: #fbbf24;
+  --warning-bg: #451a03;
+  --warning-border: #78350f;
+
+  --danger: #f87171;
+  --danger-bg: #450a0a;
+  --danger-hover: #ef4444;
+
+  /* Bootstrap */
+  --bs-primary: #0f766e;
+  --bs-primary-rgb: 15, 118, 110;
+  --bs-link-color: #2dd4bf;
+  --bs-link-hover-color: #5eead4;
+  --bs-body-color: #f1f5f9;
+  --bs-body-bg: #0f172a;
+  --bs-border-color: #334155;
+  --bs-secondary-color: #cbd5e1;
+
+  color-scheme: dark;
+}
+
+/* Utilities fixas do Bootstrap que o tema escuro não inverte sozinho. */
+[data-bs-theme="dark"] .text-dark {
+  color: var(--text-primary) !important;
+}
+
+[data-bs-theme="dark"] .bg-light {
+  background-color: var(--surface-alt) !important;
+}
+
+[data-bs-theme="dark"] .btn-light {
+  --bs-btn-color: var(--text-primary);
+  --bs-btn-bg: var(--surface-alt);
+  --bs-btn-border-color: var(--border);
+  --bs-btn-hover-color: var(--text-primary);
+  --bs-btn-hover-bg: var(--border);
+  --bs-btn-hover-border-color: var(--border);
+  --bs-btn-active-color: var(--text-primary);
+  --bs-btn-active-bg: var(--border);
+  --bs-btn-active-border-color: var(--border);
+  --bs-btn-disabled-color: var(--text-tertiary);
+  --bs-btn-disabled-bg: var(--surface-alt);
+  --bs-btn-disabled-border-color: var(--border);
+}
+
+[data-bs-theme="dark"] .text-danger {
+  color: var(--danger) !important;
+}
+
+[data-bs-theme="dark"] .text-success {
+  color: var(--success) !important;
+}
+
 /* ===== Base / reset ===== */
 html,
 body,

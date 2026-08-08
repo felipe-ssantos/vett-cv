@@ -16,6 +16,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 - **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
 - **Histórico privado** — análises salvas no Supabase e isoladas por sessão anônima
 - **Cota do dia visível** — análises restantes e horário de renovação exibidos na tela de análise
+- **Modo claro/escuro** — alternância no cabeçalho, com persistência e respeito à preferência do sistema
 - **Reanálise** — novo currículo comparado com uma vaga já analisada
 - **Acessível** — labels, landmarks e diálogos testados com `axe`
 

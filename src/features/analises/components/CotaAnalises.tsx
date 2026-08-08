@@ -34,7 +34,8 @@ function formatarRenovacao(renovaEm: string | null): string | null {
  */
 export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
   if (carregando && !cota) return null;
-  if (!cota) return null;
+  // Sem cota ou sem sessão anônima (ainda carregando): não exibe nada.
+  if (!cota?.sessao) return null;
 
   // O usuário fica bloqueado quando a cota da sessão OU a global esgota.
   const sessaoEsgotada = cota.sessao !== null && cota.sessao.restante === 0;
@@ -64,9 +65,7 @@ export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
       ) : (
         <span>
           <span className={styles.cotaDestaque}>
-            {cota.sessao
-              ? `${cota.sessao.restante} de ${cota.sessao.limite} análises hoje`
-              : "Cota indisponível"}
+            {cota.sessao.restante} de {cota.sessao.limite} análises hoje
           </span>
           {renovacao && (
             <>

@@ -319,10 +319,6 @@ export function AnaliseWorkspace() {
             )}
           </button>
 
-          <div className="text-center mt-2">
-            <CotaAnalises cota={cota} carregando={carregandoCota} />
-          </div>
-
           <div className={`text-center mt-2 ${workspaceStyles.privacyNote}`}>
             <LuLock size={12} className="me-1" />
             Suas análises são privadas e vinculadas à sua sessão.
@@ -347,6 +343,11 @@ export function AnaliseWorkspace() {
               Análise concluída em {tempoAnalise.toFixed(1)}s
             </span>
           )}
+        </div>
+
+        {/* Cota do dia: status/contexto junto do painel de resultado. */}
+        <div className="mb-2">
+          <CotaAnalises cota={cota} carregando={carregandoCota} />
         </div>
 
         {avisoSalvamento && (

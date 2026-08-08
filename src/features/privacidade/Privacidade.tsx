@@ -107,6 +107,11 @@ export function Privacidade() {
             de <strong>100 análises por dia</strong>. Esses contadores não
             armazenam nenhum dado pessoal.
           </p>
+          <p>
+            As cotas renovam automaticamente à <strong>meia-noite (horário
+            UTC)</strong> — às 21h no horário de Brasília. A tela de análise
+            mostra quantas análises restam no dia e quando a cota renova.
+          </p>
 
           <h2>7. Serviços de terceiros</h2>
           <ul>

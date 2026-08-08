@@ -67,4 +67,11 @@ describe("CotaAnalises", () => {
     );
     expect(container).toBeEmptyDOMElement();
   });
+
+  it("esconde o badge quando ainda não há cota de sessão", () => {
+    const { container } = render(
+      <CotaAnalises cota={criarCota({ sessao: null })} carregando={false} />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
 });

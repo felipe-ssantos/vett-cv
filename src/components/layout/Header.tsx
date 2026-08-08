@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router";
-import { LuClock, LuSparkles } from "react-icons/lu";
+import { LuClock, LuMoon, LuSparkles, LuSun } from "react-icons/lu";
+import { useTema } from "../../hooks/useTema";
 import styles from "./Header.module.css";
 
 export function Header() {
   const location = useLocation();
+  const { tema, alternarTema } = useTema();
 
   const isInicio = location.pathname === "/";
   const isHistorico =
@@ -36,24 +38,39 @@ export function Header() {
         </span>
       </div>
 
-      <nav className={styles.navContainer} aria-label="Navegação principal">
-        <Link
-          to="/"
-          className={`${styles.navLink} ${isInicio ? "active" : ""}`}
-          aria-current={isInicio ? "page" : undefined}
+      <div className={styles.navGroup}>
+        <nav className={styles.navContainer} aria-label="Navegação principal">
+          <Link
+            to="/"
+            className={`${styles.navLink} ${isInicio ? "active" : ""}`}
+            aria-current={isInicio ? "page" : undefined}
+          >
+            <LuSparkles size={15} aria-hidden="true" />
+            Início
+          </Link>
+          <Link
+            to="/historico"
+            className={`${styles.navLink} ${isHistorico ? "active" : ""}`}
+            aria-current={isHistorico ? "page" : undefined}
+          >
+            <LuClock size={15} aria-hidden="true" />
+            Histórico
+          </Link>
+        </nav>
+        <button
+          type="button"
+          onClick={alternarTema}
+          className={styles.temaButton}
+          aria-label={tema === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+          title={tema === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
         >
-          <LuSparkles size={15} aria-hidden="true" />
-          Início
-        </Link>
-        <Link
-          to="/historico"
-          className={`${styles.navLink} ${isHistorico ? "active" : ""}`}
-          aria-current={isHistorico ? "page" : undefined}
-        >
-          <LuClock size={15} aria-hidden="true" />
-          Histórico
-        </Link>
-      </nav>
+          {tema === "dark" ? (
+            <LuSun size={16} aria-hidden="true" />
+          ) : (
+            <LuMoon size={16} aria-hidden="true" />
+          )}
+        </button>
+      </div>
     </header>
   );
 }

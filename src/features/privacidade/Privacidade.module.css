@@ -7,14 +7,14 @@
 .prose {
   font-size: 0.9375rem;
   line-height: 1.7;
-  color: #343a40;
+  color: var(--text-secondary);
 }
 
 .prose h2 {
   font-size: 1rem;
   font-weight: 700;
   margin: 1.75rem 0 0.5rem;
-  color: #212529;
+  color: var(--text-primary);
 }
 
 .prose p {
@@ -31,7 +31,7 @@
 }
 
 .prose a {
-  color: #0d9488;
+  color: var(--bs-link-color);
   text-decoration: none;
   font-weight: 500;
 }
@@ -43,6 +43,6 @@
 .footerNote {
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border);
   font-size: 0.875rem;
 }

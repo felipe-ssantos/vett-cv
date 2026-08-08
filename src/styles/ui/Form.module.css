@@ -19,7 +19,7 @@
 .textarea:focus {
   background: var(--surface);
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(11, 79, 70, 0.08);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
   outline: none;
 }
 
