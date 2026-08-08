@@ -128,8 +128,8 @@ export function Privacidade() {
           <p>
             A comunicação é feita por <strong>HTTPS</strong>. A chave da API de
             IA vive somente no servidor e nunca é exposta ao navegador. A
-            aplicação envia cabeçalhos de segurança (CSP, proteção contra
-            clickjacking) e o acesso aos dados é isolado por sessão.
+            aplicação aplica uma Content Security Policy e proteção contra
+            clickjacking, e o acesso aos dados é isolado por sessão.
           </p>
 
           <h2>9. Alterações desta política</h2>
