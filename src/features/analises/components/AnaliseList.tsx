@@ -158,7 +158,9 @@ export function AnaliseList() {
             <LuClock className="text-teal" size={20} /> Histórico de Análises
           </h1>
           <p className={`mb-0 text-secondary ${styles.pageSubtitle}`}>
-            Suas análises são privadas e vinculadas à sua sessão.
+            Suas análises são privadas e vinculadas à sua sessão. O histórico
+            mantém as 10 análises mais recentes — as mais antigas são
+            removidas automaticamente.
           </p>
         </div>
 

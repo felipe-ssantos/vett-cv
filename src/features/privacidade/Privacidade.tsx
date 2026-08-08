@@ -96,8 +96,11 @@ export function Privacidade() {
           <p>
             Você pode apagar uma análise ou o histórico inteiro a qualquer
             momento pelo ícone de lixeira na página Histórico — a exclusão
-            remove os dados do banco. Não há prazo automático de retenção além
-            disso: os dados permanecem somente até você excluí-los.
+            remove os dados do banco. Para manter o histórico sob controle, o
+            Vett guarda automaticamente as <strong>10 análises mais
+            recentes</strong> por sessão: ao salvar uma nova, a mais antiga que
+            ultrapassar esse limite é removida. Não há outro prazo automático
+            de retenção: os dados permanecem somente até você excluí-los.
           </p>
 
           <h2>6. Limites de uso</h2>

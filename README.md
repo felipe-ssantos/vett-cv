@@ -16,7 +16,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 - **Upload de currículo** — PDF ou DOCX (até 4 MB), com extração automática do texto
 - **Ou cola o texto** — alternativa para quem prefere colar o currículo diretamente
 - **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
-- **Histórico privado** — análises salvas no Supabase e isoladas por sessão anônima
+- **Histórico privado** — análises salvas no Supabase, isoladas por sessão anônima e limitadas às 10 mais recentes
 - **Cota do dia visível** — análises restantes e horário de renovação exibidos na tela de análise
 - **Modo claro/escuro** — alternância no cabeçalho, com persistência e respeito à preferência do sistema
 - **Reanálise** — novo currículo comparado com uma vaga já analisada
@@ -97,6 +97,9 @@ conteúdo dos arquivos de `supabase/migrations/`:
 4. `0004_limpeza_uso_analises.sql` — índice, função `limpar_uso_antigo()` e
    agendamento diário com pg_cron (purga de contadores antigos; se o plano não
    tiver pg_cron, a migração roda sem erro e a limpeza fica manual).
+5. `0005_limite_historico_analises.sql` — trigger que mantém no máximo as 10
+   análises mais recentes por sessão (as mais antigas são removidas
+   automaticamente ao salvar uma nova).
 
 ### Variáveis de ambiente
 
