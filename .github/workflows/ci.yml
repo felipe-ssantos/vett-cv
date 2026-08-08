@@ -19,6 +19,7 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
+      - run: npm run check:migrations
       - run: npm run build:api
       - run: npm run build
       - run: npm test

@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "build:api": "tsc -p tsconfig.server.json",
     "lint": "eslint .",
+    "check:migrations": "node scripts/validar-migrations.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -44,6 +45,7 @@
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
     "jsdom": "^30.0.1",
+    "pgsql-parser": "^18.2.6",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.65.0",
     "vite": "^8.2.0",
