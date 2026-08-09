@@ -22,7 +22,7 @@
     "formidable": "^3.5.4",
     "jspdf": "^4.2.1",
     "mammoth": "^1.12.0",
-    "pdf-parse": "^1.1.1",
+    "pdf-parse": "^2.4.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-icons": "^5.7.0",
