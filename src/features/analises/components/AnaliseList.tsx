@@ -143,7 +143,8 @@ export function AnaliseList() {
     }
   }
 
-  // Gera e baixa um arquivo JSON com o histórico (dados do próprio usuário).
+  // Gera e baixa um arquivo JSON com o histórico. Exporta TODAS as análises
+  // (não apenas as do filtro ativo), para o backup ser completo.
   function handleExportarHistorico() {
     if (analises.length === 0) return;
     const payload = analises.map((a) => ({
@@ -247,7 +248,7 @@ export function AnaliseList() {
             aria-label="Análises salvas no histórico"
             aria-valuemin={0}
             aria-valuemax={LIMITE_HISTORICO}
-            aria-valuenow={analises.length}
+            aria-valuenow={Math.min(analises.length, LIMITE_HISTORICO)}
           >
             <div
               className={`${styles.meterFill}${analises.length >= LIMITE_HISTORICO ? ` ${styles.meterFillFull}` : ""}`}

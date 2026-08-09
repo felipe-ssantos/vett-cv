@@ -129,6 +129,9 @@ describe("AnaliseList — exportar histórico", () => {
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
       .mockImplementation(() => {});
+    const anexar = vi
+      .spyOn(document.body, "appendChild")
+      .mockImplementation((node) => node);
 
     await user.click(screen.getByRole("button", { name: /Exportar/ }));
 
@@ -136,9 +139,15 @@ describe("AnaliseList — exportar histórico", () => {
     expect(click).toHaveBeenCalled();
     await waitFor(() => expect(revokeObjectURL).toHaveBeenCalled());
 
+    // O link de download usa um nome de arquivo datado vett-historico-*.json
+    expect(anexar).toHaveBeenCalled();
+    const link = anexar.mock.calls[0][0] as HTMLAnchorElement;
+    expect(link.download).toMatch(/^vett-historico-\d{4}-\d{2}-\d{2}\.json$/);
+
     createObjectURL.mockRestore();
     revokeObjectURL.mockRestore();
     click.mockRestore();
+    anexar.mockRestore();
   });
 
   it("não oferece exportar com o histórico vazio", async () => {

@@ -4,8 +4,8 @@
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1050;
-  max-width: min(640px, calc(100vw - 32px));
+  z-index: 1040;
+  max-width: min(680px, calc(100vw - 32px));
   display: flex;
   align-items: center;
   gap: 12px;
@@ -31,6 +31,7 @@
 
 .content {
   flex: 1;
+  min-width: 0;
 }
 
 .text {
@@ -49,20 +50,54 @@
   text-decoration: underline;
 }
 
-.aceitarButton {
+.acoes {
   flex-shrink: 0;
-  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aceitarButton,
+.recusarButton {
   border-radius: 8px;
-  background: var(--primary);
-  color: #ffffff;
   font-size: 13px;
   font-weight: 600;
-  padding: 8px 16px;
-  transition: background 150ms ease;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.aceitarButton {
+  border: none;
+  background: var(--primary);
+  color: #ffffff;
 }
 
 .aceitarButton:hover {
   background: var(--primary-hover);
+}
+
+.recusarButton {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.recusarButton:hover {
+  border-color: var(--text-muted);
+}
+
+/* Telas estreitas: empilha ações abaixo do texto. */
+@media (max-width: 560px) {
+  .banner {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .acoes {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 
 /* Reduzir movimento: sem animação extra. */

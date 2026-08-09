@@ -53,13 +53,7 @@
   margin-top: 6px;
 }
 
-.exportButton {
-  height: 36px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
+.exportButton,
 .clearHistoryButton {
   height: 36px;
   border-radius: 8px;
