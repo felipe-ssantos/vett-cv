@@ -26,7 +26,7 @@ async function extrairMensagemDeErro(resposta: Response): Promise<string> {
     return "O serviço de contagem de análises está temporariamente indisponível. Tente novamente em instantes.";
   }
   if (resposta.status === 429) {
-    return "Limite de análises diárias atingido. Tente novamente amanhã.";
+    return "Limite de análises atingido. Tente novamente quando a cota renovar.";
   }
   return `Falha na análise (HTTP ${resposta.status}). Tente novamente.`;
 }

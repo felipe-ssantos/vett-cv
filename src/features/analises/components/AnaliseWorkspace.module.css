@@ -18,7 +18,10 @@
   font-size: 12.5px;
 }
 
-/* Estado bloqueado por cota: análise anterior embaçada + overlay central. */
+/* Estado bloqueado por cota: análise anterior embaçada + overlay central.
+   A entrada no estado bloqueado é animada (keyframes blurIn/overlayIn/cardIn),
+   respeitando prefers-reduced-motion. A saída não precisa de transição: o
+   painel é desmontado e o relatório volta ao normal imediatamente. */
 .blurWrapper {
   position: relative;
   border-radius: 12px;
@@ -30,6 +33,7 @@
   opacity: 0.55;
   pointer-events: none;
   user-select: none;
+  animation: blurIn 500ms ease forwards;
 }
 
 .blurOverlay {
@@ -40,6 +44,7 @@
   justify-content: center;
   padding: 20px;
   background: color-mix(in srgb, var(--surface) 72%, transparent);
+  animation: overlayIn 450ms ease both;
 }
 
 .blurCard {
@@ -50,6 +55,47 @@
   border-radius: 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   padding: 22px 24px;
+  animation: cardIn 400ms ease 80ms both;
+}
+
+@keyframes blurIn {
+  from {
+    filter: blur(0);
+    opacity: 1;
+  }
+  to {
+    filter: blur(6px);
+    opacity: 0.55;
+  }
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blurredContent,
+  .blurOverlay,
+  .blurCard {
+    animation: none;
+    transition: none;
+  }
 }
 
 .blurIcon {

@@ -13,7 +13,7 @@ export interface CotaAnalises {
   sessao: ContadorDeUso | null;
   /** Cota global do dia; null quando o serviço de contador está indisponível. */
   global: ContadorDeUso | null;
-  /** Próxima meia-noite UTC (ISO) — quando a cota diária renova. */
+  /** Próximo limite da janela de 3h da sessão (ISO) — quando a cota renova. */
   renovaEm: string | null;
 }
 

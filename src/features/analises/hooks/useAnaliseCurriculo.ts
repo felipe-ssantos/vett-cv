@@ -47,6 +47,7 @@ export interface UseAnaliseCurriculoReturn {
   handleRemoverArquivo: () => void;
   handleColarCurriculo: () => Promise<void>;
   handleColarDescricao: () => Promise<void>;
+  handleLimparDescricao: () => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => Promise<void>;
 }
 
@@ -120,6 +121,11 @@ export function useAnaliseCurriculo(): UseAnaliseCurriculoReturn {
 
   function handleColarDescricao(): Promise<void> {
     return colarDaAreaDeTransferencia(setDescricaoVaga);
+  }
+
+  /** Esvazia o campo de descrição da vaga para colar uma nova oportunidade. */
+  function handleLimparDescricao(): void {
+    setDescricaoVaga("");
   }
 
   /** Valida os campos e dispara a análise (event handler de submit). */
@@ -215,6 +221,7 @@ export function useAnaliseCurriculo(): UseAnaliseCurriculoReturn {
     handleRemoverArquivo,
     handleColarCurriculo,
     handleColarDescricao,
+    handleLimparDescricao,
     handleSubmit,
   };
 }

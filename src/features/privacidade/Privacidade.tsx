@@ -106,9 +106,9 @@ export function Privacidade() {
           <h2>6. Limites de uso</h2>
           <p>
             Para proteger as cotas gratuitas dos serviços, cada navegador pode
-            fazer até <strong>5 análises por dia</strong>, com um teto global
-            de <strong>100 análises por dia</strong>. Esses contadores não
-            armazenam nenhum dado pessoal.
+            fazer até <strong>5 análises por janela de 3 horas</strong>, com
+            um teto global de <strong>100 análises por dia</strong>. Esses
+            contadores não armazenam nenhum dado pessoal.
           </p>
           <p>
             O controle por navegador combina a <strong>sessão anônima</strong>{" "}
@@ -118,9 +118,10 @@ export function Privacidade() {
             as análises, e ele é descartado junto com o contador do dia.
           </p>
           <p>
-            As cotas renovam automaticamente à <strong>meia-noite (horário
-            UTC)</strong> — às 21h no horário de Brasília. A tela de análise
-            mostra quantas análises restam no dia e quando a cota renova.
+            A cota por navegador renova automaticamente a cada{" "}
+            <strong>3 horas (em horário UTC)</strong>; o teto global renova à
+            meia-noite UTC. A tela de análise mostra quantas análises restam e
+            a hora exata em que a cota renova.
           </p>
 
           <h2>7. Serviços de terceiros</h2>

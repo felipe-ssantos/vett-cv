@@ -171,4 +171,19 @@ describe("useAnaliseCurriculo", () => {
     expect(result.current.curriculoTexto).toBe("");
     expect(result.current.arquivo).not.toBeNull();
   });
+
+  it("limpa a descrição da vaga ao chamar handleLimparDescricao", () => {
+    const { result } = renderHook(() => useAnaliseCurriculo());
+
+    act(() => {
+      result.current.handleDescricaoChange(eventoDeTexto("Vaga de analista"));
+    });
+    expect(result.current.descricaoVaga).toBe("Vaga de analista");
+
+    act(() => {
+      result.current.handleLimparDescricao();
+    });
+
+    expect(result.current.descricaoVaga).toBe("");
+  });
 });

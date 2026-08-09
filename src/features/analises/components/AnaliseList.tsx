@@ -11,6 +11,7 @@ import {
   LuX,
 } from "react-icons/lu";
 import { Link } from "react-router";
+import { exportarHistoricoPdf } from "../../../lib/exportarPdf";
 import { supabase } from "../../../lib/supabaseClient";
 import cardStyles from "../../../styles/ui/Card.module.css";
 import buttonStyles from "../../../styles/ui/Button.module.css";
@@ -143,35 +144,11 @@ export function AnaliseList() {
     }
   }
 
-  // Gera e baixa um arquivo JSON com o histórico. Exporta TODAS as análises
+  // Gera e baixa um PDF estruturado com o histórico. Exporta TODAS as análises
   // (não apenas as do filtro ativo), para o backup ser completo.
   function handleExportarHistorico() {
     if (analises.length === 0) return;
-    const payload = analises.map((a) => ({
-      id: a.id,
-      titulo_vaga: a.titulo_vaga,
-      empresa: a.empresa,
-      senioridade: a.senioridade,
-      score_match: a.score_match,
-      match_por_categoria: a.match_por_categoria,
-      keywords_presentes: a.keywords_presentes,
-      keywords_faltando: a.keywords_faltando,
-      pontos_fortes: a.pontos_fortes,
-      sugestoes_ajuste: a.sugestoes_ajuste,
-      resumo_ia: a.resumo_ia,
-      dica_final: a.dica_final,
-      criada_em: a.created_at,
-    }));
-    const json = JSON.stringify(payload, null, 2);
-    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `vett-historico-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    void exportarHistoricoPdf(analises);
   }
 
   // Filtragem dinâmica por cargo, empresa, senioridade ou palavra-chave
@@ -206,9 +183,9 @@ export function AnaliseList() {
                 type="button"
                 onClick={handleExportarHistorico}
                 className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.exportButton}`}
-                title="Baixar histórico em JSON"
+                title="Baixar histórico em PDF"
               >
-                <LuDownload size={14} /> Exportar
+                <LuDownload size={14} /> Exportar PDF
               </button>
               <button
                 onClick={() => setConfirmandoExcluirTodas(true)}

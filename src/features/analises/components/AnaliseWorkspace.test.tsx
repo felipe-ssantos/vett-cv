@@ -15,6 +15,12 @@ const cotaMock = vi.hoisted(() => ({
   } | null,
 }));
 
+const enviarAnaliseMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../../../lib/analisarApi", () => ({
+  enviarAnalise: enviarAnaliseMock,
+}));
+
 vi.mock("../hooks/useCotaAnalises", () => ({
   useCotaAnalises: () => ({
     cota: cotaMock.valor,
@@ -39,6 +45,7 @@ function criarArquivoDeTamanho(bytes: number) {
 
 beforeEach(() => {
   cotaMock.valor = null;
+  enviarAnaliseMock.mockReset();
 });
 
 function renderizarWorkspace() {
@@ -115,7 +122,7 @@ describe("AnaliseWorkspace — bloqueio por cota", () => {
       screen.getByTestId("analise-embacada"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Cota diária esgotada" }),
+      screen.getByRole("heading", { name: "Cota de análises esgotada" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Ver meu histórico" }),
@@ -148,6 +155,40 @@ describe("AnaliseWorkspace — bloqueio por cota", () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Sua análise aparecerá aqui" }),
+    ).toBeInTheDocument();
+  });
+
+  it("embaça o painel quando a API responde 429 com a mensagem de limite", async () => {
+    // Mensagem da API (janela de 3h) — o cliente a exibe no estado de erro e
+    // o workspace reconhece como bloqueio de cota.
+    enviarAnaliseMock.mockRejectedValue(
+      new Error(
+        "Você atingiu o limite de 5 análises por janela de 3 horas neste navegador. A cota renova automaticamente.",
+      ),
+    );
+    cotaMock.valor = {
+      sessao: { restante: 2 },
+      global: { restante: 90 },
+      renovaEm: null,
+    };
+    renderizarWorkspace();
+
+    fireEvent.change(screen.getByLabelText("Currículo"), {
+      target: { value: "Analista com SQL e Python" },
+    });
+    fireEvent.change(screen.getByLabelText("Descrição da vaga"), {
+      target: { value: "Vaga de analista de dados" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: /Analisar oportunidade/ }),
+    );
+
+    expect(await screen.findByTestId("analise-embacada")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Cota de análises esgotada" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Você atingiu o limite de 5 análises por janela/),
     ).toBeInTheDocument();
   });
 });

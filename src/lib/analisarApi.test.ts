@@ -52,14 +52,14 @@ describe("enviarAnalise — limite de análises (429)", () => {
       "fetch",
       vi.fn().mockResolvedValue(
         respostaFalsa(429, {
-          erro: "Você atingiu o limite de 5 análises por dia neste navegador. Volte amanhã!",
+          erro: "Você atingiu o limite de 5 análises por janela de 3 horas neste navegador. A cota renova automaticamente.",
         }),
       ),
     );
     getSessionMock.mockResolvedValue({ data: { session: null } });
 
     await expect(enviarAnalise(new FormData())).rejects.toThrow(
-      "Você atingiu o limite de 5 análises por dia",
+      "Você atingiu o limite de 5 análises por janela de 3 horas",
     );
   });
 
@@ -68,7 +68,7 @@ describe("enviarAnalise — limite de análises (429)", () => {
     getSessionMock.mockResolvedValue({ data: { session: null } });
 
     await expect(enviarAnalise(new FormData())).rejects.toThrow(
-      "Limite de análises diárias atingido",
+      "Limite de análises atingido",
     );
   });
 });

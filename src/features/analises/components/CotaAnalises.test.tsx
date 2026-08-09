@@ -1,77 +1,91 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { CotaAnalises } from "./CotaAnalises";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CotaAnalises as TipoCotaAnalises } from "../../../lib/usoApi";
+import { CotaAnalises } from "./CotaAnalises";
 
-const OITO_HORAS_E_MEIA = (8 * 3600 + 30 * 60) * 1000;
-
-function criarCota(sobrescrever?: Partial<TipoCotaAnalises>): TipoCotaAnalises {
+function montarCota(
+  sessao: TipoCotaAnalises["sessao"],
+  renovaEm: string | null,
+): TipoCotaAnalises {
   return {
-    sessao: { usado: 2, limite: 5, restante: 3 },
-    global: { usado: 42, limite: 100, restante: 58 },
-    renovaEm: new Date(Date.now() + OITO_HORAS_E_MEIA).toISOString(),
-    ...sobrescrever,
+    sessao,
+    global: { usado: 10, limite: 100, restante: 90 },
+    renovaEm,
   };
 }
 
-describe("CotaAnalises", () => {
-  it("mostra as análises restantes, a renovação e o uso global", () => {
-    render(<CotaAnalises cota={criarCota()} carregando={false} />);
+afterEach(() => {
+  vi.useRealTimers();
+});
 
-    const caixa = screen.getByRole("status");
-    expect(caixa).toHaveTextContent("3 de 5 análises hoje");
-    expect(caixa).toHaveTextContent("Renova em 8h 30min");
-    expect(caixa).toHaveTextContent("global: 42/100");
-  });
+describe("CotaAnalises — renovação exata", () => {
+  it("mostra análises disponíveis, tempo restante e a hora exata da renovação", () => {
+    vi.useFakeTimers();
+    // 12:00 UTC, renovação às 15:00 UTC (fim da janela de 3h).
+    vi.setSystemTime(new Date("2026-08-09T12:00:00Z"));
+    const renovaEm = new Date("2026-08-09T15:00:00Z").toISOString();
 
-  it("mostra estado bloqueado quando a cota da sessão esgota", () => {
     render(
       <CotaAnalises
-        cota={criarCota({
-          sessao: { usado: 5, limite: 5, restante: 0 },
-        })}
+        cota={montarCota({ usado: 3, limite: 5, restante: 2 }, renovaEm)}
         carregando={false}
       />,
     );
 
-    const caixa = screen.getByRole("status");
-    expect(caixa).toHaveTextContent("Limite de análises de hoje atingido");
-    expect(caixa).toHaveTextContent("Renova em 8h 30min");
-    expect(caixa).not.toHaveTextContent("global:");
+    expect(
+      screen.getByText(/2 de 5 análises disponíveis/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Renova em 3h/)).toBeInTheDocument();
+    // Hora exata da próxima renovação, no fuso local do navegador.
+    expect(screen.getByText(/às \d{2}:\d{2}/)).toBeInTheDocument();
   });
 
-  it("mostra estado bloqueado quando a cota global esgota", () => {
+  it("mostra o bloqueio com a renovação exata quando a cota esgota", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-09T12:00:00Z"));
+    const renovaEm = new Date("2026-08-09T15:00:00Z").toISOString();
+
     render(
       <CotaAnalises
-        cota={criarCota({
-          global: { usado: 100, limite: 100, restante: 0 },
-        })}
+        cota={montarCota({ usado: 5, limite: 5, restante: 0 }, renovaEm)}
         carregando={false}
       />,
     );
 
-    const caixa = screen.getByRole("status");
-    expect(caixa).toHaveTextContent("Cota global do dia atingida");
+    expect(
+      screen.getByText(/Limite de análises desta janela atingido/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Renova em 3h \(às \d{2}:\d{2}\)/)).toBeInTheDocument();
   });
 
-  it("não renderiza nada enquanto carrega pela primeira vez", () => {
-    const { container } = render(
-      <CotaAnalises cota={null} carregando={true} />,
-    );
-    expect(container).toBeEmptyDOMElement();
+  it("não exibe nada enquanto carrega sem cota", () => {
+    render(<CotaAnalises cota={null} carregando />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  it("não renderiza nada quando a cota está indisponível", () => {
-    const { container } = render(
-      <CotaAnalises cota={null} carregando={false} />,
-    );
-    expect(container).toBeEmptyDOMElement();
+  it("não exibe nada quando a cota está indisponível", () => {
+    render(<CotaAnalises cota={null} carregando={false} />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  it("esconde o badge quando ainda não há cota de sessão", () => {
-    const { container } = render(
-      <CotaAnalises cota={criarCota({ sessao: null })} carregando={false} />,
+  it("mostra só a hora exata quando a janela já renovou", () => {
+    vi.useFakeTimers();
+    // Renovação às 15:00 UTC, mas o relógio do usuário já passou dela
+    // (15:05 UTC) e a cota ainda não foi recarregada.
+    vi.setSystemTime(new Date("2026-08-09T15:05:00Z"));
+    const renovaEm = new Date("2026-08-09T15:00:00Z").toISOString();
+
+    render(
+      <CotaAnalises
+        cota={montarCota({ usado: 5, limite: 5, restante: 0 }, renovaEm)}
+        carregando={false}
+      />,
     );
-    expect(container).toBeEmptyDOMElement();
+
+    expect(
+      screen.getByText(/Limite de análises desta janela atingido/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Renova às \d{2}:\d{2}/)).toBeInTheDocument();
+    expect(screen.queryByText(/Renova em/)).not.toBeInTheDocument();
   });
 });

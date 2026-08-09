@@ -73,7 +73,21 @@ function PainelVazio() {
  * fica EMBACADA ao fundo, como uma imagem desfocada, com um overlay de
  * bloqueio por cima. Quando não há análise anterior, embaça o estado vazio.
  */
-function PainelBloqueado({ analise }: { analise: AnaliseMatchIA | null }) {
+function PainelBloqueado({
+  analise,
+  renovaEm,
+}: {
+  analise: AnaliseMatchIA | null;
+  renovaEm: string | null;
+}) {
+  // Hora exata em que a cota renova (janela de 3h) — ex.: "às 18:00".
+  const renovacaoExata = renovaEm
+    ? new Date(renovaEm).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
   return (
     <div className={workspaceStyles.blurWrapper}>
       <div
@@ -93,10 +107,11 @@ function PainelBloqueado({ analise }: { analise: AnaliseMatchIA | null }) {
           <div className={workspaceStyles.blurIcon}>
             <LuLock aria-hidden="true" />
           </div>
-          <h3 className="h6 fw-bold mb-1">Cota diária esgotada</h3>
+          <h3 className="h6 fw-bold mb-1">Cota de análises esgotada</h3>
           <p className={`mb-2 text-secondary ${workspaceStyles.blurText}`}>
-            Você usou todas as análises de hoje. O resultado anterior fica
-            bloqueado até a cota renovar à meia-noite (UTC).
+            Você usou todas as análises desta janela. O resultado anterior fica
+            bloqueado até a cota renovar (a cada 3 horas)
+            {renovacaoExata && `, às ${renovacaoExata}`}.
           </p>
           <Link
             to="/historico"
@@ -115,6 +130,7 @@ interface PainelResultadoAnaliseProps {
   etapaAtual: number;
   analise: AnaliseMatchIA | null;
   bloqueado: boolean;
+  renovaEm: string | null;
 }
 
 /** Alterna entre os estados do painel de resultado usando guard clauses. */
@@ -123,9 +139,10 @@ function PainelResultadoAnalise({
   etapaAtual,
   analise,
   bloqueado,
+  renovaEm,
 }: PainelResultadoAnaliseProps) {
   if (analisando) return <PainelAnalisando etapaAtual={etapaAtual} />;
-  if (bloqueado) return <PainelBloqueado analise={analise} />;
+  if (bloqueado) return <PainelBloqueado analise={analise} renovaEm={renovaEm} />;
   if (!analise) return <PainelVazio />;
   return <RelatorioAnalise analise={analise} />;
 }
@@ -149,12 +166,17 @@ export function AnaliseWorkspace() {
     handleRemoverArquivo,
     handleColarCurriculo,
     handleColarDescricao,
+    handleLimparDescricao,
     handleSubmit,
   } = useAnaliseCurriculo();
 
-  // Cota diária de análises (restantes + horário de renovação).
+  // Cota de análises (restantes + horário exato de renovação).
   const { cota, carregando: carregandoCota, atualizarCota } =
     useCotaAnalises();
+
+  // Ref da textarea de descrição: após limpar, o foco volta para o campo para
+  // colar a nova vaga imediatamente.
+  const descricaoRef = useRef<HTMLTextAreaElement>(null);
 
   // Recarrega a cota sempre que uma análise termina (sucesso ou erro): o
   // servidor incrementa o contador em cada tentativa.
@@ -171,9 +193,9 @@ export function AnaliseWorkspace() {
     cota !== null && cota.sessao !== null && cota.sessao.restante === 0;
   const globalEsgotada =
     cota !== null && cota.global !== null && cota.global.restante === 0;
-  // Cobre as mensagens de limite da API e do cliente: "Limite de análises
-  // diárias atingido", "Você atingiu o limite de 5 análises...", "O limite
-  // diário de análises do Vett foi atingido" e a cota global.
+  // Cobre as mensagens de limite da API e do cliente: "Você atingiu o limite
+  // de 5 análises por janela de 3 horas...", "O limite diário de análises do
+  // Vett foi atingido", "Limite de análises atingido..." e a cota global.
   const erroDeCota =
     erro !== null &&
     /limite.{0,20}an[áa]lises|atingiu o limite|foi atingido|cota global/i.test(
@@ -338,6 +360,20 @@ export function AnaliseWorkspace() {
                 >
                   <LuClipboard size={12} /> Colar
                 </button>
+                {temDescricaoVaga && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleLimparDescricao();
+                      descricaoRef.current?.focus();
+                    }}
+                    className={`btn btn-sm btn-outline-secondary border d-inline-flex align-items-center gap-1 py-0 px-2 ${formStyles.pasteButton} ${formStyles.clearButton}`}
+                    title="Limpar descrição da vaga"
+                    aria-label="Limpar descrição da vaga"
+                  >
+                    <LuX size={12} aria-hidden="true" /> Limpar
+                  </button>
+                )}
                 <span className={formStyles.charCount} id="descricao-contador">
                   {descricaoVaga.length}/{LIMITE_CARACTERES}
                 </span>
@@ -347,6 +383,7 @@ export function AnaliseWorkspace() {
             <div className={formStyles.inputWrapper}>
               <textarea
                 id="descricao-vaga"
+                ref={descricaoRef}
                 className={`form-control ${formStyles.textarea} ${formStyles.textareaTall} w-100`}
                 placeholder="Buscamos Analista de Dados com experiência em SQL, Python, Looker..."
                 maxLength={LIMITE_CARACTERES}
@@ -427,6 +464,7 @@ export function AnaliseWorkspace() {
           etapaAtual={etapaAtual}
           analise={analise}
           bloqueado={bloqueado}
+          renovaEm={cota?.renovaEm ?? null}
         />
       </div>
     </div>

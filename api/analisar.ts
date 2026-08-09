@@ -5,11 +5,12 @@ import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
 import {
   LIMITE_ANALISES_GLOBAIS_DIA,
-  LIMITE_ANALISES_POR_SESSAO_DIA,
+  LIMITE_ANALISES_POR_SESSAO,
   REGEX_UUID_SESSAO,
   chavePorIp,
   criarClienteSupabaseAdmin,
   dataDeHojeUtc,
+  janelaAtualUtc,
 } from "./limites.js";
 
 export const config = {
@@ -56,19 +57,19 @@ async function verificarLimites(
   req: VercelRequest,
   sessaoId: string | null,
 ): Promise<ResultadoDeBloqueio | null> {
+  // A cota por navegador (sessão/IP) usa janelas de 3 horas; o teto global
+  // continua diário (data UTC).
+  const janela = janelaAtualUtc();
   const hoje = dataDeHojeUtc();
-  const chaveIp = chavePorIp(req, hoje);
+  const chaveIp = chavePorIp(req, janela);
 
   // Limite por sessão anônima (quando o cliente enviou um sessaoId válido).
   if (sessaoId) {
-    const totalSessao = await incrementarUso(`sessao:${sessaoId}:${hoje}`);
-    if (
-      totalSessao !== null &&
-      totalSessao > LIMITE_ANALISES_POR_SESSAO_DIA
-    ) {
+    const totalSessao = await incrementarUso(`sessao:${sessaoId}:${janela}`);
+    if (totalSessao !== null && totalSessao > LIMITE_ANALISES_POR_SESSAO) {
       return {
         status: 429,
-        mensagem: `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO_DIA} análises por dia neste navegador. Volte amanhã!`,
+        mensagem: `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO} análises por janela de 3 horas neste navegador. A cota renova automaticamente.`,
       };
     }
   }
@@ -77,10 +78,10 @@ async function verificarLimites(
   // burlar o limite simplesmente limpando o armazenamento local.
   if (chaveIp) {
     const totalIp = await incrementarUso(chaveIp);
-    if (totalIp !== null && totalIp > LIMITE_ANALISES_POR_SESSAO_DIA) {
+    if (totalIp !== null && totalIp > LIMITE_ANALISES_POR_SESSAO) {
       return {
         status: 429,
-        mensagem: `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO_DIA} análises por dia neste navegador. Volte amanhã!`,
+        mensagem: `Você atingiu o limite de ${LIMITE_ANALISES_POR_SESSAO} análises por janela de 3 horas neste navegador. A cota renova automaticamente.`,
       };
     }
   }

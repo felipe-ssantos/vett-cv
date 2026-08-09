@@ -1,13 +1,20 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { analiseFixture } from "../../../test/fixtures";
+import type { Analise } from "../../../types";
 import { AnaliseList, LIMITE_HISTORICO } from "./AnaliseList";
 
 const supabaseMocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   from: vi.fn(),
+}));
+
+const exportarPdfMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../../../lib/exportarPdf", () => ({
+  exportarHistoricoPdf: exportarPdfMock,
 }));
 
 vi.mock("../../../lib/supabaseClient", () => ({
@@ -51,6 +58,7 @@ function renderizar() {
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  exportarPdfMock.mockReset();
 });
 
 describe("AnaliseList — contador de histórico", () => {
@@ -78,8 +86,8 @@ describe("AnaliseList — contador de histórico", () => {
   });
 });
 
-describe("AnaliseList — aviso de histórico cheio", () => {
-  it("avisa quando o usuário atinge o limite salvo", async () => {
+describe("AnaliseList — aviso e meter de histórico cheio", () => {
+  it("avisa e enche a barra quando o usuário atinge o limite salvo", async () => {
     mockCarregar(LIMITE_HISTORICO);
     renderizar();
 
@@ -87,6 +95,13 @@ describe("AnaliseList — aviso de histórico cheio", () => {
     // carregamento, que também usa role="status" enquanto a lista carrega.
     const aviso = await screen.findByText(/Limite atingido/);
     expect(aviso).toHaveTextContent("a mais antiga será removida");
+
+    // Meter cheio: barra em 100% e valor máximo no ARIA.
+    const barra = screen.getByRole("progressbar", {
+      name: "Análises salvas no histórico",
+    });
+    expect(barra).toHaveAttribute("aria-valuenow", String(LIMITE_HISTORICO));
+    expect(barra.firstElementChild).toHaveStyle({ width: "100%" });
   });
 
   it("indica quantas análises restam abaixo do limite", async () => {
@@ -113,41 +128,19 @@ describe("AnaliseList — aviso de histórico cheio", () => {
   });
 });
 
-describe("AnaliseList — exportar histórico", () => {
-  it("baixa um arquivo JSON com as análises ao clicar em Exportar", async () => {
+describe("AnaliseList — exportar histórico em PDF", () => {
+  it("gera um PDF com todas as análises ao clicar em Exportar PDF", async () => {
     const user = userEvent.setup();
     mockCarregar(2);
     renderizar();
 
     await screen.findByText("Vaga de Teste 0");
-    const createObjectURL = vi
-      .spyOn(URL, "createObjectURL")
-      .mockReturnValue("blob:teste");
-    const revokeObjectURL = vi
-      .spyOn(URL, "revokeObjectURL")
-      .mockImplementation(() => {});
-    const click = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => {});
-    const anexar = vi
-      .spyOn(document.body, "appendChild")
-      .mockImplementation((node) => node);
+    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
 
-    await user.click(screen.getByRole("button", { name: /Exportar/ }));
-
-    expect(createObjectURL).toHaveBeenCalled();
-    expect(click).toHaveBeenCalled();
-    await waitFor(() => expect(revokeObjectURL).toHaveBeenCalled());
-
-    // O link de download usa um nome de arquivo datado vett-historico-*.json
-    expect(anexar).toHaveBeenCalled();
-    const link = anexar.mock.calls[0][0] as HTMLAnchorElement;
-    expect(link.download).toMatch(/^vett-historico-\d{4}-\d{2}-\d{2}\.json$/);
-
-    createObjectURL.mockRestore();
-    revokeObjectURL.mockRestore();
-    click.mockRestore();
-    anexar.mockRestore();
+    expect(exportarPdfMock).toHaveBeenCalledTimes(1);
+    const analisesExportadas = exportarPdfMock.mock.calls[0][0] as Analise[];
+    expect(analisesExportadas).toHaveLength(2);
+    expect(analisesExportadas[0].titulo_vaga).toBe("Vaga de Teste 0");
   });
 
   it("não oferece exportar com o histórico vazio", async () => {
@@ -156,7 +149,7 @@ describe("AnaliseList — exportar histórico", () => {
 
     await screen.findByText("Nenhuma análise salva ainda");
     expect(
-      screen.queryByRole("button", { name: /Exportar/ }),
+      screen.queryByRole("button", { name: /Exportar PDF/ }),
     ).not.toBeInTheDocument();
   });
 });

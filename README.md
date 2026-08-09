@@ -17,7 +17,8 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 - **Ou cola o texto** — alternativa para quem prefere colar o currículo diretamente
 - **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
 - **Histórico privado** — análises salvas no Supabase, isoladas por sessão anônima e limitadas às 25 mais recentes
-- **Cota do dia visível** — análises restantes e horário de renovação exibidos na tela de análise
+- **Cota visível** — análises restantes e hora exata de renovação (janela de 3h) exibidos na tela de análise
+- **Exportar histórico em PDF** — dados estruturados e legíveis para qualquer pessoa (substituiu o antigo JSON)
 - **Modo claro/escuro** — alternância no cabeçalho, com persistência e respeito à preferência do sistema
 - **Reanálise** — novo currículo comparado com uma vaga já analisada
 - **Acessível** — labels, landmarks e diálogos testados com `axe`
@@ -160,21 +161,21 @@ O Vett tem três camadas de limite, com propósitos diferentes:
 
 | Limite | Valor | O que controla | Renovação |
 | ------ | ----- | -------------- | --------- |
-| **Por navegador** (sessão anônima + hash de IP) | **5 análises/dia** | Uso individual — anti-abuso e fair use | Meia-noite UTC |
+| **Por navegador** (sessão anônima + hash de IP) | **5 análises/janela** | Uso individual — anti-abuso e fair use | A cada 3 horas (UTC) |
 | **Global** | **100 análises/dia** | Capacidade do serviço — protege a cota gratuita da IA | Meia-noite UTC |
 | **Histórico salvo** | **25 análises** | Retenção — quantas análises ficam salvas por usuário | Rotativo (a mais antiga sai ao salvar a 26ª) |
 
-Ao atingir o limite diário, a API responde `429` com uma mensagem clara. O
-histórico é limitado por um trigger no banco (migration `0005`): ao inserir
-uma nova análise, as mais antigas além da 25ª do mesmo usuário são removidas
-automaticamente — nunca toca em dados de outros usuários.
+Ao atingir o limite da janela ou do dia, a API responde `429` com uma mensagem
+clara. O histórico é limitado por um trigger no banco (migration `0005`): ao
+inserir uma nova análise, as mais antigas além da 25ª do mesmo usuário são
+removidas automaticamente — nunca toca em dados de outros usuários.
 
 O navegador é identificado de duas formas complementares: pela **sessão
 anônima** (armazenamento local) e por um **hash anônimo do IP** (HMAC-SHA256
 com segredo do servidor — o IP bruto nunca é persistido). O limite vale para o
-maior uso entre os dois, então limpar os dados do navegador não zera o limite
-do dia. Como IPs podem ser compartilhados (NAT/escritório), usuários na mesma
-rede dividem as 5 análises — comportamento esperado.
+maior uso entre os dois, então limpar os dados do navegador não zera a cota
+da janela. Como IPs podem ser compartilhados (NAT/escritório), usuários na
+mesma rede dividem as 5 análises da janela — comportamento esperado.
 
 Comportamento em falha do contador (Supabase): o teto **global é fail-closed**
 (se o contador estiver indisponível, a análise é bloqueada com `503` para

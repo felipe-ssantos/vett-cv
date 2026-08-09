@@ -13,24 +13,41 @@ function agoraEmMilissegundos(): number {
   return Date.now();
 }
 
+// Renovação exata: mostra quanto falta (relativo) e a hora exata da próxima
+// renovação da janela (ex.: "Renova em 2h 15min (às 18:00)"). Se a janela já
+// renovou e a cota ainda não foi recarregada, mostra apenas a hora exata.
 function formatarRenovacao(renovaEm: string | null): string | null {
   if (!renovaEm) return null;
-  const msRestantes = new Date(renovaEm).getTime() - agoraEmMilissegundos();
+  const data = new Date(renovaEm);
+  const msRestantes = data.getTime() - agoraEmMilissegundos();
   if (Number.isNaN(msRestantes)) return null;
 
-  const minutos = Math.max(1, Math.ceil(msRestantes / 60_000));
+  const exato = data.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  // Já passou do horário de renovação: sem contagem regressiva negativa.
+  if (msRestantes <= 0) return `Renova às ${exato}`;
+
+  const minutos = Math.ceil(msRestantes / 60_000);
   const horas = Math.floor(minutos / 60);
   const minutosRestantes = minutos % 60;
 
-  if (horas <= 0) return `Renova em ${minutosRestantes}min`;
-  if (minutosRestantes === 0) return `Renova em ${horas}h`;
-  return `Renova em ${horas}h ${minutosRestantes}min`;
+  const relativo =
+    horas <= 0
+      ? `${minutosRestantes}min`
+      : minutosRestantes === 0
+        ? `${horas}h`
+        : `${horas}h ${minutosRestantes}min`;
+
+  return `Renova em ${relativo} (às ${exato})`;
 }
 
 /**
- * Indicador de cota diária: análises restantes da sessão, renovação e uso
- * global. Não renderiza nada enquanto a cota não foi carregada ou está
- * indisponível.
+ * Indicador de cota de análises (janela de 3h por navegador): análises
+ * restantes, renovação exata e uso global. Não renderiza nada enquanto a cota
+ * não foi carregada ou está indisponível.
  */
 export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
   if (carregando && !cota) return null;
@@ -44,7 +61,7 @@ export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
   const renovacao = formatarRenovacao(cota.renovaEm);
 
   const textoBloqueio = sessaoEsgotada
-    ? "Limite de análises de hoje atingido"
+    ? "Limite de análises desta janela atingido"
     : "Cota global do dia atingida";
 
   return (
@@ -65,7 +82,7 @@ export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
       ) : (
         <span>
           <span className={styles.cotaDestaque}>
-            {cota.sessao.restante} de {cota.sessao.limite} análises hoje
+            {cota.sessao.restante} de {cota.sessao.limite} análises disponíveis
           </span>
           {renovacao && (
             <>

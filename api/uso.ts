@@ -1,20 +1,22 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   LIMITE_ANALISES_GLOBAIS_DIA,
-  LIMITE_ANALISES_POR_SESSAO_DIA,
+  LIMITE_ANALISES_POR_SESSAO,
   REGEX_UUID_SESSAO,
   chavePorIp,
   criarClienteSupabaseAdmin,
   dataDeHojeUtc,
-  proximaMeiaNoiteUtc,
+  janelaAtualUtc,
+  proximaLimiteJanelaUtc,
 } from "./limites.js";
 
 // Cliente do Supabase usado apenas no back-end (chave de serviço, nunca
 // exposta ao cliente).
 const supabaseAdmin = criarClienteSupabaseAdmin();
 
-// Lê o contador de uma chave (ex.: "sessao:<uuid>:2026-08-07"). Retorna 0
-// quando a chave ainda não existe e null quando o serviço está indisponível.
+// Lê o contador de uma chave (ex.: "sessao:<uuid>:2026-08-09T15" — janela de
+// 3h). Retorna 0 quando a chave ainda não existe e null quando o serviço está
+// indisponível.
 async function obterContagem(chave: string): Promise<number | null> {
   if (!supabaseAdmin) return null;
   const { data, error } = await supabaseAdmin
@@ -56,11 +58,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? sessaoIdRaw
       : null;
 
+  // A cota por navegador (sessão/IP) usa janelas de 3 horas; o teto global
+  // continua diário (data UTC).
+  const janela = janelaAtualUtc();
   const hoje = dataDeHojeUtc();
-  const chaveIp = chavePorIp(req, hoje);
+  const chaveIp = chavePorIp(req, janela);
 
   const [usadoSessao, usadoIp, usadoGlobal] = await Promise.all([
-    sessaoId ? obterContagem(`sessao:${sessaoId}:${hoje}`) : Promise.resolve(null),
+    sessaoId
+      ? obterContagem(`sessao:${sessaoId}:${janela}`)
+      : Promise.resolve(null),
     chaveIp ? obterContagem(chaveIp) : Promise.resolve(null),
     obterContagem(`global:${hoje}`),
   ]);
@@ -74,8 +81,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : Math.max(usadoSessao ?? 0, usadoIp ?? 0);
 
   return res.status(200).json({
-    sessao: montarContador(usadoNavegador, LIMITE_ANALISES_POR_SESSAO_DIA),
+    sessao: montarContador(usadoNavegador, LIMITE_ANALISES_POR_SESSAO),
     global: montarContador(usadoGlobal, LIMITE_ANALISES_GLOBAIS_DIA),
-    renovaEm: proximaMeiaNoiteUtc(),
+    // A renovação exibida é a da cota por navegador (janela de 3 horas).
+    renovaEm: proximaLimiteJanelaUtc(),
   });
 }
