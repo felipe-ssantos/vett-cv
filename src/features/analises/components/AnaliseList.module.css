@@ -4,6 +4,62 @@
   font-size: 13px;
 }
 
+/* Indicador de uso do histórico (contador + barra de progresso) */
+.historyMeter {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.infoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.infoBadgeMuted {
+  color: var(--text-secondary);
+  background: var(--border-subtle);
+}
+
+.meterTrack {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--success);
+  transition: width 300ms ease;
+}
+
+.meterFillFull {
+  background: var(--warning);
+}
+
+.meterHint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+.exportButton {
+  height: 36px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .clearHistoryButton {
   height: 36px;
   border-radius: 8px;

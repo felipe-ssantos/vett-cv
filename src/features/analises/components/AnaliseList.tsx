@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import {
   LuChevronRight,
   LuClock,
+  LuDownload,
   LuPlus,
   LuSearch,
+  LuShieldCheck,
   LuSparkles,
   LuTrash2,
   LuX,
@@ -141,6 +143,36 @@ export function AnaliseList() {
     }
   }
 
+  // Gera e baixa um arquivo JSON com o histórico (dados do próprio usuário).
+  function handleExportarHistorico() {
+    if (analises.length === 0) return;
+    const payload = analises.map((a) => ({
+      id: a.id,
+      titulo_vaga: a.titulo_vaga,
+      empresa: a.empresa,
+      senioridade: a.senioridade,
+      score_match: a.score_match,
+      match_por_categoria: a.match_por_categoria,
+      keywords_presentes: a.keywords_presentes,
+      keywords_faltando: a.keywords_faltando,
+      pontos_fortes: a.pontos_fortes,
+      sugestoes_ajuste: a.sugestoes_ajuste,
+      resumo_ia: a.resumo_ia,
+      dica_final: a.dica_final,
+      criada_em: a.created_at,
+    }));
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `vett-historico-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   // Filtragem dinâmica por cargo, empresa, senioridade ou palavra-chave
   const analisesFiltradas = analises.filter((a) => {
     const termo = filtro.toLowerCase().trim();
@@ -162,20 +194,28 @@ export function AnaliseList() {
             <LuClock className="text-teal" size={20} /> Histórico de Análises
           </h1>
           <p className={`mb-0 text-secondary ${styles.pageSubtitle}`}>
-            Suas análises são privadas e vinculadas à sua sessão. O histórico
-            mantém as {LIMITE_HISTORICO} análises mais recentes — as mais
-            antigas são removidas automaticamente.
+            Suas análises são privadas e vinculadas à sua sessão anônima.
           </p>
         </div>
 
         <div className="d-flex align-items-center gap-2">
           {analises.length > 0 && (
-            <button
-              onClick={() => setConfirmandoExcluirTodas(true)}
-              className={`btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
-            >
-              <LuTrash2 size={14} /> Limpar histórico
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleExportarHistorico}
+                className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.exportButton}`}
+                title="Baixar histórico em JSON"
+              >
+                <LuDownload size={14} /> Exportar
+              </button>
+              <button
+                onClick={() => setConfirmandoExcluirTodas(true)}
+                className={`btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
+              >
+                <LuTrash2 size={14} /> Limpar histórico
+              </button>
+            </>
           )}
           <Link
             to="/"
@@ -186,16 +226,41 @@ export function AnaliseList() {
         </div>
       </div>
 
-      {/* Aviso de histórico cheio: usuário atingiu o limite de análises salvas */}
-      {!carregando && analises.length >= LIMITE_HISTORICO && (
-        <div className="alert alert-warning d-flex align-items-start gap-2 py-2" role="status">
-          <LuTrash2 size={15} className="mt-1 flex-shrink-0" aria-hidden="true" />
-          <span>
-            Você atingiu o limite de <strong>{LIMITE_HISTORICO} análises</strong>{" "}
-            salvas. Ao analisar uma nova vaga, a mais antiga será removida
-            automaticamente — exclua as que não precisa mais para liberar
-            espaço.
-          </span>
+      {/* Indicador de uso do histórico: contador + barra de progresso + dica */}
+      {!carregando && analises.length > 0 && (
+        <div className={`${styles.historyMeter} mb-3`}>
+          <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <span className={`${styles.infoBadge}`}>
+              <LuShieldCheck size={13} aria-hidden="true" /> Privadas por sessão
+            </span>
+            <span
+              className={`${styles.infoBadge} ${styles.infoBadgeMuted}`}
+              role="status"
+            >
+              <LuClock size={13} aria-hidden="true" />
+              {analises.length} de {LIMITE_HISTORICO} análises salvas
+            </span>
+          </div>
+          <div
+            className={styles.meterTrack}
+            role="progressbar"
+            aria-label="Análises salvas no histórico"
+            aria-valuemin={0}
+            aria-valuemax={LIMITE_HISTORICO}
+            aria-valuenow={analises.length}
+          >
+            <div
+              className={`${styles.meterFill}${analises.length >= LIMITE_HISTORICO ? ` ${styles.meterFillFull}` : ""}`}
+              style={{
+                width: `${Math.min(100, (analises.length / LIMITE_HISTORICO) * 100)}%`,
+              }}
+            />
+          </div>
+          <p className={`mb-0 ${styles.meterHint}`}>
+            {analises.length >= LIMITE_HISTORICO
+              ? `Limite atingido: ao salvar uma nova análise, a mais antiga será removida automaticamente.`
+              : `Você ainda pode salvar ${LIMITE_HISTORICO - analises.length} análise${LIMITE_HISTORICO - analises.length === 1 ? "" : "s"}. Quando o limite é atingido, a mais antiga sai automaticamente.`}
+          </p>
         </div>
       )}
 

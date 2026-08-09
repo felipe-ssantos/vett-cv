@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ConsentBanner } from "./ConsentBanner";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { PageContainer } from "./PageContainer";
@@ -13,6 +14,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <Header />
       <PageContainer>{children}</PageContainer>
       <Footer />
+      <ConsentBanner />
     </div>
   );
 }
