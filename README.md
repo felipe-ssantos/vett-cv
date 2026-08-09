@@ -34,7 +34,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 | Back-end | Vercel Serverless Functions · Node.js |
 | IA | Google Gemini (Flash Lite) |
 | Banco de dados | Supabase · PostgreSQL |
-| Documentos | pdf-parse · mammoth |
+| Documentos | pdf-parse · mammoth · jspdf (exportação em PDF) |
 | Testes | Vitest · Testing Library · vitest-axe |
 
 ---
@@ -101,6 +101,11 @@ conteúdo dos arquivos de `supabase/migrations/`:
 5. `0005_limite_historico_analises.sql` — trigger que mantém no máximo as 25
    análises mais recentes por sessão (as mais antigas são removidas
    automaticamente ao salvar uma nova).
+6. `0006_limpeza_chaves_diarias_uso.sql` — remove as chaves DIÁRIAS antigas
+   do contador de uso (a cota por navegador agora usa janelas de 3 horas).
+7. `0007_limpeza_politicas_rls.sql` — remove políticas permissivas criadas
+   via dashboard (bypass de RLS) e fixa o `search_path` da função
+   `incrementar_uso` (hardening do Supabase Security Advisor).
 
 ### Variáveis de ambiente
 
@@ -128,6 +133,7 @@ A suíte usa Vitest, Testing Library e `vitest-axe` para checagem de acessibilid
 ```bash
 npm test                 # Executa todos os testes uma única vez
 npm run test:watch       # Modo watch — reexecuta a cada mudança
+npm run test:coverage    # Testes + relatório de cobertura (v8) com thresholds
 npm run check:migrations # Valida a sintaxe SQL de supabase/migrations (pgsql-parser)
 npm run check:secrets    # Varre o repo procurando chaves/segredos vazados
 ```
@@ -135,6 +141,11 @@ npm run check:secrets    # Varre o repo procurando chaves/segredos vazados
 O `check:migrations` usa o `pgsql-parser` (libpg_query compilado para WASM — o
 mesmo parser do PostgreSQL) para validar todas as migrations sem precisar de
 banco, e o CI roda essa checagem em todo push/PR.
+
+O CI também roda a **cobertura de testes** (job `quality`): se a cobertura
+cair abaixo dos thresholds definidos no `vite.config.ts` (linhas/funções 50%,
+branches 40%, statements 50%), o pipeline falha — evitando regressões sem
+testes.
 
 O `check:secrets` (script sem dependências) varre os arquivos do projeto
 (rastreados + não rastreados, respeitando o `.gitignore`) procurando JWTs,

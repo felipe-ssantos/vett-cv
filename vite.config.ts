@@ -77,5 +77,26 @@ export default defineConfig({
       "api/**/*.test.{ts,tsx}",
       "scripts/**/*.test.mjs",
     ],
+    // Cobertura de testes (v8). Executada localmente via `npm run test:coverage`
+    // e no CI (job `quality`), que falha se os thresholds não forem atingidos.
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "lcov"],
+      include: ["src/**/*.{ts,tsx}", "api/**/*.ts", "scripts/**/*.mjs"],
+      exclude: [
+        "src/main.tsx",
+        "src/test/**",
+        "**/*.test.{ts,tsx,mjs}",
+        "**/*.d.ts",
+      ],
+      // Pisos mínimos da suíte atual (medidos em 2026-08): o CI falha se a
+      // cobertura cair abaixo destes valores (proteção contra regressões).
+      thresholds: {
+        lines: 50,
+        functions: 50,
+        branches: 40,
+        statements: 50,
+      },
+    },
   },
 });

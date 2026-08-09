@@ -23,4 +23,6 @@ jobs:
       - run: npm run check:secrets
       - run: npm run build:api
       - run: npm run build
-      - run: npm test
+      # test:coverage roda a suíte completa E aplica os thresholds — substitui
+      # o `npm test` para não executar os testes duas vezes no mesmo job.
+      - run: npm run test:coverage
