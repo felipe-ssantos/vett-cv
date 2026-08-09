@@ -156,9 +156,18 @@ Os testes ficam colocalizados ao lado dos componentes e não entram no bundle de
 
 ## ⚙️ Limites de uso
 
-Para proteger as cotas gratuitas do Gemini e do Supabase, cada navegador pode
-fazer **5 análises por dia** e o Vett tem um teto global de **100 análises por
-dia**. Ao atingir o limite, a API responde `429` com uma mensagem clara.
+O Vett tem três camadas de limite, com propósitos diferentes:
+
+| Limite | Valor | O que controla | Renovação |
+| ------ | ----- | -------------- | --------- |
+| **Por navegador** (sessão anônima + hash de IP) | **5 análises/dia** | Uso individual — anti-abuso e fair use | Meia-noite UTC |
+| **Global** | **100 análises/dia** | Capacidade do serviço — protege a cota gratuita da IA | Meia-noite UTC |
+| **Histórico salvo** | **25 análises** | Retenção — quantas análises ficam salvas por usuário | Rotativo (a mais antiga sai ao salvar a 26ª) |
+
+Ao atingir o limite diário, a API responde `429` com uma mensagem clara. O
+histórico é limitado por um trigger no banco (migration `0005`): ao inserir
+uma nova análise, as mais antigas além da 25ª do mesmo usuário são removidas
+automaticamente — nunca toca em dados de outros usuários.
 
 O navegador é identificado de duas formas complementares: pela **sessão
 anônima** (armazenamento local) e por um **hash anônimo do IP** (HMAC-SHA256
