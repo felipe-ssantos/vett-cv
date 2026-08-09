@@ -61,7 +61,7 @@ export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
   const renovacao = formatarRenovacao(cota.renovaEm);
 
   const textoBloqueio = sessaoEsgotada
-    ? "Limite de análises desta janela atingido"
+    ? "Limite de análises atingido"
     : "Cota global do dia atingida";
 
   return (
