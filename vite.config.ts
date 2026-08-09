@@ -71,6 +71,11 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     // api/** cobre os testes dos módulos puros do back-end (ex.: bordas das
     // janelas de cota em api/janelaAnalises.test.ts).
-    include: ["src/**/*.test.{ts,tsx}", "api/**/*.test.{ts,tsx}"],
+    // scripts/** cobre as ferramentas de validação (ex.: verificar-segredos).
+    include: [
+      "src/**/*.test.{ts,tsx}",
+      "api/**/*.test.{ts,tsx}",
+      "scripts/**/*.test.mjs",
+    ],
   },
 });

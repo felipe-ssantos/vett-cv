@@ -129,11 +129,20 @@ A suíte usa Vitest, Testing Library e `vitest-axe` para checagem de acessibilid
 npm test                 # Executa todos os testes uma única vez
 npm run test:watch       # Modo watch — reexecuta a cada mudança
 npm run check:migrations # Valida a sintaxe SQL de supabase/migrations (pgsql-parser)
+npm run check:secrets    # Varre o repo procurando chaves/segredos vazados
 ```
 
 O `check:migrations` usa o `pgsql-parser` (libpg_query compilado para WASM — o
 mesmo parser do PostgreSQL) para validar todas as migrations sem precisar de
 banco, e o CI roda essa checagem em todo push/PR.
+
+O `check:secrets` (script sem dependências) varre os arquivos do projeto
+(rastreados + não rastreados, respeitando o `.gitignore`) procurando JWTs,
+chaves do Supabase (`sb_publishable_`/`sb_secret_`), da Google (`AIza`),
+tokens de serviços (OpenAI, GitHub, Slack, AWS) e chaves privadas. Se encontrar
+qualquer segredo, o script **falha** (exit 1) e o CI bloqueia o push — é a
+proteção contra vazamento de chaves antes de o repositório se tornar público.
+O template `.env.local.example` (valores vazios) é ignorado de propósito.
 
 **Cobertura:**
 

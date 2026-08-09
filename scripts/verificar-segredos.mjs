@@ -14,9 +14,11 @@
  */
 import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 
 // Padrões de chaves com valor preenchido (não placeholders).
-const PADROES = [
+// Exportado para os testes unitários (scripts/verificar-segredos.test.mjs).
+export const PADROES = [
   {
     nome: "JWT (Supabase ou outro emissor)",
     regex: /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/,
@@ -35,7 +37,7 @@ const PADROES = [
   },
   {
     nome: "Token OpenAI (sk-)",
-    regex: /sk-[A-Za-z0-9]{20,}/,
+    regex: /sk-[A-Za-z0-9-]{20,}/,
   },
   {
     nome: "Token GitHub (ghp_)",
@@ -58,6 +60,21 @@ const PADROES = [
 // Nome do template versionado de propósito (valores vazios, sem segredos).
 const TEMPLATE_ENV = ".env.local.example";
 
+/**
+ * Varre um conteúdo de texto e devolve os segredos detectados.
+ * Função pura — usada pelo CLI e pelos testes unitários.
+ */
+export function detectarSegredosEmTexto(conteudo) {
+  const achados = [];
+  for (const { nome, regex } of PADROES) {
+    const match = conteudo.match(regex);
+    if (match) {
+      achados.push({ nome, trecho: match[0] });
+    }
+  }
+  return achados;
+}
+
 function listarArquivos() {
   // -c: rastreados | -o: não rastreados (não ignorados) | --exclude-standard:
   // respeita o .gitignore. O CI roda após checkout, então cobre o push inteiro.
@@ -72,7 +89,7 @@ function listarArquivos() {
     .filter((arquivo) => !arquivo.includes(TEMPLATE_ENV));
 }
 
-async function verificar() {
+export async function verificar() {
   const arquivos = listarArquivos();
   let problemas = 0;
 
@@ -85,15 +102,12 @@ async function verificar() {
       continue;
     }
 
-    for (const { nome, regex } of PADROES) {
-      const match = conteudo.match(regex);
-      if (match) {
-        problemas += 1;
-        // Nunca imprime o segredo — só o arquivo e o tipo.
-        console.error(
-          `  ✘ ${arquivo}: possível ${nome} detectado (match "${maskMatch(match[0])}")`,
-        );
-      }
+    for (const achado of detectarSegredosEmTexto(conteudo)) {
+      problemas += 1;
+      // Nunca imprime o segredo — só o arquivo e o tipo.
+      console.error(
+        `  ✘ ${arquivo}: possível ${achado.nome} detectado (match "${maskMatch(achado.trecho)}")`,
+      );
     }
   }
 
@@ -114,4 +128,9 @@ function maskMatch(trecho) {
     : "trecho curto";
 }
 
-await verificar();
+// Só executa a varredura quando chamado como script (node scripts/verificar-segredos.mjs),
+// nunca quando importado pelos testes. `pathToFileURL(process.argv[1])` resolve o
+// caminho como digitado (relativo ou absoluto) para uma file URL comparável.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await verificar();
+}
