@@ -10,6 +10,7 @@
     "build:api": "tsc -p tsconfig.server.json",
     "lint": "eslint .",
     "check:migrations": "node scripts/validar-migrations.mjs",
+    "check:secrets": "node scripts/verificar-segredos.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

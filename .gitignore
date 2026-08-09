@@ -12,18 +12,20 @@ lerna-debug.log*
 /.pnp
 .pnp.js
 
-# Production
+# Production build
 /dist
 /build
 
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
-.env.*
+# Test coverage
+/coverage
+
+# Environment variables — nunca versionar valores reais.
+# O template .env.local.example (sem segredos) é versionado de propósito.
+.env*
+!.env.local.example
+
+# Vercel (deploy local e tokens)
+.vercel
 
 # Editor directories and files
 .vscode
@@ -34,12 +36,6 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
-.env.local
-.vercel
-.env*
 
 # Freebuff (tooling local)
 .freebuff/
-
-# Modelo de variáveis de ambiente (sem segredos) — versionado de propósito
-!.env.local.example
