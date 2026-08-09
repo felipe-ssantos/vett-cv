@@ -3,6 +3,11 @@ import formidable from "formidable";
 import fs from "fs/promises";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
+import { ErroTimeoutIA, chamarIA } from "./gemini.js";
+import {
+  LIMITE_CARACTERES_TEXTO,
+  campoExcedeLimiteDeTexto,
+} from "./limitesTexto.js";
 import {
   montarPromptComExtracao,
   montarPromptSoAnalise,
@@ -23,10 +28,6 @@ export const config = {
 };
 
 const LIMITE_TAMANHO_ARQUIVO_BYTES = 4 * 1024 * 1024; // 4 MB
-
-// Teto de caracteres para os textos do usuário (currículo e descrição da
-// vaga), aplicado ANTES de montar o prompt e consumir a cota da IA.
-const LIMITE_CARACTERES_TEXTO = 8000;
 
 // Cliente do Supabase usado apenas no back-end (chave de serviço, nunca
 // exposta ao cliente). Sem a chave configurada, o limite é ignorado
@@ -127,13 +128,6 @@ const EXTENSOES_POR_MIMETYPE: Record<string, string> = {
 };
 
 class ErroDeArquivo extends Error {}
-
-class ErroTimeoutIA extends Error {}
-
-// Timeout explícito da chamada à IA (AbortController). A Vercel já impõe
-// `maxDuration` (60s); este teto evita que uma resposta lenta da Gemini
-// segure a função por muito tempo. Configurável via GEMINI_TIMEOUT_MS.
-const TIMEOUT_IA_MS = Number(process.env.GEMINI_TIMEOUT_MS) || 15_000;
 
 function extrairExtensao(
   nomeArquivo: string | undefined,
@@ -256,55 +250,6 @@ async function extrairTextoDoArquivo(
   );
 }
 
-interface RespostaGeminiAPI {
-  candidates: {
-    content: {
-      parts: { text: string }[];
-    };
-  }[];
-}
-
-async function chamarIA(prompt: string): Promise<string> {
-  // Timeout explícito: aborta o fetch se a IA não responder dentro do teto
-  // (TIMEOUT_IA_MS), liberando a função e a cota.
-  const controlador = new AbortController();
-  const timeout = setTimeout(() => controlador.abort(), TIMEOUT_IA_MS);
-
-  try {
-    const response = await fetch(
-      // A chave viaja no header x-goog-api-key (não na query string), para não
-      // vazar em logs de proxy/servidor.
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": process.env.GEMINI_API_KEY ?? "",
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" },
-        }),
-        signal: controlador.signal,
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Erro na chamada da IA: ${response.status}`);
-    }
-
-    const data = (await response.json()) as RespostaGeminiAPI;
-    return data.candidates[0].content.parts[0].text;
-  } catch (erro) {
-    if (erro instanceof Error && erro.name === "AbortError") {
-      throw new ErroTimeoutIA("A IA demorou mais que o esperado.");
-    }
-    throw erro;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
 class RespostaIAInvalidaError extends Error {}
 
 function validarNumeroPercentual(valor: unknown, campo: string): number {
@@ -424,16 +369,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // P3 — teto de caracteres por campo de texto: rejeita antes de montar o
     // prompt e consumir a cota da IA.
-    for (const [campo, valor] of [
-      ["descricaoVaga", descricaoVaga],
-      ["curriculoTexto", curriculoTextoColado],
-      ["vagaExistente", vagaExistenteJson],
-    ] as const) {
-      if (valor && valor.length > LIMITE_CARACTERES_TEXTO) {
-        return res.status(400).json({
-          erro: `O campo ${campo} excede o limite de ${LIMITE_CARACTERES_TEXTO} caracteres.`,
-        });
-      }
+    const campoExcedente = campoExcedeLimiteDeTexto([
+      { nome: "descricaoVaga", valor: descricaoVaga },
+      { nome: "curriculoTexto", valor: curriculoTextoColado },
+      { nome: "vagaExistente", valor: vagaExistenteJson },
+    ]);
+    if (campoExcedente) {
+      return res.status(400).json({
+        erro: `O campo ${campoExcedente} excede o limite de ${LIMITE_CARACTERES_TEXTO} caracteres.`,
+      });
     }
 
     if (arquivo && arquivo.size === 0) {
