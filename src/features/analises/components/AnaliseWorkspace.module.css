@@ -17,3 +17,54 @@
 .saveWarning {
   font-size: 12.5px;
 }
+
+/* Estado bloqueado por cota: análise anterior embaçada + overlay central. */
+.blurWrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.blurredContent {
+  filter: blur(6px);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.blurOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+}
+
+.blurCard {
+  max-width: 340px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 22px 24px;
+}
+
+.blurIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--warning-bg);
+  color: var(--warning);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  margin-bottom: 10px;
+}
+
+.blurText {
+  font-size: 12.5px;
+}

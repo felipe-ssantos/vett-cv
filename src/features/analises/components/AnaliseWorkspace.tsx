@@ -10,6 +10,7 @@ import {
   LuUser,
   LuX,
 } from "react-icons/lu";
+import { Link } from "react-router";
 import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
 import cardStyles from "../../../styles/ui/Card.module.css";
 import formStyles from "../../../styles/ui/Form.module.css";
@@ -67,19 +68,64 @@ function PainelVazio() {
   );
 }
 
+/**
+ * Estado bloqueado (cota diária esgotada): a análise anterior (se houver)
+ * fica EMBACADA ao fundo, como uma imagem desfocada, com um overlay de
+ * bloqueio por cima. Quando não há análise anterior, embaça o estado vazio.
+ */
+function PainelBloqueado({ analise }: { analise: AnaliseMatchIA | null }) {
+  return (
+    <div className={workspaceStyles.blurWrapper}>
+      <div
+        className={workspaceStyles.blurredContent}
+        aria-hidden="true"
+        inert
+        data-testid="analise-embacada"
+      >
+        {analise ? (
+          <RelatorioAnalise analise={analise} />
+        ) : (
+          <PainelVazio />
+        )}
+      </div>
+      <div className={workspaceStyles.blurOverlay}>
+        <div className={workspaceStyles.blurCard}>
+          <div className={workspaceStyles.blurIcon}>
+            <LuLock aria-hidden="true" />
+          </div>
+          <h3 className="h6 fw-bold mb-1">Cota diária esgotada</h3>
+          <p className={`mb-2 text-secondary ${workspaceStyles.blurText}`}>
+            Você usou todas as análises de hoje. O resultado anterior fica
+            bloqueado até a cota renovar à meia-noite (UTC).
+          </p>
+          <Link
+            to="/historico"
+            className="btn btn-light border text-secondary btn-sm d-inline-flex align-items-center gap-1"
+          >
+            Ver meu histórico
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface PainelResultadoAnaliseProps {
   analisando: boolean;
   etapaAtual: number;
   analise: AnaliseMatchIA | null;
+  bloqueado: boolean;
 }
 
-/** Alterna entre os três estados do painel de resultado usando guard clauses. */
+/** Alterna entre os estados do painel de resultado usando guard clauses. */
 function PainelResultadoAnalise({
   analisando,
   etapaAtual,
   analise,
+  bloqueado,
 }: PainelResultadoAnaliseProps) {
   if (analisando) return <PainelAnalisando etapaAtual={etapaAtual} />;
+  if (bloqueado) return <PainelBloqueado analise={analise} />;
   if (!analise) return <PainelVazio />;
   return <RelatorioAnalise analise={analise} />;
 }
@@ -117,6 +163,23 @@ export function AnaliseWorkspace() {
     if (analisandoAnterior.current && !analisando) atualizarCota();
     analisandoAnterior.current = analisando;
   }, [analisando, atualizarCota]);
+
+  // Bloqueio por cota: sessão OU global esgotadas, ou erro de limite vindo da
+  // API (429). Quando bloqueado, o painel de resultado mostra a análise
+  // anterior embaçada com um overlay de bloqueio no lugar dos dados normais.
+  const sessaoEsgotada =
+    cota !== null && cota.sessao !== null && cota.sessao.restante === 0;
+  const globalEsgotada =
+    cota !== null && cota.global !== null && cota.global.restante === 0;
+  // Cobre as mensagens de limite da API e do cliente: "Limite de análises
+  // diárias atingido", "Você atingiu o limite de 5 análises...", "O limite
+  // diário de análises do Vett foi atingido" e a cota global.
+  const erroDeCota =
+    erro !== null &&
+    /limite.{0,20}an[áa]lises|atingiu o limite|foi atingido|cota global/i.test(
+      erro,
+    );
+  const bloqueado = sessaoEsgotada || globalEsgotada || erroDeCota;
 
   // Estado derivado: condições simples calculadas a partir de outros estados.
   const temConteudoCurriculo =
@@ -363,6 +426,7 @@ export function AnaliseWorkspace() {
           analisando={analisando}
           etapaAtual={etapaAtual}
           analise={analise}
+          bloqueado={bloqueado}
         />
       </div>
     </div>

@@ -1,15 +1,23 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AnaliseWorkspace } from "./AnaliseWorkspace";
 
 vi.mock("../../../lib/supabaseClient", () => ({
   supabase: {},
 }));
 
+const cotaMock = vi.hoisted(() => ({
+  valor: null as {
+    sessao: { restante: number } | null;
+    global: { restante: number } | null;
+    renovaEm: string | null;
+  } | null,
+}));
+
 vi.mock("../hooks/useCotaAnalises", () => ({
   useCotaAnalises: () => ({
-    cota: null,
+    cota: cotaMock.valor,
     carregando: false,
     atualizarCota: vi.fn(),
   }),
@@ -28,6 +36,10 @@ function criarArquivoDeTamanho(bytes: number) {
     type: "application/pdf",
   });
 }
+
+beforeEach(() => {
+  cotaMock.valor = null;
+});
 
 function renderizarWorkspace() {
   return render(
@@ -84,6 +96,58 @@ describe("AnaliseWorkspace — remoção do arquivo", () => {
 
     expect(
       screen.getByText(/Selecionado: curriculo\.pdf/),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("AnaliseWorkspace — bloqueio por cota", () => {
+  it("embaça o painel de resultado e mostra o overlay de bloqueio quando a cota da sessão esgota", () => {
+    cotaMock.valor = {
+      sessao: { restante: 0 },
+      global: { restante: 90 },
+      renovaEm: null,
+    };
+    renderizarWorkspace();
+
+    // O conteúdo embaçado (análise anterior ou estado vazio) fica oculto de
+    // leitores de tela (aria-hidden) e o overlay de bloqueio é o foco.
+    expect(
+      screen.getByTestId("analise-embacada"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Cota diária esgotada" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Ver meu histórico" }),
+    ).toBeInTheDocument();
+  });
+
+  it("embaça o painel quando a cota global esgota", () => {
+    cotaMock.valor = {
+      sessao: { restante: 3 },
+      global: { restante: 0 },
+      renovaEm: null,
+    };
+    renderizarWorkspace();
+
+    expect(
+      screen.getByTestId("analise-embacada"),
+    ).toBeInTheDocument();
+  });
+
+  it("mostra o painel normal quando a cota ainda tem análises", () => {
+    cotaMock.valor = {
+      sessao: { restante: 3 },
+      global: { restante: 90 },
+      renovaEm: null,
+    };
+    renderizarWorkspace();
+
+    expect(
+      screen.queryByTestId("analise-embacada"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Sua análise aparecerá aqui" }),
     ).toBeInTheDocument();
   });
 });
