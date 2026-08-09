@@ -11,7 +11,10 @@ import { lerTextoDaAreaDeTransferencia } from "../../../lib/areaTransferencia";
 import { useArquivoCurriculo } from "./useArquivoCurriculo";
 import type { AnaliseMatchIA, VagaExtraidaIA } from "../../../types";
 
-export const LIMITE_CARACTERES = 5000;
+// Teto de caracteres de currículo e descrição da vaga — mesmo limite aplicado
+// no backend (api/analisar.ts) para que a validação client-side seja replicada
+// no servidor.
+export const LIMITE_CARACTERES = 8000;
 export { ROTULO_TAMANHO_MAXIMO } from "./useArquivoCurriculo";
 export const ETAPAS_ANALISE = [
   "Lendo seu currículo...",

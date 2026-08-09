@@ -4,6 +4,10 @@ import fs from "fs/promises";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
 import {
+  montarPromptComExtracao,
+  montarPromptSoAnalise,
+} from "./prompts.js";
+import {
   LIMITE_ANALISES_GLOBAIS_DIA,
   LIMITE_ANALISES_POR_SESSAO,
   REGEX_UUID_SESSAO,
@@ -19,6 +23,10 @@ export const config = {
 };
 
 const LIMITE_TAMANHO_ARQUIVO_BYTES = 4 * 1024 * 1024; // 4 MB
+
+// Teto de caracteres para os textos do usuário (currículo e descrição da
+// vaga), aplicado ANTES de montar o prompt e consumir a cota da IA.
+const LIMITE_CARACTERES_TEXTO = 8000;
 
 // Cliente do Supabase usado apenas no back-end (chave de serviço, nunca
 // exposta ao cliente). Sem a chave configurada, o limite é ignorado
@@ -119,6 +127,13 @@ const EXTENSOES_POR_MIMETYPE: Record<string, string> = {
 };
 
 class ErroDeArquivo extends Error {}
+
+class ErroTimeoutIA extends Error {}
+
+// Timeout explícito da chamada à IA (AbortController). A Vercel já impõe
+// `maxDuration` (60s); este teto evita que uma resposta lenta da Gemini
+// segure a função por muito tempo. Configurável via GEMINI_TIMEOUT_MS.
+const TIMEOUT_IA_MS = Number(process.env.GEMINI_TIMEOUT_MS) || 15_000;
 
 function extrairExtensao(
   nomeArquivo: string | undefined,
@@ -241,75 +256,6 @@ async function extrairTextoDoArquivo(
   );
 }
 
-const FORMATO_ANALISE = `{
-  "scoreMatch": number (0-100),
-  "matchPorCategoria": {
-    "skills_tecnicas": number (0-100),
-    "ferramentas": number (0-100),
-    "experiencia": number (0-100),
-    "soft_skills": number (0-100)
-  },
-  "keywordsPresentes": string[],
-  "keywordsFaltando": string[],
-  "pontosFortes": string[],
-  "sugestoesAjuste": string[],
-  "resumoIA": string (2-3 frases sobre o alinhamento geral do perfil),
-  "dicaFinal": string (1 frase objetiva com a ação mais impactante para subir a %)
-}`;
-
-function montarPromptComExtracao(
-  curriculoTexto: string,
-  descricaoVaga: string,
-): string {
-  return `Você é um especialista em recrutamento e ATS (Applicant Tracking System).
-Primeiro, extraia os dados estruturados da vaga a partir do texto colado (que pode vir de qualquer site de emprego, com ruído/formatação misturada). Depois, compare o currículo com a vaga.
-
-Retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), exatamente no formato abaixo, respeitando os nomes de propriedade exatamente como estão (note o underscore em "skills_tecnicas" e "soft_skills"):
-
-{
-  "vaga": {
-    "titulo": string,
-    "empresa": string | null,
-    "hardSkills": string[] (tecnologias, ferramentas, certificações exigidas),
-    "softSkills": string[],
-    "senioridade": string | null (ex: "Júnior", "Pleno", "Sênior", ou null se não informado)
-  },
-  "analise": ${FORMATO_ANALISE}
-}
-
-DESCRIÇÃO DA VAGA (texto colado, pode ter ruído):
-${descricaoVaga}
-
-CURRÍCULO:
-${curriculoTexto}`;
-}
-
-function montarPromptSoAnalise(
-  curriculoTexto: string,
-  vaga: {
-    titulo: string;
-    descricaoCompleta: string;
-    hardSkills: string[];
-    softSkills: string[];
-    senioridade?: string | null;
-  },
-): string {
-  return `Você é um especialista em recrutamento e ATS (Applicant Tracking System).
-Compare o currículo abaixo com a vaga e retorne SOMENTE um JSON válido (sem markdown, sem \`\`\`), exatamente no formato abaixo, respeitando os nomes de propriedade exatamente como estão (note o underscore em "skills_tecnicas" e "soft_skills"):
-
-${FORMATO_ANALISE}
-
-VAGA:
-Título: ${vaga.titulo}
-Senioridade: ${vaga.senioridade ?? "não informado"}
-Hard skills exigidas: ${vaga.hardSkills.join(", ")}
-Soft skills exigidas: ${vaga.softSkills.join(", ")}
-Descrição completa: ${vaga.descricaoCompleta}
-
-CURRÍCULO:
-${curriculoTexto}`;
-}
-
 interface RespostaGeminiAPI {
   candidates: {
     content: {
@@ -319,29 +265,44 @@ interface RespostaGeminiAPI {
 }
 
 async function chamarIA(prompt: string): Promise<string> {
-  const response = await fetch(
-    // A chave viaja no header x-goog-api-key (não na query string), para não
-    // vazar em logs de proxy/servidor.
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY ?? "",
+  // Timeout explícito: aborta o fetch se a IA não responder dentro do teto
+  // (TIMEOUT_IA_MS), liberando a função e a cota.
+  const controlador = new AbortController();
+  const timeout = setTimeout(() => controlador.abort(), TIMEOUT_IA_MS);
+
+  try {
+    const response = await fetch(
+      // A chave viaja no header x-goog-api-key (não na query string), para não
+      // vazar em logs de proxy/servidor.
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY ?? "",
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" },
+        }),
+        signal: controlador.signal,
       },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" },
-      }),
-    },
-  );
+    );
 
-  if (!response.ok) {
-    throw new Error(`Erro na chamada da IA: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`Erro na chamada da IA: ${response.status}`);
+    }
+
+    const data = (await response.json()) as RespostaGeminiAPI;
+    return data.candidates[0].content.parts[0].text;
+  } catch (erro) {
+    if (erro instanceof Error && erro.name === "AbortError") {
+      throw new ErroTimeoutIA("A IA demorou mais que o esperado.");
+    }
+    throw erro;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const data = (await response.json()) as RespostaGeminiAPI;
-  return data.candidates[0].content.parts[0].text;
 }
 
 class RespostaIAInvalidaError extends Error {}
@@ -461,6 +422,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const curriculoTextoColado = fields.curriculoTexto?.[0];
     const arquivo = files.arquivo?.[0];
 
+    // P3 — teto de caracteres por campo de texto: rejeita antes de montar o
+    // prompt e consumir a cota da IA.
+    for (const [campo, valor] of [
+      ["descricaoVaga", descricaoVaga],
+      ["curriculoTexto", curriculoTextoColado],
+      ["vagaExistente", vagaExistenteJson],
+    ] as const) {
+      if (valor && valor.length > LIMITE_CARACTERES_TEXTO) {
+        return res.status(400).json({
+          erro: `O campo ${campo} excede o limite de ${LIMITE_CARACTERES_TEXTO} caracteres.`,
+        });
+      }
+    }
+
     if (arquivo && arquivo.size === 0) {
       return res.status(400).json({ erro: "O arquivo enviado está vazio." });
     }
@@ -489,6 +464,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         arquivo.originalFilename ?? undefined,
         arquivo.mimetype ?? undefined,
       );
+    }
+
+    // O texto extraído do arquivo também respeita o teto de caracteres.
+    if (curriculoTexto.length > LIMITE_CARACTERES_TEXTO) {
+      return res.status(400).json({
+        erro: `O texto extraído do currículo excede o limite de ${LIMITE_CARACTERES_TEXTO} caracteres.`,
+      });
     }
 
     if (!curriculoTexto.trim()) {
@@ -538,6 +520,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error(erro);
     if (erro instanceof ErroDeArquivo) {
       return res.status(400).json({ erro: erro.message });
+    }
+    if (erro instanceof ErroTimeoutIA) {
+      return res.status(504).json({
+        erro: "O serviço de IA demorou demais para responder. Tente novamente em instantes.",
+      });
     }
     if (erro instanceof RespostaIAInvalidaError) {
       return res.status(502).json({

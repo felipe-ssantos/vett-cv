@@ -21,6 +21,7 @@ import {
   ROTULO_TAMANHO_MAXIMO,
   useArquivoCurriculo,
 } from "../hooks/useArquivoCurriculo";
+import { LIMITE_CARACTERES } from "../hooks/useAnaliseCurriculo";
 import type { Analise } from "../../../types";
 
 export function ReanalisarForm() {
@@ -165,6 +166,7 @@ export function ReanalisarForm() {
                 id="reanalisar-curriculo"
                 className={`form-control ${formStyles.textarea} ${formStyles.textareaLg} w-100`}
                 placeholder="Cole aqui o texto do seu currículo atualizado..."
+                maxLength={LIMITE_CARACTERES}
                 value={curriculoTexto}
                 onChange={(e) => {
                   setCurriculoTexto(e.target.value);

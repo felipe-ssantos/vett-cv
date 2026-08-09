@@ -1,0 +1,33 @@
+# Atualizações automáticas de dependências (Dependabot).
+#
+# - npm: revisão semanal das dependências do app e das ferramentas de dev.
+# - github-actions: revisão semanal das actions usadas no CI.
+# As PRs são abertas contra a branch `develop` (fluxo de trabalho do projeto).
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Sao_Paulo"
+    target-branch: "develop"
+    open-pull-requests-limit: 5
+    groups:
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      supabase:
+        patterns: ["@supabase/*"]
+      vercel:
+        patterns: ["@vercel/*"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Sao_Paulo"
+    target-branch: "develop"
+    open-pull-requests-limit: 5
