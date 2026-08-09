@@ -109,7 +109,7 @@ function PainelBloqueado({
           </div>
           <h3 className="h6 fw-bold mb-1">Cota de análises esgotada</h3>
           <p className={`mb-2 text-secondary ${workspaceStyles.blurText}`}>
-            Você usou todas as análises desta janela. O resultado anterior fica
+            Você usou todas as análises disponíveis no momento. O resultado anterior fica
             bloqueado até a cota renovar (a cada 3 horas)
             {renovacaoExata && `, às ${renovacaoExata}`}.
           </p>

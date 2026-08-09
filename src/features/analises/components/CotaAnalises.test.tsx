@@ -53,7 +53,7 @@ describe("CotaAnalises — renovação exata", () => {
     );
 
     expect(
-      screen.getByText(/Limite de análises desta janela atingido/),
+      screen.getByText(/Limite de análises atingido/),
     ).toBeInTheDocument();
     expect(screen.getByText(/Renova em 3h \(às \d{2}:\d{2}\)/)).toBeInTheDocument();
   });
@@ -83,7 +83,7 @@ describe("CotaAnalises — renovação exata", () => {
     );
 
     expect(
-      screen.getByText(/Limite de análises desta janela atingido/),
+      screen.getByText(/Limite de análises atingido/),
     ).toBeInTheDocument();
     expect(screen.getByText(/Renova às \d{2}:\d{2}/)).toBeInTheDocument();
     expect(screen.queryByText(/Renova em/)).not.toBeInTheDocument();
