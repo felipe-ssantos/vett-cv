@@ -2,52 +2,22 @@ import { createClient } from "@supabase/supabase-js";
 import { createHmac } from "node:crypto";
 import type { VercelRequest } from "@vercel/node";
 
+// Re-exporta a matemática das janelas de 3h (módulo puro, testável sem banco).
+export {
+  JANELA_ANALISES_HORAS,
+  janelaAtualUtc,
+  proximaLimiteJanelaUtc,
+} from "./janelaAnalises.js";
+
 // Limites de uso para proteger a cota gratuita do Gemini e do Supabase.
 // Compartilhados entre o handler de análise (que incrementa) e o endpoint de
 // consulta de cota (que apenas lê).
 export const LIMITE_ANALISES_POR_SESSAO = 5;
 export const LIMITE_ANALISES_GLOBAIS_DIA = 100;
 
-// Janela de renovação da cota por navegador (sessão/IP): a cada 3 horas, em
-// bordas UTC, o contador zera e a cota volta a ficar disponível.
-export const JANELA_ANALISES_HORAS = 3;
-
 // IDs de sessão vêm do cliente e são validados antes de virarem chave.
 export const REGEX_UUID_SESSAO =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// Hora de início (UTC) da janela atual: múltiplo de JANELA_ANALISES_HORAS
-// (ex.: 15h para a janela 15h–17h59). Base compartilhada das duas funções
-// abaixo, para a matemática das bordas nunca divergir.
-function inicioJanelaUtc(agora: Date): number {
-  return (
-    Math.floor(agora.getUTCHours() / JANELA_ANALISES_HORAS) *
-    JANELA_ANALISES_HORAS
-  );
-}
-
-// Chave da janela atual (ex.: "2026-08-09T15" cobre 15h–17h59 UTC). Usada nos
-// contadores por navegador — a renovação acontece a cada JANELA_ANALISES_HORAS.
-export function janelaAtualUtc(): string {
-  const agora = new Date();
-  const horaJanela = inicioJanelaUtc(agora);
-  return `${agora.toISOString().slice(0, 10)}T${String(horaJanela).padStart(2, "0")}`;
-}
-
-// Próximo limite da janela (ISO) — quando a cota por navegador renova.
-export function proximaLimiteJanelaUtc(): string {
-  const agora = new Date();
-  const horaJanela = inicioJanelaUtc(agora);
-  const proxima = new Date(
-    Date.UTC(
-      agora.getUTCFullYear(),
-      agora.getUTCMonth(),
-      agora.getUTCDate(),
-      horaJanela + JANELA_ANALISES_HORAS,
-    ),
-  );
-  return proxima.toISOString();
-}
 
 // O dia do contador global é a data UTC (YYYY-MM-DD) — o teto global renova à
 // meia-noite UTC.

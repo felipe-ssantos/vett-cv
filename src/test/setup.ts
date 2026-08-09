@@ -8,10 +8,13 @@ import { afterEach, beforeEach, expect } from "vitest";
 expect.extend({ toHaveNoViolations });
 
 // O jsdom não carrega o index.html; garante as precondições das regras
-// document-title e html-has-lang do axe.
+// document-title e html-has-lang do axe. Guarda para o ambiente node
+// (ex.: api/janelaAnalises.test.ts), que não tem DOM.
 beforeEach(() => {
-  document.documentElement.lang = "pt-BR";
-  document.title = "Vett — Análise de compatibilidade profissional";
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = "pt-BR";
+    document.title = "Vett — Análise de compatibilidade profissional";
+  }
 });
 
 afterEach(() => {

@@ -69,6 +69,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}"],
+    // api/** cobre os testes dos módulos puros do back-end (ex.: bordas das
+    // janelas de cota em api/janelaAnalises.test.ts).
+    include: ["src/**/*.test.{ts,tsx}", "api/**/*.test.{ts,tsx}"],
   },
 });
