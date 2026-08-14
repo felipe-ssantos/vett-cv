@@ -46,8 +46,9 @@ function formatarRenovacao(renovaEm: string | null): string | null {
 
 /**
  * Indicador de cota de análises (janela de 3h por navegador): análises
- * restantes, renovação exata e uso global. Não renderiza nada enquanto a cota
- * não foi carregada ou está indisponível.
+ * restantes, renovação exata, uso global e uma barra de progresso com a fração
+ * de análises restantes. Não renderiza nada enquanto a cota não foi carregada
+ * ou está indisponível.
  */
 export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
   if (carregando && !cota) return null;
@@ -60,42 +61,66 @@ export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
   const bloqueada = sessaoEsgotada || globalEsgotada;
   const renovacao = formatarRenovacao(cota.renovaEm);
 
+  // Barra de progresso: fração de análises restantes na janela (0% quando a
+  // cota esgotou). A largura é um valor genuinamente dinâmico — exceção ao CSS.
+  const restante = cota.sessao.restante;
+  const limite = cota.sessao.limite;
+  const percentualRestante =
+    limite > 0 ? Math.round((restante / limite) * 100) : 0;
+
   const textoBloqueio = sessaoEsgotada
     ? "Limite de análises atingido"
     : "Cota global do dia atingida";
+
+  const textoStatus = bloqueada ? (
+    <>
+      <span className={styles.cotaDestaque}>{textoBloqueio}</span>
+      {renovacao && (
+        <>
+          {" "}· {renovacao}
+        </>
+      )}
+    </>
+  ) : (
+    <>
+      <span className={styles.cotaDestaque}>
+        {restante} de {limite} análises disponíveis
+      </span>
+      {renovacao && (
+        <>
+          {" "}· {renovacao}
+        </>
+      )}
+    </>
+  );
 
   return (
     <div
       role="status"
       className={`${styles.cotaBox} ${bloqueada ? styles.bloqueada : ""}`}
     >
-      <LuGauge size={14} className={styles.cotaIcon} aria-hidden="true" />
-      {bloqueada ? (
-        <span>
-          <span className={styles.cotaDestaque}>{textoBloqueio}</span>
-          {renovacao && (
-            <>
-              {" "}· {renovacao}
-            </>
-          )}
-        </span>
-      ) : (
-        <span>
-          <span className={styles.cotaDestaque}>
-            {cota.sessao.restante} de {cota.sessao.limite} análises disponíveis
+      <span className={styles.cotaLinha}>
+        <LuGauge size={14} className={styles.cotaIcon} aria-hidden="true" />
+        {textoStatus}
+        {cota.global && !bloqueada && (
+          <span className={styles.cotaGlobal} aria-hidden="true">
+            · global: {cota.global.usado}/{cota.global.limite}
           </span>
-          {renovacao && (
-            <>
-              {" "}· {renovacao}
-            </>
-          )}
-        </span>
-      )}
-      {cota.global && !bloqueada && (
-        <span className={styles.cotaGlobal} aria-hidden="true">
-          · global: {cota.global.usado}/{cota.global.limite}
-        </span>
-      )}
+        )}
+      </span>
+      <span
+        className={styles.cotaBar}
+        role="progressbar"
+        aria-label="Análises restantes na janela"
+        aria-valuenow={restante}
+        aria-valuemin={0}
+        aria-valuemax={limite}
+      >
+        <span
+          className={styles.cotaBarFill}
+          style={{ width: `${percentualRestante}%` }}
+        />
+      </span>
     </div>
   );
 }

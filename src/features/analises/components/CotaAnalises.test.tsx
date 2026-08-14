@@ -88,4 +88,38 @@ describe("CotaAnalises — renovação exata", () => {
     expect(screen.getByText(/Renova às \d{2}:\d{2}/)).toBeInTheDocument();
     expect(screen.queryByText(/Renova em/)).not.toBeInTheDocument();
   });
+
+  it("mostra a barra de progresso com as análises restantes", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-09T12:00:00Z"));
+
+    render(
+      <CotaAnalises
+        cota={montarCota({ usado: 3, limite: 5, restante: 2 }, null)}
+        carregando={false}
+      />,
+    );
+
+    const barra = screen.getByRole("progressbar");
+    expect(barra).toHaveAttribute("aria-valuenow", "2");
+    expect(barra).toHaveAttribute("aria-valuemax", "5");
+    // 2 de 5 restantes → 40% da barra preenchida.
+    expect(barra.firstElementChild).toHaveStyle({ width: "40%" });
+  });
+
+  it("esvazia a barra de progresso quando a cota esgota", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-09T12:00:00Z"));
+
+    render(
+      <CotaAnalises
+        cota={montarCota({ usado: 5, limite: 5, restante: 0 }, null)}
+        carregando={false}
+      />,
+    );
+
+    const barra = screen.getByRole("progressbar");
+    expect(barra).toHaveAttribute("aria-valuenow", "0");
+    expect(barra.firstElementChild).toHaveStyle({ width: "0%" });
+  });
 });

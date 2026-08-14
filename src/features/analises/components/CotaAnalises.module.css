@@ -2,17 +2,25 @@
 
 .cotaBox {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding: 5px 12px;
-  border-radius: 20px;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 230px;
+  padding: 8px 12px;
+  border-radius: 12px;
   background: var(--surface-alt);
   border: 1px solid var(--border);
   font-size: 12.5px;
   line-height: 1.4;
   color: var(--text-secondary);
+}
+
+.cotaLinha {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  text-align: center;
 }
 
 .cotaIcon {
@@ -30,6 +38,23 @@
   color: var(--text-muted);
 }
 
+/* Barra de progresso das análises restantes na janela. */
+.cotaBar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.cotaBarFill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
 /* Variante quando o limite da sessão foi atingido. */
 .bloqueada {
   background: var(--warning-bg);
@@ -39,4 +64,8 @@
 
 .bloqueada .cotaDestaque {
   color: var(--warning);
+}
+
+.bloqueada .cotaBarFill {
+  background: var(--warning);
 }
