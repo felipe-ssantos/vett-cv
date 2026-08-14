@@ -202,6 +202,11 @@ Comportamento em falha do contador (Supabase): o teto **global é fail-closed**
 proteger a cota da IA), enquanto os limites por navegador são fail-open (só
 são aplicados quando o contador responde).
 
+A cota é consumida **somente quando o currículo é lido com sucesso**:
+tentativas com PDF/DOCX ilegível (ou sem texto extraível) são rejeitadas com
+`400` **sem** contabilizar a análise — o contador só é incrementado quando a
+análise realmente vai rodar.
+
 ---
 
 ## 🌿 Fluxo de desenvolvimento

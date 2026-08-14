@@ -390,17 +390,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Limite de uso (por sessão e global) — responde 429 antes de extrair o
-    // arquivo e de consumir a cota do Gemini.
-    const sessaoIdRaw = fields.sessaoId?.[0];
-    const sessaoId =
-      sessaoIdRaw && REGEX_UUID_SESSAO.test(sessaoIdRaw) ? sessaoIdRaw : null;
-
-    const bloqueio = await verificarLimites(req, sessaoId);
-    if (bloqueio) {
-      return res.status(bloqueio.status).json({ erro: bloqueio.mensagem });
-    }
-
     let curriculoTexto = curriculoTextoColado ?? "";
     if (arquivo) {
       curriculoTexto = await extrairTextoDoArquivo(
@@ -421,6 +410,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({
         erro: "Nenhum texto de currículo foi encontrado (cole o texto ou envie um PDF/DOCX).",
       });
+    }
+
+    // Limite de uso (por sessão e global) — verificado só depois que o
+    // currículo foi lido com sucesso: tentativas com documento ilegível (ou
+    // sem texto) não consomem a cota. O 429/503 chega antes da chamada à IA.
+    const sessaoIdRaw = fields.sessaoId?.[0];
+    const sessaoId =
+      sessaoIdRaw && REGEX_UUID_SESSAO.test(sessaoIdRaw) ? sessaoIdRaw : null;
+
+    const bloqueio = await verificarLimites(req, sessaoId);
+    if (bloqueio) {
+      return res.status(bloqueio.status).json({ erro: bloqueio.mensagem });
     }
 
     if (vagaExistenteJson) {
