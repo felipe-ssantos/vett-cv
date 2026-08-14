@@ -8,8 +8,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { LIMITE_ANALISES_POR_SESSAO } from "./limites.js";
-import handler from "./analisar.js";
+import { LIMITE_ANALISES_POR_SESSAO } from "../limites.js";
+import handler from "../analisar.js";
 
 const formidableMock = vi.hoisted(() => ({
   parse: vi.fn(async () => [{}, {}]),
@@ -41,18 +41,18 @@ vi.mock("formidable", () => ({
   default: () => ({ parse: formidableMock.parse }),
 }));
 
-vi.mock("./gemini.js", () => ({
+vi.mock("../gemini.js", () => ({
   ErroTimeoutIA,
   chamarIA,
 }));
 
-vi.mock("./prompts.js", () => ({
+vi.mock("../prompts.js", () => ({
   montarPromptComExtracao,
   montarPromptSoAnalise,
 }));
 
-vi.mock("./limites.js", async (importOriginal) => {
-  const original = await importOriginal<typeof import("./limites.js")>();
+vi.mock("../limites.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../limites.js")>();
   return {
     ...original,
     criarClienteSupabaseAdmin: () => ({ rpc }),
@@ -385,11 +385,11 @@ describe("POST /api/analisar — limites de uso", () => {
     // `criarClienteSupabaseAdmin` devolvendo null (sem SUPABASE_SERVICE_ROLE_KEY)
     // para cobrir o guard `if (!supabaseAdmin) return null` (fail-open).
     vi.resetModules();
-    vi.doMock("./limites.js", async (importOriginal) => {
-      const original = await importOriginal<typeof import("./limites.js")>();
+    vi.doMock("../limites.js", async (importOriginal) => {
+      const original = await importOriginal<typeof import("../limites.js")>();
       return { ...original, criarClienteSupabaseAdmin: () => null };
     });
-    const handlerSemCliente = (await import("./analisar.js")).default;
+    const handlerSemCliente = (await import("../analisar.js")).default;
 
     definirEntrada({
       curriculoTexto: ["Currículo com SQL"],

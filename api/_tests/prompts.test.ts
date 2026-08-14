@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   montarPromptComExtracao,
   montarPromptSoAnalise,
-} from "./prompts.js";
+} from "../prompts.js";
 
 const CURRICULO = "Analista de dados com 3 anos de experiência em SQL e Python.";
 const DESCRICAO_VAGA = "Buscamos analista de dados com experiência em SQL.";

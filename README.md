@@ -159,10 +159,14 @@ O template `.env.local.example` (valores vazios) é ignorado de propósito.
 
 - Acessibilidade (`*.a11y.test.tsx`) com as regras do `axe`
 - Unitários dos formulários de análise: upload de arquivo, atalho Esc, foco automático e limite de 4 MB
-- Back-end (`api/**`): handlers `analisar.ts` e `uso.ts` com `formidable`/Gemini/Supabase mockados (validações, limites 429/503, fluxos de sucesso) e módulos puros (`limites.ts`, `janelaAnalises.ts`, `limitesTexto.ts`, `prompts.ts`, `gemini.ts`)
+- Back-end (`api/**`): handlers `analisar.ts` e `uso.ts` com `formidable`/Gemini/Supabase mockados (validações, limites 429/503, extração de PDF/DOCX e fluxos de sucesso) e módulos puros (`limites.ts`, `janelaAnalises.ts`, `limitesTexto.ts`, `prompts.ts`, `gemini.ts`)
 - O build de produção (`npm run build`) também valida o TypeScript via `tsc -b`
 
 Os testes ficam colocalizados ao lado dos componentes e não entram no bundle de produção.
+
+Os testes da API ficam em `api/_tests/`: o prefixo `_` faz o Vercel ignorá-los
+como serverless functions (o plano Hobby limita a 12 functions por deploy),
+e os imports continuam relativos aos módulos testados em `api/`.
 
 ---
 

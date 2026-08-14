@@ -9,7 +9,7 @@ import {
   dataDeHojeUtc,
   obterIpDoCliente,
   proximaMeiaNoiteUtc,
-} from "./limites.js";
+} from "../limites.js";
 
 function reqCom(
   headers: Record<string, string | string[] | undefined>,

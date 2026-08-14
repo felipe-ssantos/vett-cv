@@ -6,7 +6,7 @@ import {
   inicioJanelaUtc,
   janelaAtualUtc,
   proximaLimiteJanelaUtc,
-} from "./janelaAnalises.js";
+} from "../janelaAnalises.js";
 
 afterEach(() => {
   vi.useRealTimers();
