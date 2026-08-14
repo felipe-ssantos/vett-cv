@@ -8,6 +8,7 @@ import {
   criarClienteSupabaseAdmin,
   dataDeHojeUtc,
   obterIpDoCliente,
+  proximaMeiaNoiteUtc,
 } from "./limites.js";
 
 function reqCom(
@@ -50,6 +51,21 @@ describe("dataDeHojeUtc — dia do contador global", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-10T00:00:00.000Z"));
     expect(dataDeHojeUtc()).toBe("2026-08-10");
+  });
+});
+
+describe("proximaMeiaNoiteUtc — quando o teto global renova", () => {
+  it("retorna a meia-noite UTC seguinte ao momento atual", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-09T15:30:00.000Z"));
+    expect(proximaMeiaNoiteUtc()).toBe("2026-08-10T00:00:00.000Z");
+  });
+
+  it("é sempre estritamente maior que o momento atual", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-09T23:59:59.999Z"));
+    const proxima = new Date(proximaMeiaNoiteUtc());
+    expect(proxima.getTime()).toBeGreaterThan(Date.now());
   });
 });
 

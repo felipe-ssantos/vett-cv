@@ -8,6 +8,7 @@ import {
   dataDeHojeUtc,
   janelaAtualUtc,
   proximaLimiteJanelaUtc,
+  proximaMeiaNoiteUtc,
 } from "./limites.js";
 
 // Cliente do Supabase usado apenas no back-end (chave de serviço, nunca
@@ -83,7 +84,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   return res.status(200).json({
     sessao: montarContador(usadoNavegador, LIMITE_ANALISES_POR_SESSAO),
     global: montarContador(usadoGlobal, LIMITE_ANALISES_GLOBAIS_DIA),
-    // A renovação exibida é a da cota por navegador (janela de 3 horas).
+    // Renovações exibidas na UI: a da cota por navegador (janela de 3 horas)
+    // e a do teto global (meia-noite UTC) — o bloqueio pode vir de qualquer
+    // um dos dois, e cada um renova em um momento diferente.
     renovaEm: proximaLimiteJanelaUtc(),
+    renovaEmGlobal: proximaMeiaNoiteUtc(),
   });
 }
