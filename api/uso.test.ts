@@ -102,12 +102,15 @@ describe("GET /api/uso — contadores de cota", () => {
       sessao: { usado: number; limite: number; restante: number };
       global: { usado: number; limite: number; restante: number };
       renovaEm: string;
+      renovaEmGlobal: string;
     };
     // IP sem registro conta como 0 → o maior uso é o da sessão (3).
     expect(dados.sessao).toEqual({ usado: 3, limite: 5, restante: 2 });
     expect(dados.global.usado).toBe(42);
     expect(dados.global.restante).toBe(58);
     expect(typeof dados.renovaEm).toBe("string");
+    // A renovação do teto global é a meia-noite UTC — sempre um ISO futuro.
+    expect(dados.renovaEmGlobal).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
 
   it("usa o contador do IP quando o sessaoId é inválido", async () => {

@@ -12,6 +12,7 @@ const cotaMock = vi.hoisted(() => ({
     sessao: { restante: number } | null;
     global: { restante: number } | null;
     renovaEm: string | null;
+    renovaEmGlobal: string | null;
   } | null,
 }));
 
@@ -113,6 +114,7 @@ describe("AnaliseWorkspace — bloqueio por cota", () => {
       sessao: { restante: 0 },
       global: { restante: 90 },
       renovaEm: null,
+      renovaEmGlobal: null,
     };
     renderizarWorkspace();
 
@@ -129,16 +131,22 @@ describe("AnaliseWorkspace — bloqueio por cota", () => {
     ).toBeInTheDocument();
   });
 
-  it("embaça o painel quando a cota global esgota", () => {
+  it("embaça o painel quando a cota global esgota e mostra a renovação da meia-noite UTC", () => {
     cotaMock.valor = {
       sessao: { restante: 3 },
       global: { restante: 0 },
       renovaEm: null,
+      renovaEmGlobal: "2026-08-10T00:00:00.000Z",
     };
     renderizarWorkspace();
 
     expect(
       screen.getByTestId("analise-embacada"),
+    ).toBeInTheDocument();
+    // O texto acompanha o limite que esgotou: o teto global renova à
+    // meia-noite UTC, não na janela de 3h.
+    expect(
+      screen.getByText(/até a cota global do dia renovar/),
     ).toBeInTheDocument();
   });
 
@@ -147,6 +155,7 @@ describe("AnaliseWorkspace — bloqueio por cota", () => {
       sessao: { restante: 3 },
       global: { restante: 90 },
       renovaEm: null,
+      renovaEmGlobal: null,
     };
     renderizarWorkspace();
 
@@ -170,6 +179,7 @@ describe("AnaliseWorkspace — bloqueio por cota", () => {
       sessao: { restante: 2 },
       global: { restante: 90 },
       renovaEm: null,
+      renovaEmGlobal: null,
     };
     renderizarWorkspace();
 

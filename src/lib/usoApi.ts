@@ -13,8 +13,10 @@ export interface CotaAnalises {
   sessao: ContadorDeUso | null;
   /** Cota global do dia; null quando o serviço de contador está indisponível. */
   global: ContadorDeUso | null;
-  /** Próximo limite da janela de 3h da sessão (ISO) — quando a cota renova. */
+  /** Próximo limite da janela de 3h da sessão (ISO) — quando a cota por navegador renova. */
   renovaEm: string | null;
+  /** Próxima meia-noite UTC (ISO) — quando o teto global renova. */
+  renovaEmGlobal: string | null;
 }
 
 function ehContadorDeUso(valor: unknown): valor is ContadorDeUso {
@@ -36,11 +38,14 @@ function validarCota(corpo: unknown): CotaAnalises | null {
   if (cota.sessao !== null && !ehContadorDeUso(cota.sessao)) return null;
   if (cota.global !== null && !ehContadorDeUso(cota.global)) return null;
   if (typeof cota.renovaEm !== "string" && cota.renovaEm !== null) return null;
+  if (typeof cota.renovaEmGlobal !== "string" && cota.renovaEmGlobal !== null)
+    return null;
 
   return {
     sessao: (cota.sessao as ContadorDeUso | null) ?? null,
     global: (cota.global as ContadorDeUso | null) ?? null,
     renovaEm: (cota.renovaEm as string | null) ?? null,
+    renovaEmGlobal: (cota.renovaEmGlobal as string | null) ?? null,
   };
 }
 

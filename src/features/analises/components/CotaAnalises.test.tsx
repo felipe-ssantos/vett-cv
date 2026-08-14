@@ -6,12 +6,14 @@ import { CotaAnalises } from "./CotaAnalises";
 function montarCota(
   sessao: TipoCotaAnalises["sessao"],
   renovaEm: string | null,
+  renovaEmGlobal: string | null = null,
+  global: TipoCotaAnalises["global"] = {
+    usado: 10,
+    limite: 100,
+    restante: 90,
+  },
 ): TipoCotaAnalises {
-  return {
-    sessao,
-    global: { usado: 10, limite: 100, restante: 90 },
-    renovaEm,
-  };
+  return { sessao, global, renovaEm, renovaEmGlobal };
 }
 
 afterEach(() => {
@@ -121,5 +123,33 @@ describe("CotaAnalises — renovação exata", () => {
     const barra = screen.getByRole("progressbar");
     expect(barra).toHaveAttribute("aria-valuenow", "0");
     expect(barra.firstElementChild).toHaveStyle({ width: "0%" });
+  });
+
+  it("mostra a renovação da meia-noite UTC quando o teto global esgota", () => {
+    vi.useFakeTimers();
+    // 20:00 UTC — a janela de 3h renova às 21:00; o teto global, à meia-noite.
+    vi.setSystemTime(new Date("2026-08-09T20:00:00Z"));
+    const renovaEmJanela = new Date("2026-08-09T21:00:00Z").toISOString();
+    const renovaEmGlobal = new Date("2026-08-10T00:00:00Z").toISOString();
+
+    render(
+      <CotaAnalises
+        cota={montarCota(
+          { usado: 2, limite: 5, restante: 3 },
+          renovaEmJanela,
+          renovaEmGlobal,
+          { usado: 100, limite: 100, restante: 0 },
+        )}
+        carregando={false}
+      />,
+    );
+
+    expect(
+      screen.getByText(/Cota global do dia atingida/),
+    ).toBeInTheDocument();
+    // Renova em 4h (20:00 → 00:00 UTC) — o tempo do teto global, não o da
+    // janela de 3h (que seria "Renova em 1h").
+    expect(screen.getByText(/Renova em 4h/)).toBeInTheDocument();
+    expect(screen.queryByText(/Renova em 1h/)).not.toBeInTheDocument();
   });
 });

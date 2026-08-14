@@ -69,24 +69,32 @@ function PainelVazio() {
 }
 
 /**
- * Estado bloqueado (cota diária esgotada): a análise anterior (se houver)
- * fica EMBACADA ao fundo, como uma imagem desfocada, com um overlay de
- * bloqueio por cima. Quando não há análise anterior, embaça o estado vazio.
+ * Estado bloqueado (cota esgotada): a análise anterior (se houver) fica
+ * EMBACADA ao fundo, como uma imagem desfocada, com um overlay de bloqueio
+ * por cima. Quando não há análise anterior, embaça o estado vazio.
  */
 function PainelBloqueado({
   analise,
   renovaEm,
+  bloqueioGlobal,
 }: {
   analise: AnaliseMatchIA | null;
   renovaEm: string | null;
+  bloqueioGlobal: boolean;
 }) {
-  // Hora exata em que a cota renova (janela de 3h) — ex.: "às 18:00".
+  // Hora exata em que a cota renova — ex.: "às 18:00".
   const renovacaoExata = renovaEm
     ? new Date(renovaEm).toLocaleTimeString("pt-BR", {
         hour: "2-digit",
         minute: "2-digit",
       })
     : null;
+
+  // A janela de 3h é da cota por navegador; o teto global renova à meia-noite
+  // UTC — o texto acompanha o limite que realmente esgotou.
+  const cicloRenovacao = bloqueioGlobal
+    ? "até a cota global do dia renovar (à meia-noite UTC)"
+    : "até a cota renovar (a cada 3 horas)";
 
   return (
     <div className={workspaceStyles.blurWrapper}>
@@ -110,7 +118,7 @@ function PainelBloqueado({
           <h3 className="h6 fw-bold mb-1">Cota de análises esgotada</h3>
           <p className={`mb-2 text-secondary ${workspaceStyles.blurText}`}>
             Você usou todas as análises disponíveis no momento. O resultado anterior fica
-            bloqueado até a cota renovar (a cada 3 horas)
+            bloqueado {cicloRenovacao}
             {renovacaoExata && `, às ${renovacaoExata}`}.
           </p>
           <Link
@@ -131,6 +139,7 @@ interface PainelResultadoAnaliseProps {
   analise: AnaliseMatchIA | null;
   bloqueado: boolean;
   renovaEm: string | null;
+  bloqueioGlobal: boolean;
 }
 
 /** Alterna entre os estados do painel de resultado usando guard clauses. */
@@ -140,9 +149,17 @@ function PainelResultadoAnalise({
   analise,
   bloqueado,
   renovaEm,
+  bloqueioGlobal,
 }: PainelResultadoAnaliseProps) {
   if (analisando) return <PainelAnalisando etapaAtual={etapaAtual} />;
-  if (bloqueado) return <PainelBloqueado analise={analise} renovaEm={renovaEm} />;
+  if (bloqueado)
+    return (
+      <PainelBloqueado
+        analise={analise}
+        renovaEm={renovaEm}
+        bloqueioGlobal={bloqueioGlobal}
+      />
+    );
   if (!analise) return <PainelVazio />;
   return <RelatorioAnalise analise={analise} />;
 }
@@ -193,6 +210,9 @@ export function AnaliseWorkspace() {
     cota !== null && cota.sessao !== null && cota.sessao.restante === 0;
   const globalEsgotada =
     cota !== null && cota.global !== null && cota.global.restante === 0;
+  // Quando ambos esgotam, o texto/hora seguem o limite da sessão (prioridade
+  // histórica da mensagem) — o global só é tratado como causa isolada.
+  const bloqueioGlobal = globalEsgotada && !sessaoEsgotada;
   // Cobre as mensagens de limite da API e do cliente: "Você atingiu o limite
   // de 5 análises por janela de 3 horas...", "O limite diário de análises do
   // Vett foi atingido", "Limite de análises atingido..." e a cota global.
@@ -202,6 +222,12 @@ export function AnaliseWorkspace() {
       erro,
     );
   const bloqueado = sessaoEsgotada || globalEsgotada || erroDeCota;
+
+  // Hora de renovação exibida no overlay: janela de 3h da sessão ou meia-noite
+  // UTC do teto global, conforme o limite que esgotou.
+  const renovaEmParaExibir = sessaoEsgotada
+    ? cota?.renovaEm ?? null
+    : cota?.renovaEmGlobal ?? cota?.renovaEm ?? null;
 
   // Estado derivado: condições simples calculadas a partir de outros estados.
   const temConteudoCurriculo =
@@ -464,7 +490,8 @@ export function AnaliseWorkspace() {
           etapaAtual={etapaAtual}
           analise={analise}
           bloqueado={bloqueado}
-          renovaEm={cota?.renovaEm ?? null}
+          renovaEm={renovaEmParaExibir}
+          bloqueioGlobal={bloqueioGlobal}
         />
       </div>
     </div>

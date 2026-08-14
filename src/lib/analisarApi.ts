@@ -9,7 +9,7 @@ export interface RespostaAnalisar {
 }
 
 // Navegadores com proteção de privacidade (ex.: Brave) e o próprio servidor
-// podem responder com HTML em vez de JSON (ex.: 413/502/504). Aqui extraío a melhor mensagem possível.
+// podem responder com HTML em vez de JSON (ex.: 413/502/504). Aqui extraio a melhor mensagem possível.
 async function extrairMensagemDeErro(resposta: Response): Promise<string> {
   const contentType = resposta.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {

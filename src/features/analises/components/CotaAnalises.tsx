@@ -59,7 +59,12 @@ export function CotaAnalises({ cota, carregando }: CotaAnalisesProps) {
   const sessaoEsgotada = cota.sessao !== null && cota.sessao.restante === 0;
   const globalEsgotada = cota.global !== null && cota.global.restante === 0;
   const bloqueada = sessaoEsgotada || globalEsgotada;
-  const renovacao = formatarRenovacao(cota.renovaEm);
+
+  // A renovação exibida depende do limite que esgotou: a janela de 3h da
+  // sessão (renovaEm) ou a meia-noite UTC do teto global (renovaEmGlobal).
+  const renovacao = formatarRenovacao(
+    sessaoEsgotada ? cota.renovaEm : cota.renovaEmGlobal ?? cota.renovaEm,
+  );
 
   // Barra de progresso: fração de análises restantes na janela (0% quando a
   // cota esgotou). A largura é um valor genuinamente dinâmico — exceção ao CSS.

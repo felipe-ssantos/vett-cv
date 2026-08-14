@@ -12,6 +12,7 @@ const cotaMock = {
   sessao: { usado: 1, limite: 5, restante: 4 },
   global: { usado: 10, limite: 100, restante: 90 },
   renovaEm: "2026-08-08T00:00:00.000Z",
+  renovaEmGlobal: "2026-08-09T00:00:00.000Z",
 };
 
 beforeEach(() => {
