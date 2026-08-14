@@ -17,7 +17,7 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 - **Ou cola o texto** — alternativa para quem prefere colar o currículo diretamente
 - **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
 - **Histórico privado** — análises salvas no Supabase, isoladas por sessão anônima e limitadas às 25 mais recentes
-- **Cota visível** — análises restantes e hora exata de renovação (janela de 3h) exibidos na tela de análise
+- **Cota visível** — análises restantes (com barra de progresso), hora exata de renovação (janela de 3h) e uso global exibidos na tela de análise
 - **Exportar histórico em PDF** — marque (checkbox) exatamente quais análises incluir no PDF ou selecione todas
 - **Modo claro/escuro** — alternância no cabeçalho com persistência; o site inicia no modo claro por padrão
 - **Reanálise** — novo currículo comparado com uma vaga já analisada
@@ -159,6 +159,7 @@ O template `.env.local.example` (valores vazios) é ignorado de propósito.
 
 - Acessibilidade (`*.a11y.test.tsx`) com as regras do `axe`
 - Unitários dos formulários de análise: upload de arquivo, atalho Esc, foco automático e limite de 4 MB
+- Back-end (`api/**`): handlers `analisar.ts` e `uso.ts` com `formidable`/Gemini/Supabase mockados (validações, limites 429/503, fluxos de sucesso) e módulos puros (`limites.ts`, `janelaAnalises.ts`, `limitesTexto.ts`, `prompts.ts`, `gemini.ts`)
 - O build de produção (`npm run build`) também valida o TypeScript via `tsc -b`
 
 Os testes ficam colocalizados ao lado dos componentes e não entram no bundle de produção.
