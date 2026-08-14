@@ -3,15 +3,15 @@
 // dos contadores (sessão/IP/global) sem depender de rede ou banco.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { chavePorIp, dataDeHojeUtc, janelaAtualUtc } from "./limites.js";
-import handler from "./uso.js";
+import { chavePorIp, dataDeHojeUtc, janelaAtualUtc } from "../limites.js";
+import handler from "../uso.js";
 
 // Mapa de contagens por chave do contador: null = serviço indisponível.
 // Chaves ausentes contam como 0 (chave ainda não criada no banco).
 const contagens = vi.hoisted(() => new Map<string, number | null>());
 
-vi.mock("./limites.js", async (importOriginal) => {
-  const original = await importOriginal<typeof import("./limites.js")>();
+vi.mock("../limites.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../limites.js")>();
   return {
     ...original,
     criarClienteSupabaseAdmin: () => ({

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   LIMITE_CARACTERES_TEXTO,
   campoExcedeLimiteDeTexto,
-} from "./limitesTexto.js";
+} from "../limitesTexto.js";
 
 describe("campoExcedeLimiteDeTexto — teto de 8.000 caracteres (P3)", () => {
   it("aceita campos dentro do limite", () => {

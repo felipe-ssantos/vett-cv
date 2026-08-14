@@ -1,7 +1,7 @@
 // @vitest-environment node
 // O módulo usa fetch e timers injetáveis — testado em ambiente node com fakes.
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ErroTimeoutIA, chamarIA } from "./gemini.js";
+import { ErroTimeoutIA, chamarIA } from "../gemini.js";
 
 afterEach(() => {
   vi.useRealTimers();
