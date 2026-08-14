@@ -25,18 +25,6 @@ export function dataDeHojeUtc(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function proximaMeiaNoiteUtc(): string {
-  const agora = new Date();
-  const proxima = new Date(
-    Date.UTC(
-      agora.getUTCFullYear(),
-      agora.getUTCMonth(),
-      agora.getUTCDate() + 1,
-    ),
-  );
-  return proxima.toISOString();
-}
-
 // Segredo usado no HMAC do IP. O IP bruto nunca é persistido — apenas um hash
 // irreversível dele (proteção adicional contra ataques de dicionário).
 // Quando nem RATE_LIMIT_IP_SECRET nem SUPABASE_SERVICE_ROLE_KEY existem, o
