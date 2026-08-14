@@ -61,6 +61,32 @@
   font-weight: 600;
 }
 
+/* Modo de seleção para exportação (checkboxes inline na lista) */
+.selecaoBarra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--surface-alt);
+  border: 1px solid var(--primary-light);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.selecaoCheckbox {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.selecaoCheckbox:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
 .searchInput {
   padding-left: 38px;
   height: 40px;

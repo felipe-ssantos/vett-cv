@@ -21,7 +21,6 @@ import motionStyles from "../../../styles/ui/Motion.module.css";
 import pageStyles from "../../../styles/ui/Page.module.css";
 import styles from "./AnaliseList.module.css";
 import { ConfirmModal } from "./ConfirmModal";
-import { ExportarHistoricoModal } from "./ExportarHistoricoModal";
 import type { Analise } from "../../../types";
 
 // Limite de análises salvas por usuário. Deve permanecer em sincronia com
@@ -41,8 +40,11 @@ export function AnaliseList() {
   const [confirmandoExcluirTodas, setConfirmandoExcluirTodas] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
 
-  // Estados para o diálogo de exportação (escolha de quantidade)
-  const [modalExportarAberto, setModalExportarAberto] = useState(false);
+  // Estados para exportação: modo de seleção inline (checkboxes na lista)
+  const [modoSelecao, setModoSelecao] = useState(false);
+  const [selecionadas, setSelecionadas] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
@@ -149,26 +151,52 @@ export function AnaliseList() {
     }
   }
 
-  // Abre o diálogo para o usuário marcar (checkbox) quais análises exportar.
-  // A seleção não considera o filtro ativo, para o backup do histórico poder
-  // incluir qualquer análise salva.
-  function handleAbrirExportacao() {
-    if (analises.length === 0) return;
-    setModalExportarAberto(true);
-  }
-
-  // Gera e baixa o PDF apenas com as análises marcadas pelo usuário.
-  async function handleConfirmarExportacao(selecionadas: Analise[]) {
-    if (selecionadas.length === 0) return;
+  // Primeiro clique: entra no modo de seleção (checkboxes habilitados na
+  // lista). Segundo clique: exporta apenas as análises marcadas. A seleção
+  // não considera o filtro ativo, para o backup poder incluir qualquer
+  // análise salva.
+  async function handleExportarPdf() {
+    if (!modoSelecao) {
+      setSelecionadas(new Set());
+      setModoSelecao(true);
+      return;
+    }
+    if (selecionadas.size === 0) return;
     setExportando(true);
     try {
-      await exportarHistoricoPdf(selecionadas);
+      await exportarHistoricoPdf(
+        analises.filter((a) => selecionadas.has(a.id)),
+      );
     } catch (err) {
       console.error("Falha ao exportar o histórico:", err);
     } finally {
       setExportando(false);
-      setModalExportarAberto(false);
+      setModoSelecao(false);
+      setSelecionadas(new Set());
     }
+  }
+
+  function cancelarSelecao() {
+    setModoSelecao(false);
+    setSelecionadas(new Set());
+  }
+
+  function alternarSelecao(id: string) {
+    setSelecionadas((atual) => {
+      const proximo = new Set(atual);
+      if (proximo.has(id)) {
+        proximo.delete(id);
+      } else {
+        proximo.add(id);
+      }
+      return proximo;
+    });
+  }
+
+  function alternarTodas() {
+    setSelecionadas(
+      todasSelecionadas ? new Set() : new Set(analises.map((a) => a.id)),
+    );
   }
 
   // Filtragem dinâmica por cargo, empresa, senioridade ou palavra-chave
@@ -182,6 +210,10 @@ export function AnaliseList() {
       a.descricao_vaga?.toLowerCase().includes(termo)
     );
   });
+
+  // Estado derivado: todas as análises estão marcadas?
+  const todasSelecionadas =
+    analises.length > 0 && selecionadas.size === analises.length;
 
   return (
     <div className={`${motionStyles.fadeInUp} ${pageStyles.wide}`}>
@@ -199,14 +231,39 @@ export function AnaliseList() {
         <div className="d-flex align-items-center gap-2">
           {analises.length > 0 && (
             <>
-              <button
-                type="button"
-                onClick={handleAbrirExportacao}
-                className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.exportButton}`}
-                title="Baixar histórico em PDF"
-              >
-                <LuDownload size={14} /> Exportar PDF
-              </button>
+              {modoSelecao ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleExportarPdf}
+                    disabled={exportando || selecionadas.size === 0}
+                    className={`${buttonStyles.primary} ${buttonStyles.primaryCompact} px-3`}
+                    title="Baixar em PDF as análises selecionadas"
+                  >
+                    <LuDownload size={14} />
+                    {exportando
+                      ? "Exportando..."
+                      : `Exportar (${selecionadas.size})`}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelarSelecao}
+                    disabled={exportando}
+                    className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
+                  >
+                    <LuX size={14} /> Cancelar
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleExportarPdf}
+                  className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.exportButton}`}
+                  title="Selecionar análises para exportar em PDF"
+                >
+                  <LuDownload size={14} /> Exportar PDF
+                </button>
+              )}
               <button
                 onClick={() => setConfirmandoExcluirTodas(true)}
                 className={`btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
@@ -302,6 +359,25 @@ export function AnaliseList() {
         </div>
       )}
 
+      {/* Barra de seleção para exportação (modo ativado pelo botão Exportar) */}
+      {modoSelecao && (
+        <div className={`${styles.selecaoBarra} mb-3`}>
+          <label className="d-flex align-items-center gap-2 mb-0">
+            <input
+              type="checkbox"
+              checked={todasSelecionadas}
+              onChange={alternarTodas}
+            />
+            <span className="fw-semibold">
+              Selecionar todas ({analises.length})
+            </span>
+          </label>
+          <span className="text-secondary" role="status">
+            {selecionadas.size} de {analises.length} selecionadas
+          </span>
+        </div>
+      )}
+
       {carregando && (
         <div className={emptyStyles.emptyState} role="status">
           <div className="spinner-border text-teal" aria-hidden="true" />
@@ -353,37 +429,47 @@ export function AnaliseList() {
               key={analise.id}
               className={`${cardStyles.card} d-flex align-items-center justify-content-between p-3`}
             >
-              <Link
-                to={`/analises/${analise.id}`}
-                className={`text-decoration-none flex-fill me-3 ${styles.itemLink}`}
-              >
-                <div className="d-flex align-items-center gap-3">
-                  <div
-                    className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary} ${cardStyles.iconCircleScore} flex-shrink-0`}
-                  >
-                    <span className={`fw-bold ${styles.scoreValue}`}>
-                      {analise.score_match}%
-                    </span>
-                  </div>
+              <div className="d-flex align-items-center gap-3 flex-fill me-3">
+                <input
+                  type="checkbox"
+                  className={`${styles.selecaoCheckbox} flex-shrink-0`}
+                  disabled={!modoSelecao}
+                  checked={selecionadas.has(analise.id)}
+                  onChange={() => alternarSelecao(analise.id)}
+                  aria-label={`Selecionar para exportar: ${analise.titulo_vaga}`}
+                />
+                <Link
+                  to={`/analises/${analise.id}`}
+                  className={`text-decoration-none flex-fill ${styles.itemLink}`}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div
+                      className={`${cardStyles.iconCircle} ${cardStyles.iconCirclePrimary} ${cardStyles.iconCircleScore} flex-shrink-0`}
+                    >
+                      <span className={`fw-bold ${styles.scoreValue}`}>
+                        {analise.score_match}%
+                      </span>
+                    </div>
 
-                  <div>
-                    <div className={`fw-bold text-dark ${styles.itemTitle}`}>
-                      {analise.titulo_vaga}
-                    </div>
-                    <div className={`text-secondary ${styles.itemSubtitle}`}>
-                      {analise.empresa ? `${analise.empresa} · ` : ""}
-                      {new Date(analise.created_at).toLocaleDateString(
-                        "pt-BR",
-                        {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        },
-                      )}
+                    <div>
+                      <div className={`fw-bold text-dark ${styles.itemTitle}`}>
+                        {analise.titulo_vaga}
+                      </div>
+                      <div className={`text-secondary ${styles.itemSubtitle}`}>
+                        {analise.empresa ? `${analise.empresa} · ` : ""}
+                        {new Date(analise.created_at).toLocaleDateString(
+                          "pt-BR",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
 
               <div className="d-flex align-items-center gap-2">
                 <Link
@@ -422,16 +508,6 @@ export function AnaliseList() {
           processando={excluindo}
           aoCancelar={() => setItemParaExcluir(null)}
           aoConfirmar={handleExcluirUma}
-        />
-      )}
-
-      {/* Modal de exportação: marcar quais análises incluir no PDF */}
-      {modalExportarAberto && (
-        <ExportarHistoricoModal
-          analises={analises}
-          processando={exportando}
-          aoConfirmar={handleConfirmarExportacao}
-          aoCancelar={() => setModalExportarAberto(false)}
         />
       )}
 
