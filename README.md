@@ -18,8 +18,8 @@ O Vett ajuda candidatos a entenderem o alinhamento do seu perfil com uma oportun
 - **Relatório completo** — pontos fortes, lacunas e sugestões de melhoria
 - **Histórico privado** — análises salvas no Supabase, isoladas por sessão anônima e limitadas às 25 mais recentes
 - **Cota visível** — análises restantes e hora exata de renovação (janela de 3h) exibidos na tela de análise
-- **Exportar histórico em PDF** — dados estruturados e legíveis para qualquer pessoa (substituiu o antigo JSON)
-- **Modo claro/escuro** — alternância no cabeçalho, com persistência e respeito à preferência do sistema
+- **Exportar histórico em PDF** — escolha quantas análises exportar (as N mais recentes) ou todas, com dados estruturados e legíveis
+- **Modo claro/escuro** — alternância no cabeçalho com persistência; o site inicia no modo claro por padrão
 - **Reanálise** — novo currículo comparado com uma vaga já analisada
 - **Acessível** — labels, landmarks e diálogos testados com `axe`
 - **Carregamento rápido** — code-splitting por rota (lazy loading) e chunks de vendor (react, supabase) com cache de longo prazo

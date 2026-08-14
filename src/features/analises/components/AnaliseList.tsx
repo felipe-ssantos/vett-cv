@@ -21,6 +21,7 @@ import motionStyles from "../../../styles/ui/Motion.module.css";
 import pageStyles from "../../../styles/ui/Page.module.css";
 import styles from "./AnaliseList.module.css";
 import { ConfirmModal } from "./ConfirmModal";
+import { ExportarHistoricoModal } from "./ExportarHistoricoModal";
 import type { Analise } from "../../../types";
 
 // Limite de análises salvas por usuário. Deve permanecer em sincronia com
@@ -39,6 +40,10 @@ export function AnaliseList() {
   const [itemParaExcluir, setItemParaExcluir] = useState<Analise | null>(null);
   const [confirmandoExcluirTodas, setConfirmandoExcluirTodas] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+
+  // Estados para o diálogo de exportação (escolha de quantidade)
+  const [modalExportarAberto, setModalExportarAberto] = useState(false);
+  const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -144,11 +149,25 @@ export function AnaliseList() {
     }
   }
 
-  // Gera e baixa um PDF estruturado com o histórico. Exporta TODAS as análises
-  // (não apenas as do filtro ativo), para o backup ser completo.
-  function handleExportarHistorico() {
+  // Abre o diálogo para o usuário escolher quantas análises exportar (as N
+  // mais recentes ou todas). A exportação não considera o filtro ativo, para
+  // o backup do histórico ser completo.
+  function handleAbrirExportacao() {
     if (analises.length === 0) return;
-    void exportarHistoricoPdf(analises);
+    setModalExportarAberto(true);
+  }
+
+  // Gera e baixa o PDF com as `quantidade` análises mais recentes.
+  async function handleConfirmarExportacao(quantidade: number) {
+    setExportando(true);
+    try {
+      await exportarHistoricoPdf(analises.slice(0, quantidade));
+    } catch (err) {
+      console.error("Falha ao exportar o histórico:", err);
+    } finally {
+      setExportando(false);
+      setModalExportarAberto(false);
+    }
   }
 
   // Filtragem dinâmica por cargo, empresa, senioridade ou palavra-chave
@@ -181,7 +200,7 @@ export function AnaliseList() {
             <>
               <button
                 type="button"
-                onClick={handleExportarHistorico}
+                onClick={handleAbrirExportacao}
                 className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.exportButton}`}
                 title="Baixar histórico em PDF"
               >
@@ -402,6 +421,16 @@ export function AnaliseList() {
           processando={excluindo}
           aoCancelar={() => setItemParaExcluir(null)}
           aoConfirmar={handleExcluirUma}
+        />
+      )}
+
+      {/* Modal de exportação: escolher quantidade ou exportar todas */}
+      {modalExportarAberto && (
+        <ExportarHistoricoModal
+          totalAnalises={analises.length}
+          processando={exportando}
+          aoConfirmar={handleConfirmarExportacao}
+          aoCancelar={() => setModalExportarAberto(false)}
         />
       )}
 

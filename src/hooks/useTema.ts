@@ -12,8 +12,9 @@ export interface UseTemaReturn {
 /**
  * Hook global de tema (compartilhado entre features — por isso vive em
  * src/hooks). O tema inicial é aplicado pelo script `/tema-inicial.js` antes
- * do primeiro paint; aqui apenas sincronizamos o estado, alternamos e
- * persistimos no localStorage.
+ * do primeiro paint (sem preferência salva, o site inicia no modo claro);
+ * aqui apenas sincronizamos o estado, alternamos e persistimos no
+ * localStorage.
  */
 export function useTema(): UseTemaReturn {
   // O tema já foi aplicado ao <html> pelo script /tema-inicial.js antes do

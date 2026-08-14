@@ -129,7 +129,7 @@ describe("AnaliseList — aviso e meter de histórico cheio", () => {
 });
 
 describe("AnaliseList — exportar histórico em PDF", () => {
-  it("gera um PDF com todas as análises ao clicar em Exportar PDF", async () => {
+  it("exporta todas as análises por padrão ao confirmar o diálogo", async () => {
     const user = userEvent.setup();
     mockCarregar(2);
     renderizar();
@@ -137,10 +137,65 @@ describe("AnaliseList — exportar histórico em PDF", () => {
     await screen.findByText("Vaga de Teste 0");
     await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
 
+    // O diálogo abre com "Todas as análises" selecionado por padrão.
+    expect(
+      screen.getByRole("radio", { name: /Todas as análises/ }),
+    ).toBeChecked();
+    await user.click(screen.getByRole("button", { name: /^Exportar$/ }));
+
     expect(exportarPdfMock).toHaveBeenCalledTimes(1);
     const analisesExportadas = exportarPdfMock.mock.calls[0][0] as Analise[];
     expect(analisesExportadas).toHaveLength(2);
     expect(analisesExportadas[0].titulo_vaga).toBe("Vaga de Teste 0");
+  });
+
+  it("exporta apenas a quantidade escolhida pelo usuário", async () => {
+    const user = userEvent.setup();
+    mockCarregar(3);
+    renderizar();
+
+    await screen.findByText("Vaga de Teste 0");
+    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
+
+    await user.click(
+      screen.getByRole("radio", { name: /Escolher quantidade/ }),
+    );
+    const campoQuantidade = screen.getByRole("spinbutton", {
+      name: "Quantidade de análises para exportar",
+    });
+    await user.clear(campoQuantidade);
+    await user.type(campoQuantidade, "2");
+    await user.click(screen.getByRole("button", { name: /^Exportar$/ }));
+
+    expect(exportarPdfMock).toHaveBeenCalledTimes(1);
+    const analisesExportadas = exportarPdfMock.mock.calls[0][0] as Analise[];
+    expect(analisesExportadas).toHaveLength(2);
+  });
+
+  it("limita a quantidade ao total de análises salvas", async () => {
+    const user = userEvent.setup();
+    mockCarregar(2);
+    renderizar();
+
+    await screen.findByText("Vaga de Teste 0");
+    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
+    await user.click(
+      screen.getByRole("radio", { name: /Escolher quantidade/ }),
+    );
+    const campoQuantidade = screen.getByRole("spinbutton", {
+      name: "Quantidade de análises para exportar",
+    });
+    await user.clear(campoQuantidade);
+    await user.type(campoQuantidade, "99");
+
+    // Ao sair do campo (blur), o valor é normalizado para o total máximo.
+    await user.tab();
+    expect(campoQuantidade).toHaveValue(2);
+    await user.click(screen.getByRole("button", { name: /^Exportar$/ }));
+
+    expect(exportarPdfMock).toHaveBeenCalledTimes(1);
+    const analisesExportadas = exportarPdfMock.mock.calls[0][0] as Analise[];
+    expect(analisesExportadas).toHaveLength(2);
   });
 
   it("não oferece exportar com o histórico vazio", async () => {
