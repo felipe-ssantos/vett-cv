@@ -231,39 +231,32 @@ export function AnaliseList() {
         <div className="d-flex align-items-center gap-2">
           {analises.length > 0 && (
             <>
-              {modoSelecao ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleExportarPdf}
-                    disabled={exportando || selecionadas.size === 0}
-                    className={`${buttonStyles.primary} ${buttonStyles.primaryCompact} px-3`}
-                    title="Baixar em PDF as análises selecionadas"
-                  >
-                    <LuDownload size={14} />
-                    {exportando
-                      ? "Exportando..."
-                      : `Exportar (${selecionadas.size})`}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelarSelecao}
-                    disabled={exportando}
-                    className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
-                  >
-                    <LuX size={14} /> Cancelar
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleExportarPdf}
-                  className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.exportButton}`}
-                  title="Selecionar análises para exportar em PDF"
-                >
-                  <LuDownload size={14} /> Exportar PDF
-                </button>
-              )}
+              {/* Botão único no mesmo lugar: fora do modo vira "Exportar PDF";
+                  no modo de seleção vira "Exportar (N)" — nada quebra de linha. */}
+              <button
+                type="button"
+                onClick={handleExportarPdf}
+                disabled={
+                  modoSelecao && (exportando || selecionadas.size === 0)
+                }
+                className={
+                  modoSelecao
+                    ? `${buttonStyles.primary} ${buttonStyles.primaryCompact} px-3`
+                    : `btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.exportButton}`
+                }
+                title={
+                  modoSelecao
+                    ? "Baixar em PDF as análises selecionadas"
+                    : "Selecionar análises para exportar em PDF"
+                }
+              >
+                <LuDownload size={14} />
+                {exportando
+                  ? "Exportando..."
+                  : modoSelecao
+                    ? `Exportar (${selecionadas.size})`
+                    : "Exportar PDF"}
+              </button>
               <button
                 onClick={() => setConfirmandoExcluirTodas(true)}
                 className={`btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
@@ -372,9 +365,19 @@ export function AnaliseList() {
               Selecionar todas ({analises.length})
             </span>
           </label>
-          <span className="text-secondary" role="status">
-            {selecionadas.size} de {analises.length} selecionadas
-          </span>
+          <div className="d-flex align-items-center gap-2">
+            <span className="text-secondary" role="status">
+              {selecionadas.size} de {analises.length} selecionadas
+            </span>
+            <button
+              type="button"
+              onClick={cancelarSelecao}
+              disabled={exportando}
+              className={`btn btn-light border text-secondary btn-sm d-flex align-items-center gap-1 px-3 ${styles.clearHistoryButton}`}
+            >
+              <LuX size={14} /> Cancelar
+            </button>
+          </div>
         </div>
       )}
 
