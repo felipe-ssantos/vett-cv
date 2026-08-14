@@ -1,64 +1,68 @@
 import { useId, useState } from "react";
 import { LuDownload } from "react-icons/lu";
+import type { Analise } from "../../../types";
 import cardStyles from "../../../styles/ui/Card.module.css";
 import modalStyles from "../../../styles/ui/Modal.module.css";
 import buttonStyles from "../../../styles/ui/Button.module.css";
 import styles from "./ExportarHistoricoModal.module.css";
 
 interface ExportarHistoricoModalProps {
-  totalAnalises: number;
-  aoConfirmar: (quantidade: number) => void;
+  /** Análises disponíveis, já ordenadas da mais recente para a mais antiga. */
+  analises: Analise[];
+  aoConfirmar: (selecionadas: Analise[]) => void;
   aoCancelar: () => void;
   processando?: boolean;
 }
 
-type ModoExportacao = "todas" | "quantidade";
-
-// Padrão ao escolher "quantidade": as 5 análises mais recentes.
-const QUANTIDADE_PADRAO = 5;
-
-function limitarQuantidade(valor: number, total: number): number {
-  return Math.min(Math.max(1, valor), total);
+function formatarData(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 /**
- * Diálogo de exportação do histórico: o usuário escolhe exportar todas as
- * análises ou apenas as N mais recentes (1..total). Componente presentacional —
- * recebe o total e o callback com a quantidade confirmada.
+ * Diálogo de exportação do histórico: o usuário marca (checkbox) exatamente
+ * quais análises deseja exportar, com a opção de selecionar todas. Componente
+ * presentacional — recebe a lista e o callback com as análises selecionadas.
  */
 export function ExportarHistoricoModal({
-  totalAnalises,
+  analises,
   aoConfirmar,
   aoCancelar,
   processando = false,
 }: ExportarHistoricoModalProps) {
-  // A quantidade é mantida como texto enquanto o usuário digita (o clamp para
-  // 1..total acontece no blur e na confirmação) — evitar que o valor controlado
-  // "salte" durante a digitação.
-  const [modo, setModo] = useState<ModoExportacao>("todas");
-  const [quantidadeTexto, setQuantidadeTexto] = useState(() =>
-    String(limitarQuantidade(QUANTIDADE_PADRAO, totalAnalises)),
+  // Por padrão todas ficam marcadas (mesmo comportamento de exportar tudo);
+  // o usuário desmarca as que não quer incluir no PDF.
+  const [selecionadas, setSelecionadas] = useState<Set<string>>(
+    () => new Set(analises.map((a) => a.id)),
   );
   const tituloId = useId();
   const descricaoId = useId();
 
-  function normalizarQuantidade(valor: string): number {
-    const numero = Number.parseInt(valor, 10);
-    return limitarQuantidade(Number.isNaN(numero) ? 1 : numero, totalAnalises);
-  }
+  const todasSelecionadas = selecionadas.size === analises.length;
 
-  function handleConfirmar() {
-    aoConfirmar(
-      modo === "todas" ? totalAnalises : normalizarQuantidade(quantidadeTexto),
+  function alternarTodas() {
+    setSelecionadas(
+      todasSelecionadas ? new Set() : new Set(analises.map((a) => a.id)),
     );
   }
 
-  function handleQuantidadeChange(valor: string) {
-    setQuantidadeTexto(valor.replace(/\D/g, ""));
+  function alternarUma(id: string) {
+    setSelecionadas((atual) => {
+      const proximo = new Set(atual);
+      if (proximo.has(id)) {
+        proximo.delete(id);
+      } else {
+        proximo.add(id);
+      }
+      return proximo;
+    });
   }
 
-  function handleQuantidadeBlur() {
-    setQuantidadeTexto(String(normalizarQuantidade(quantidadeTexto)));
+  function handleConfirmar() {
+    aoConfirmar(analises.filter((a) => selecionadas.has(a.id)));
   }
 
   return (
@@ -86,65 +90,60 @@ export function ExportarHistoricoModal({
             className={`text-secondary mb-3 ${modalStyles.modalText}`}
             id={descricaoId}
           >
-            Escolha quantas análises deseja exportar (da mais recente para a
-            mais antiga).
+            Marque quais análises deseja exportar (a lista segue da mais
+            recente para a mais antiga).
           </p>
 
-          <div className={`d-flex flex-column gap-3 mb-4 ${styles.opcoes}`}>
-            <label className={`d-flex align-items-start gap-2 ${styles.opcao}`}>
+          <div className={styles.selecaoHeader}>
+            <label className="d-flex align-items-center gap-2 mb-0">
               <input
-                type="radio"
-                name="modo-exportacao"
-                className="mt-1"
-                checked={modo === "todas"}
-                onChange={() => setModo("todas")}
+                type="checkbox"
+                checked={todasSelecionadas}
+                onChange={alternarTodas}
               />
-              <span>
-                <span className="fw-semibold d-block">Todas as análises</span>
-                <span className="text-secondary">
-                  {totalAnalises} {totalAnalises === 1 ? "análise" : "análises"}{" "}
-                  no histórico
-                </span>
-              </span>
-            </label>
-
-            <label className={`d-flex align-items-start gap-2 ${styles.opcao}`}>
-              <input
-                type="radio"
-                name="modo-exportacao"
-                className="mt-1"
-                checked={modo === "quantidade"}
-                onChange={() => setModo("quantidade")}
-              />
-              <span className="flex-fill">
-                <span className="fw-semibold d-block">
-                  Escolher quantidade
-                </span>
-                {modo === "quantidade" && (
-                  <span
-                    className={`d-inline-flex align-items-center gap-2 mt-1 ${styles.quantidadeLinha}`}
-                  >
-                    <span className="text-secondary">Exportar as últimas</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={totalAnalises}
-                      value={quantidadeTexto}
-                      onChange={(e) => handleQuantidadeChange(e.target.value)}
-                      onBlur={handleQuantidadeBlur}
-                      className={`form-control form-control-sm ${styles.quantidadeInput}`}
-                      aria-label="Quantidade de análises para exportar"
-                    />
-                    <span className="text-secondary">
-                      {totalAnalises === 1 ? "análise" : "análises"}
-                    </span>
-                  </span>
-                )}
+              <span className="fw-semibold">
+                Selecionar todas ({analises.length})
               </span>
             </label>
           </div>
 
-          <div className="d-flex justify-content-end gap-2">
+          <div
+            className={styles.lista}
+            role="group"
+            aria-label="Análises para exportar"
+          >
+            {analises.map((analise) => (
+              <label
+                key={analise.id}
+                className={`d-flex align-items-start gap-2 ${styles.item}`}
+              >
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={selecionadas.has(analise.id)}
+                  onChange={() => alternarUma(analise.id)}
+                />
+                <span className={`flex-fill ${styles.itemTexto}`}>
+                  <span className={`fw-semibold d-block ${styles.itemTitulo}`}>
+                    {analise.titulo_vaga}
+                  </span>
+                  <span
+                    className={`text-secondary d-block ${styles.itemSubtitulo}`}
+                  >
+                    {analise.empresa ? `${analise.empresa} · ` : ""}
+                    {formatarData(analise.created_at)}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+
+          <p className={`mb-0 ${styles.contador}`} role="status">
+            {selecionadas.size} de {analises.length}{" "}
+            {analises.length === 1 ? "análise selecionada" : "análises selecionadas"}
+          </p>
+
+          <div className="d-flex justify-content-end gap-2 mt-3">
             <button
               type="button"
               onClick={aoCancelar}
@@ -157,7 +156,7 @@ export function ExportarHistoricoModal({
             <button
               type="button"
               onClick={handleConfirmar}
-              disabled={processando}
+              disabled={processando || selecionadas.size === 0}
               className={`${buttonStyles.primary} ${buttonStyles.primaryCompact} px-4`}
             >
               {processando ? "Exportando..." : "Exportar"}

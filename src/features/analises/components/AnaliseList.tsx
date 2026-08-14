@@ -149,19 +149,20 @@ export function AnaliseList() {
     }
   }
 
-  // Abre o diálogo para o usuário escolher quantas análises exportar (as N
-  // mais recentes ou todas). A exportação não considera o filtro ativo, para
-  // o backup do histórico ser completo.
+  // Abre o diálogo para o usuário marcar (checkbox) quais análises exportar.
+  // A seleção não considera o filtro ativo, para o backup do histórico poder
+  // incluir qualquer análise salva.
   function handleAbrirExportacao() {
     if (analises.length === 0) return;
     setModalExportarAberto(true);
   }
 
-  // Gera e baixa o PDF com as `quantidade` análises mais recentes.
-  async function handleConfirmarExportacao(quantidade: number) {
+  // Gera e baixa o PDF apenas com as análises marcadas pelo usuário.
+  async function handleConfirmarExportacao(selecionadas: Analise[]) {
+    if (selecionadas.length === 0) return;
     setExportando(true);
     try {
-      await exportarHistoricoPdf(analises.slice(0, quantidade));
+      await exportarHistoricoPdf(selecionadas);
     } catch (err) {
       console.error("Falha ao exportar o histórico:", err);
     } finally {
@@ -424,10 +425,10 @@ export function AnaliseList() {
         />
       )}
 
-      {/* Modal de exportação: escolher quantidade ou exportar todas */}
+      {/* Modal de exportação: marcar quais análises incluir no PDF */}
       {modalExportarAberto && (
         <ExportarHistoricoModal
-          totalAnalises={analises.length}
+          analises={analises}
           processando={exportando}
           aoConfirmar={handleConfirmarExportacao}
           aoCancelar={() => setModalExportarAberto(false)}
