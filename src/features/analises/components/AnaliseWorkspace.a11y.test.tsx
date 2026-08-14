@@ -9,9 +9,16 @@ vi.mock("../../../lib/supabaseClient", () => ({
   supabase: {},
 }));
 
+// Cota normal — o indicador (badge + barra de progresso) entra no DOM auditado
+// pelo axe.
 vi.mock("../hooks/useCotaAnalises", () => ({
   useCotaAnalises: () => ({
-    cota: null,
+    cota: {
+      sessao: { usado: 2, limite: 5, restante: 3 },
+      global: { usado: 10, limite: 100, restante: 90 },
+      renovaEm: "2026-08-09T15:00:00.000Z",
+      renovaEmGlobal: "2026-08-10T00:00:00.000Z",
+    },
     carregando: false,
     atualizarCota: vi.fn(),
   }),

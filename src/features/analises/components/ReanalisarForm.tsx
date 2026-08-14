@@ -11,6 +11,8 @@ import {
 import { supabase } from "../../../lib/supabaseClient";
 import { formatarTamanhoArquivo } from "../../../lib/formatarArquivo";
 import { enviarAnalise } from "../../../lib/analisarApi";
+import { useCotaAnalises } from "../hooks/useCotaAnalises";
+import { CotaAnalises } from "./CotaAnalises";
 import cardStyles from "../../../styles/ui/Card.module.css";
 import formStyles from "../../../styles/ui/Form.module.css";
 import buttonStyles from "../../../styles/ui/Button.module.css";
@@ -32,6 +34,11 @@ export function ReanalisarForm() {
   const [curriculoTexto, setCurriculoTexto] = useState("");
   const [analisando, setAnalisando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+
+  // Cota de análises (restantes + renovação): mesma indicação do workspace,
+  // para o usuário ver o limite antes de tentar (a API responde 429 ao
+  // esgotar).
+  const { cota, carregando: carregandoCota } = useCotaAnalises();
 
   const {
     arquivo,
@@ -251,6 +258,10 @@ export function ReanalisarForm() {
             )}
           </div>
 
+          <div className="mb-3">
+            <CotaAnalises cota={cota} carregando={carregandoCota} />
+          </div>
+
           <button
             type="submit"
             disabled={analisando || !analiseBase}
@@ -271,7 +282,11 @@ export function ReanalisarForm() {
             )}
           </button>
 
-          {erro && <div className="alert alert-danger mt-3 mb-0">{erro}</div>}
+          {erro && (
+            <div className="alert alert-danger mt-3 mb-0" role="alert">
+              {erro}
+            </div>
+          )}
         </form>
       </div>
     </div>

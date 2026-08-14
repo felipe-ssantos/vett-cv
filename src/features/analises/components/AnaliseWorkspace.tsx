@@ -450,7 +450,11 @@ export function AnaliseWorkspace() {
             Suas análises são privadas e vinculadas à sua sessão.
           </div>
 
-          {erro && <div className="alert alert-danger mt-2 mb-0">{erro}</div>}
+          {erro && (
+            <div className="alert alert-danger mt-2 mb-0" role="alert">
+              {erro}
+            </div>
+          )}
         </form>
       </div>
 
