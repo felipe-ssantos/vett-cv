@@ -1,0 +1,24 @@
+/* ExportarHistoricoModal — page-scoped styles only. Shared primitives (Card,
+   Button, Modal) come from src/styles/ui. */
+
+.opcoes {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.opcao {
+  cursor: pointer;
+  font-size: 13.5px;
+}
+
+.quantidadeLinha {
+  font-size: 13px;
+}
+
+.quantidadeInput {
+  width: 76px;
+  text-align: center;
+  font-size: 13px;
+}
