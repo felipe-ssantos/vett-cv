@@ -12,7 +12,25 @@ vi.mock("../../../lib/supabaseClient", () => ({
   supabase: { from: supabaseMocks.from },
 }));
 
+const cotaMock = vi.hoisted(() => ({
+  valor: null as {
+    sessao: { usado: number; limite: number; restante: number } | null;
+    global: { usado: number; limite: number; restante: number } | null;
+    renovaEm: string | null;
+    renovaEmGlobal: string | null;
+  } | null,
+}));
+
+vi.mock("../hooks/useCotaAnalises", () => ({
+  useCotaAnalises: () => ({
+    cota: cotaMock.valor,
+    carregando: false,
+    atualizarCota: vi.fn(),
+  }),
+}));
+
 beforeEach(() => {
+  cotaMock.valor = null;
   supabaseMocks.from.mockReturnValue({
     select: () => ({
       eq: () => ({
@@ -98,6 +116,36 @@ describe("ReanalisarForm — remoção do arquivo", () => {
 
     expect(
       screen.getByText(/Selecionado: curriculo\.pdf/),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("ReanalisarForm — cota de análises", () => {
+  it("mostra o indicador de cota com as análises restantes", async () => {
+    cotaMock.valor = {
+      sessao: { usado: 2, limite: 5, restante: 3 },
+      global: { usado: 10, limite: 100, restante: 90 },
+      renovaEm: null,
+      renovaEmGlobal: null,
+    };
+    renderizarFormulario();
+
+    expect(
+      await screen.findByText(/3 de 5 análises disponíveis/),
+    ).toBeInTheDocument();
+  });
+
+  it("mostra o bloqueio de cota quando a sessão esgota", async () => {
+    cotaMock.valor = {
+      sessao: { usado: 5, limite: 5, restante: 0 },
+      global: { usado: 10, limite: 100, restante: 90 },
+      renovaEm: null,
+      renovaEmGlobal: null,
+    };
+    renderizarFormulario();
+
+    expect(
+      await screen.findByText(/Limite de análises atingido/),
     ).toBeInTheDocument();
   });
 });
