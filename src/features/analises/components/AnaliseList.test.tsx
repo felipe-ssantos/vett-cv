@@ -129,57 +129,45 @@ describe("AnaliseList — aviso e meter de histórico cheio", () => {
 });
 
 describe("AnaliseList — exportar histórico em PDF", () => {
-  it("exporta todas as análises por padrão ao confirmar o diálogo", async () => {
-    const user = userEvent.setup();
-    mockCarregar(2);
-    renderizar();
-
-    await screen.findByText("Vaga de Teste 0");
-    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
-
-    // Todas as análises vêm marcadas por padrão.
-    expect(
-      screen.getByRole("checkbox", { name: /Selecionar todas/ }),
-    ).toBeChecked();
-    expect(
-      screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }),
-    ).toBeChecked();
-    expect(
-      screen.getByRole("checkbox", { name: /Vaga de Teste 1/ }),
-    ).toBeChecked();
-
-    await user.click(screen.getByRole("button", { name: /^Exportar$/ }));
-
-    expect(exportarPdfMock).toHaveBeenCalledTimes(1);
-    const analisesExportadas = exportarPdfMock.mock.calls[0][0] as Analise[];
-    expect(analisesExportadas).toHaveLength(2);
-    expect(analisesExportadas[0].titulo_vaga).toBe("Vaga de Teste 0");
-  });
-
-  it("exporta apenas as análises marcadas pelo usuário", async () => {
+  it("exporta apenas as análises marcadas na lista", async () => {
     const user = userEvent.setup();
     mockCarregar(3);
     renderizar();
 
     await screen.findByText("Vaga de Teste 0");
-    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
 
-    // Desmarca duas das três análises (resta apenas a "Vaga de Teste 1").
-    await user.click(screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }));
-    await user.click(screen.getByRole("checkbox", { name: /Vaga de Teste 2/ }));
-
+    // Checkboxes começam desabilitados (sem modo de seleção).
     expect(
-      screen.getByText("1 de 3 análises selecionadas"),
+      screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }),
+    ).toBeDisabled();
+
+    // Ao clicar em Exportar PDF, os checkboxes da lista são habilitados.
+    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
+    expect(
+      screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }),
+    ).toBeEnabled();
+
+    // Marca duas das três análises.
+    await user.click(
+      screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }),
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: /Vaga de Teste 2/ }),
+    );
+    expect(
+      screen.getByText("2 de 3 selecionadas"),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /^Exportar$/ }));
+
+    await user.click(screen.getByRole("button", { name: /^Exportar \(2\)$/ }));
 
     expect(exportarPdfMock).toHaveBeenCalledTimes(1);
     const analisesExportadas = exportarPdfMock.mock.calls[0][0] as Analise[];
-    expect(analisesExportadas).toHaveLength(1);
-    expect(analisesExportadas[0].titulo_vaga).toBe("Vaga de Teste 1");
+    expect(analisesExportadas).toHaveLength(2);
+    expect(analisesExportadas[0].titulo_vaga).toBe("Vaga de Teste 0");
+    expect(analisesExportadas[1].titulo_vaga).toBe("Vaga de Teste 2");
   });
 
-  it("desabilita Exportar quando nenhuma análise está marcada", async () => {
+  it("desabilita Exportar enquanto nenhuma análise está marcada", async () => {
     const user = userEvent.setup();
     mockCarregar(2);
     renderizar();
@@ -187,17 +175,59 @@ describe("AnaliseList — exportar histórico em PDF", () => {
     await screen.findByText("Vaga de Teste 0");
     await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
 
-    // "Selecionar todas" desmarca tudo quando já está tudo marcado.
-    await user.click(
-      screen.getByRole("checkbox", { name: /Selecionar todas/ }),
-    );
-    expect(screen.getByRole("button", { name: /^Exportar$/ })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /^Exportar \(0\)$/ }),
+    ).toBeDisabled();
 
-    // Ao marcar uma análise, o botão volta a ficar disponível.
     await user.click(
       screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }),
     );
-    expect(screen.getByRole("button", { name: /^Exportar$/ })).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: /^Exportar \(1\)$/ }),
+    ).toBeEnabled();
+  });
+
+  it("Selecionar todas marca todas as análises de uma vez", async () => {
+    const user = userEvent.setup();
+    mockCarregar(2);
+    renderizar();
+
+    await screen.findByText("Vaga de Teste 0");
+    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
+    await user.click(
+      screen.getByRole("checkbox", { name: /Selecionar todas/ }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: /^Exportar \(2\)$/ }),
+    ).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: /^Exportar \(2\)$/ }));
+
+    expect(exportarPdfMock).toHaveBeenCalledTimes(1);
+    const analisesExportadas = exportarPdfMock.mock.calls[0][0] as Analise[];
+    expect(analisesExportadas).toHaveLength(2);
+  });
+
+  it("Cancelar sai do modo de seleção sem exportar", async () => {
+    const user = userEvent.setup();
+    mockCarregar(2);
+    renderizar();
+
+    await screen.findByText("Vaga de Teste 0");
+    await user.click(screen.getByRole("button", { name: /Exportar PDF/ }));
+    await user.click(
+      screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }),
+    );
+    await user.click(screen.getByRole("button", { name: /Cancelar/ }));
+
+    expect(exportarPdfMock).not.toHaveBeenCalled();
+    // Volta ao botão padrão e os checkboxes são desabilitados de novo.
+    expect(
+      screen.getByRole("button", { name: /Exportar PDF/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: /Vaga de Teste 0/ }),
+    ).toBeDisabled();
   });
 
   it("não oferece exportar com o histórico vazio", async () => {
