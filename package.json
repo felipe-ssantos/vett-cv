@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
-    "@vercel/node": "^5.10.2",
+    "@vercel/node": "^13.0.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "formidable": "^3.5.4",
