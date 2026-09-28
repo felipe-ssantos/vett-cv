@@ -3,7 +3,12 @@ import formidable from "formidable";
 import fs from "fs/promises";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
-import { ErroTimeoutIA, chamarIA } from "./gemini.js";
+import {
+  ErroIAIndisponivel,
+  ErroRespostaIA,
+  ErroTimeoutIA,
+  chamarIA,
+} from "./gemini.js";
 import {
   LIMITE_CARACTERES_TEXTO,
   campoExcedeLimiteDeTexto,
@@ -266,8 +271,14 @@ function validarNumeroPercentual(valor: unknown, campo: string): number {
   return valor;
 }
 
+function ehListaDeStrings(valor: unknown): valor is string[] {
+  return (
+    Array.isArray(valor) && valor.every((item) => typeof item === "string")
+  );
+}
+
 function validarArrayDeStrings(valor: unknown, campo: string): string[] {
-  if (!Array.isArray(valor) || valor.some((item) => typeof item !== "string")) {
+  if (!ehListaDeStrings(valor)) {
     throw new RespostaIAInvalidaError(
       `Campo "${campo}" ausente ou não é uma lista de strings.`,
     );
@@ -353,6 +364,44 @@ function validarVagaExtraidaIA(json: unknown): VagaExtraidaIA {
   };
 }
 
+interface VagaParaComparacao {
+  titulo: string;
+  descricaoCompleta: string;
+  hardSkills: string[];
+  softSkills: string[];
+  senioridade: string | null;
+}
+
+// O JSON da vaga original chega do cliente no fluxo de reanálise. É validado
+// antes de montar o prompt: um payload corrompido ou incompleto quebraria a
+// montagem e viraria 500 em vez de um erro claro ao usuário.
+function interpretarVagaExistente(json: string): VagaParaComparacao | null {
+  let bruto: unknown;
+  try {
+    bruto = JSON.parse(json);
+  } catch {
+    return null;
+  }
+
+  if (typeof bruto !== "object" || bruto === null || Array.isArray(bruto)) {
+    return null;
+  }
+
+  const vaga = bruto as Record<string, unknown>;
+  if (typeof vaga.titulo !== "string") return null;
+  if (typeof vaga.descricaoCompleta !== "string") return null;
+  if (!ehListaDeStrings(vaga.hardSkills)) return null;
+  if (!ehListaDeStrings(vaga.softSkills)) return null;
+
+  return {
+    titulo: vaga.titulo,
+    descricaoCompleta: vaga.descricaoCompleta,
+    hardSkills: vaga.hardSkills,
+    softSkills: vaga.softSkills,
+    senioridade: typeof vaga.senioridade === "string" ? vaga.senioridade : null,
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ erro: "Método não permitido" });
@@ -412,6 +461,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    // Reanálise: a vaga original vem do cliente em JSON. Validada aqui, antes
+    // da cota, para que um payload corrompido não consuma uma tentativa.
+    let vagaExistente: VagaParaComparacao | null = null;
+    if (vagaExistenteJson) {
+      vagaExistente = interpretarVagaExistente(vagaExistenteJson);
+      if (!vagaExistente) {
+        return res.status(400).json({
+          erro: "Os dados da vaga original estão incompletos ou corrompidos. Abra a análise original e tente novamente.",
+        });
+      }
+    }
+
     // Limite de uso (por sessão e global) — verificado só depois que o
     // currículo foi lido com sucesso: tentativas com documento ilegível (ou
     // sem texto) não consomem a cota. O 429/503 chega antes da chamada à IA.
@@ -424,8 +485,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(bloqueio.status).json({ erro: bloqueio.mensagem });
     }
 
-    if (vagaExistenteJson) {
-      const vagaExistente = JSON.parse(vagaExistenteJson);
+    if (vagaExistente) {
       const prompt = montarPromptSoAnalise(curriculoTexto, vagaExistente);
       const respostaIA = await chamarIA(prompt);
 
@@ -471,7 +531,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         erro: "O serviço de IA demorou demais para responder. Tente novamente em instantes.",
       });
     }
-    if (erro instanceof RespostaIAInvalidaError) {
+    if (erro instanceof ErroIAIndisponivel) {
+      return res.status(503).json({
+        erro: "O serviço de IA está temporariamente indisponível. Tente novamente em instantes.",
+      });
+    }
+    if (
+      erro instanceof RespostaIAInvalidaError ||
+      erro instanceof ErroRespostaIA
+    ) {
       return res.status(502).json({
         erro: `A IA retornou uma resposta inválida: ${erro.message}`,
       });
