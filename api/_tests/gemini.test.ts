@@ -208,6 +208,23 @@ describe("chamarIA — retry e fallback de modelo", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(4);
   });
 
+  it("desiste de tentar quando o orçamento total da cadeia se esgota", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(respostaErro(503));
+
+    await expect(
+      chamarIA("prompt", {
+        fetchImpl,
+        timeoutMs: 5000,
+        modelos: [MODELO_A, MODELO_B],
+        esperaMs: 0,
+        orcamentoMs: 0,
+      }),
+    ).rejects.toBeInstanceOf(ErroIAIndisponivel);
+
+    // Melhor devolver o último erro conhecido do que estourar o maxDuration.
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("trata falha de rede como indisponibilidade (com retry)", async () => {
     const fetchImpl = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
 

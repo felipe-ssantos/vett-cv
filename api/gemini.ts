@@ -47,6 +47,12 @@ const MODELOS_PADRAO = ["gemini-3.5-flash-lite", "gemini-3.6-flash"];
 const TENTATIVAS_POR_MODELO = 2;
 const ESPERA_ENTRE_TENTATIVAS_MS = 300;
 
+// Orçamento total da cadeia (soma de todas as tentativas). Uma resposta de
+// indisponibilidade do provedor pode levar vários segundos, então este teto
+// garante que a função responda antes do `maxDuration` de 60s da Vercel.
+// Configurável via GEMINI_BUDGET_MS.
+const ORCAMENTO_TOTAL_MS = Number(process.env.GEMINI_BUDGET_MS) || 45_000;
+
 // Repetir só faz sentido quando o provedor está sobrecarregado ou limitando o
 // uso: erros de requisição (400/401/403/404) repetiriam o mesmo resultado.
 const STATUS_RETENTAVEIS = new Set([429, 500, 502, 503, 504]);
@@ -85,6 +91,8 @@ export interface OpcoesChamarIA {
   modelos?: string[];
   /** Espera entre tentativas do mesmo modelo (padrão: 300ms). */
   esperaMs?: number;
+  /** Orçamento total da cadeia em ms (padrão: ORCAMENTO_TOTAL_MS). */
+  orcamentoMs?: number;
 }
 
 function esperar(ms: number): Promise<void> {
@@ -181,12 +189,24 @@ export async function chamarIA(
   const modelos = opcoes.modelos?.length
     ? opcoes.modelos
     : modelosConfigurados();
+  const prazo = Date.now() + (opcoes.orcamentoMs ?? ORCAMENTO_TOTAL_MS);
 
   let ultimo: ResultadoChamada = { tipo: "indisponivel" };
 
   for (const [indice, modelo] of modelos.entries()) {
     for (let tentativa = 1; tentativa <= TENTATIVAS_POR_MODELO; tentativa++) {
-      const resultado = await chamarModelo(modelo, prompt, fetchImpl, timeoutMs);
+      // Sem orçamento restante, para de tentar: é melhor devolver o último erro
+      // conhecido do que estourar o tempo máximo da função.
+      const restante = prazo - Date.now();
+      if (restante <= 0) throw erroFinal(ultimo, modelos);
+
+      // Cada tentativa nunca passa do que sobra do orçamento.
+      const resultado = await chamarModelo(
+        modelo,
+        prompt,
+        fetchImpl,
+        Math.min(timeoutMs, restante),
+      );
       if (resultado.tipo === "ok") return resultado.texto;
 
       ultimo = resultado;
