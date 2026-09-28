@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
-    "@vercel/node": "^13.0.0",
+    "@vercel/node": "^15.0.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "formidable": "^3.5.4",
@@ -51,7 +51,7 @@
     "jsdom": "^30.0.1",
     "pgsql-parser": "^18.2.6",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.70.0",
+    "typescript-eslint": "^8.70.1",
     "vite": "^8.2.0",
     "vitest": "^4.1.11",
     "vitest-axe": "^0.1.0"
