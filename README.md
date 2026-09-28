@@ -116,6 +116,7 @@ conteúdo dos arquivos de `supabase/migrations/`:
 | `GEMINI_API_KEY` | Chave da API do Google Gemini (usada apenas no back-end) |
 | `GEMINI_MODELOS` | Opcional — cadeia de modelos Gemini na ordem de tentativa (padrão: `gemini-3.5-flash-lite,gemini-3.6-flash`). Quando um modelo responde 429/5xx, a API repete a chamada e cai para o próximo da lista |
 | `GEMINI_TIMEOUT_MS` | Opcional — timeout de cada tentativa da IA, em ms (padrão: `15000`) |
+| `GEMINI_BUDGET_MS` | Opcional — orçamento total da cadeia de tentativas da IA, em ms (padrão: `45000`). Garante a resposta antes do `maxDuration` de 60s da função |
 | `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço do Supabase (apenas no back-end, para o limite diário de análises). `SUPABASE_URL` é opcional — sem ela, a API reusa `VITE_SUPABASE_URL` |
 | `RATE_LIMIT_IP_SECRET` | Opcional — segredo usado no hash anônimo do IP (limite por navegador). Sem ela, a API usa `SUPABASE_SERVICE_ROLE_KEY` como segredo |
 
