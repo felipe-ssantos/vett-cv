@@ -514,6 +514,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new RespostaIAInvalidaError("A IA não retornou um JSON válido.");
     }
 
+    // O JSON pode ser válido e ainda assim não ser um objeto (ex.: a IA
+    // respondeu `null` ou um escalar). Sem este guard, acessar `.vaga` de um
+    // `null` estouraria um TypeError e viraria o 500 genérico; aqui vira 502.
+    if (typeof respostaJson !== "object" || respostaJson === null) {
+      throw new RespostaIAInvalidaError(
+        "Resposta da IA não é um objeto JSON válido.",
+      );
+    }
+
     const respostaObj = respostaJson as Record<string, unknown>;
     const vaga = validarVagaExtraidaIA(respostaObj.vaga);
     const analise = validarAnaliseIA(respostaObj.analise);

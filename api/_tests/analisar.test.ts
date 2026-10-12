@@ -840,6 +840,24 @@ describe("POST /api/analisar — falhas da IA", () => {
     );
   });
 
+  it("retorna 502 quando a IA responde um JSON válido que não é objeto (null)", async () => {
+    // `JSON.parse("null")` é válido, mas acessar `.vaga` estouraria um
+    // TypeError (500 genérico) sem o guard do handler.
+    chamarIA.mockResolvedValue("null");
+    definirEntrada({
+      curriculoTexto: ["Currículo com SQL"],
+      descricaoVaga: ["Vaga de dados"],
+    });
+
+    const { res, corpo } = criarResposta();
+    await handler(criarRequisicao(), res);
+
+    expect(corpo.status).toBe(502);
+    expect((corpo.dados as { erro: string }).erro).toContain(
+      "não é um objeto JSON válido",
+    );
+  });
+
   it("retorna 502 quando matchPorCategoria está ausente", async () => {
     const { matchPorCategoria, ...semCategoria } = analiseValida();
     void matchPorCategoria;
