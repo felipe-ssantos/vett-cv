@@ -19,12 +19,30 @@ const chamarIA = vi.hoisted(() => vi.fn());
 const montarPromptComExtracao = vi.hoisted(() => vi.fn(() => "prompt"));
 const montarPromptSoAnalise = vi.hoisted(() => vi.fn(() => "prompt"));
 
-// A MESMA classe de erro exportada pelo mock: o handler usa `instanceof`.
+// As MESMAS classes de erro exportadas pelo mock: o handler usa `instanceof`.
 const ErroTimeoutIA = vi.hoisted(() => {
   return class ErroTimeoutIA extends Error {
     constructor(mensagem: string) {
       super(mensagem);
       this.name = "ErroTimeoutIA";
+    }
+  };
+});
+
+const ErroIAIndisponivel = vi.hoisted(() => {
+  return class ErroIAIndisponivel extends Error {
+    constructor(mensagem: string) {
+      super(mensagem);
+      this.name = "ErroIAIndisponivel";
+    }
+  };
+});
+
+const ErroRespostaIA = vi.hoisted(() => {
+  return class ErroRespostaIA extends Error {
+    constructor(mensagem: string) {
+      super(mensagem);
+      this.name = "ErroRespostaIA";
     }
   };
 });
@@ -42,6 +60,8 @@ vi.mock("formidable", () => ({
 }));
 
 vi.mock("../gemini.js", () => ({
+  ErroIAIndisponivel,
+  ErroRespostaIA,
   ErroTimeoutIA,
   chamarIA,
 }));
@@ -820,6 +840,24 @@ describe("POST /api/analisar — falhas da IA", () => {
     );
   });
 
+  it("retorna 502 quando a IA responde um JSON válido que não é objeto (null)", async () => {
+    // `JSON.parse("null")` é válido, mas acessar `.vaga` estouraria um
+    // TypeError (500 genérico) sem o guard do handler.
+    chamarIA.mockResolvedValue("null");
+    definirEntrada({
+      curriculoTexto: ["Currículo com SQL"],
+      descricaoVaga: ["Vaga de dados"],
+    });
+
+    const { res, corpo } = criarResposta();
+    await handler(criarRequisicao(), res);
+
+    expect(corpo.status).toBe(502);
+    expect((corpo.dados as { erro: string }).erro).toContain(
+      "não é um objeto JSON válido",
+    );
+  });
+
   it("retorna 502 quando matchPorCategoria está ausente", async () => {
     const { matchPorCategoria, ...semCategoria } = analiseValida();
     void matchPorCategoria;
@@ -929,5 +967,74 @@ describe("POST /api/analisar — falhas da IA", () => {
     expect((corpo.dados as { erro: string }).erro).toBe(
       "Falha ao processar a análise.",
     );
+  });
+
+  it("retorna 503 quando a IA está indisponível (429/5xx do provedor)", async () => {
+    chamarIA.mockRejectedValue(
+      new ErroIAIndisponivel("IA indisponível (HTTP 503) após tentar: modelo-a."),
+    );
+    definirEntrada({
+      curriculoTexto: ["Currículo com SQL"],
+      descricaoVaga: ["Vaga de dados"],
+    });
+
+    const { res, corpo } = criarResposta();
+    await handler(criarRequisicao(), res);
+
+    expect(corpo.status).toBe(503);
+    expect((corpo.dados as { erro: string }).erro).toContain(
+      "temporariamente indisponível",
+    );
+  });
+
+  it("retorna 502 quando a IA responde sem conteúdo utilizável", async () => {
+    chamarIA.mockRejectedValue(
+      new ErroRespostaIA("resposta sem conteúdo utilizável."),
+    );
+    definirEntrada({
+      curriculoTexto: ["Currículo com SQL"],
+      descricaoVaga: ["Vaga de dados"],
+    });
+
+    const { res, corpo } = criarResposta();
+    await handler(criarRequisicao(), res);
+
+    expect(corpo.status).toBe(502);
+    expect((corpo.dados as { erro: string }).erro).toContain(
+      "resposta sem conteúdo utilizável",
+    );
+  });
+});
+
+describe("POST /api/analisar — vaga original da reanálise", () => {
+  it("retorna 400 quando o JSON da vaga original está corrompido", async () => {
+    definirEntrada({
+      curriculoTexto: ["Currículo com SQL"],
+      vagaExistente: ["{isto não é JSON"],
+    });
+
+    const { res, corpo } = criarResposta();
+    await handler(criarRequisicao(), res);
+
+    expect(corpo.status).toBe(400);
+    expect((corpo.dados as { erro: string }).erro).toContain(
+      "dados da vaga original",
+    );
+    // Payload inválido não chega à IA nem consome cota.
+    expect(chamarIA).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("retorna 400 quando a vaga original não traz os campos esperados", async () => {
+    definirEntrada({
+      curriculoTexto: ["Currículo com SQL"],
+      vagaExistente: [JSON.stringify({ titulo: "Analista de Dados" })],
+    });
+
+    const { res, corpo } = criarResposta();
+    await handler(criarRequisicao(), res);
+
+    expect(corpo.status).toBe(400);
+    expect(chamarIA).not.toHaveBeenCalled();
   });
 });

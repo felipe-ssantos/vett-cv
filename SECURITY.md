@@ -17,9 +17,11 @@ As vulnerabilidades anteriormente conhecidas foram todas corrigidas:
 | `path-to-regexp` | Risco aceito, sem correção segura na cadeia do `@vercel/node` | Corrigido via `overrides` para `6.3.0` |
 | `undici` | Risco aceito, downgrade pior que o problema | Corrigido via `overrides` para `6.28.0` |
 | `ajv` | Risco aceito, mesma cadeia de dependência | Corrigido via `overrides` para `8.20.0` |
+| `@xmldom/xmldom` | `0.8.13` na cadeia do `mammoth`, exposto a advisory high (injection e ReDoS) | Corrigido via `overrides` para `0.8.15` |
+| `vitest` / `@vitest/mocker` | `4.1.10` exposto a path traversal (GHSA-82fw-gwwq-j7x9) | Atualizado para `4.1.11` (ferramenta de dev, sem impacto no deploy) |
 
 Correções adicionais aplicadas via `overrides` no `package.json`:
-`minimatch`, `smol-toml` e `js-yaml`.
+`@xmldom/xmldom`, `minimatch`, `smol-toml` e `js-yaml`.
 
 ## Row Level Security (Supabase)
 
